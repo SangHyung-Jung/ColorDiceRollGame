@@ -1,7 +1,12 @@
 class_name Dice
 extends RigidBody3D
+@export var pips_texture_original: Texture2D
+@export var dice_color := Color.BROWN:
+		set(value):
+			dice_color = value
+			if is_node_ready():
+				call_deferred("_update_visuals")
 
-@export var dice_color := Color.BROWN
 @onready var original_position := position
 
 var sides = {}
@@ -11,11 +16,9 @@ const dice_size := 2.0
 const dice_density := 10.0
 const ANGULAR_VELOCITY_THRESHOLD := 1.
 const LINEAR_VELOCITY_THRESHOLD := 0.1 * dice_size
-## If the center of the dice stops above this elevation it is considered mounted
 const mounted_elevation = 0.8 * dice_size
-## The minimal angle between faces (different in a d20)
 const face_angle := 90.0
-## how up must be a face unit vector for the face to be choosen
+
 func max_tilt():
 	return cos(deg_to_rad(face_angle/float(sides.size())))
 
@@ -32,7 +35,6 @@ func _init() -> void:
 	physics_material_override = PhysicsMaterial.new()
 	physics_material_override.absorbent = true
 	physics_material_override.bounce = 0.1
-
 	physics_material_override.friction = 1.0
 
 @onready var collider : CollisionShape3D = $Collider
@@ -45,14 +47,68 @@ func _adjust_to_size():
 
 func _ready():
 	original_position = position
-	mesh.material_override = mesh.material_override.duplicate()
-	mesh.material_override.albedo_color = dice_color
 	_adjust_to_size()
 	self.sleeping_state_changed.connect(_on_sleeping_state_changed)
+	
+	call_deferred("_update_visuals")
 	
 	stop()
 	
 	self.angular_damp = 1.0
+
+func _update_visuals():
+	if not pips_texture_original:
+		printerr("Dice '", name, "': pips_texture_original is not set in the inspector!")
+		return
+	
+	var unique_material = StandardMaterial3D.new()
+	unique_material.resource_local_to_scene = true
+
+	var pips_color: Color
+	if dice_color.is_equal_approx(Color.WHITE):
+		pips_color = Color.BLACK
+	else:
+		pips_color = Color.WHITE
+
+	var new_texture = _generate_dice_texture(dice_color, pips_color)
+	if not new_texture:
+		printerr("Dice '", name, "': Failed to generate new texture.")
+		return
+
+	unique_material.albedo_texture = new_texture
+	unique_material.albedo_color = Color.WHITE
+	
+	mesh.material_override = unique_material
+
+func _generate_dice_texture(body_color: Color, pips_color: Color) -> ImageTexture:
+	var source_image: Image = pips_texture_original.get_image()
+	if source_image == null or source_image.is_empty():
+		return null
+
+	# ★★ 수정된 부분: 압축된 텍스처 포맷으로 인한 오류를 해결합니다. ★★
+	# Godot는 성능을 위해 텍스처를 VRAM 압축 포맷으로 자동 변환할 수 있습니다.
+	# 픽셀을 직접 수정하기 전에, 압축된 상태라면 먼저 압축을 풀어야 합니다.
+	if source_image.is_compressed():
+		if source_image.decompress() != OK:
+			printerr("Failed to decompress source image for dice '", name, "'")
+			return null
+
+	# 이제 안전하게 표준 포맷으로 변환할 수 있습니다.
+	source_image.convert(Image.FORMAT_RGBA8)
+
+	var new_image: Image = Image.create(source_image.get_width(), source_image.get_height(), false, Image.FORMAT_RGBA8)
+
+	for y in range(source_image.get_height()):
+		for x in range(source_image.get_width()):
+			var original_pixel = source_image.get_pixel(x, y)
+			
+			if original_pixel.v < 0.5:
+				new_image.set_pixel(x, y, pips_color)
+			else:
+				new_image.set_pixel(x, y, body_color)
+	
+	return ImageTexture.create_from_image(new_image)
+
 
 func stop():
 	dehighlight()
@@ -61,7 +117,6 @@ func stop():
 	position = original_position
 	position.y = 5 * dice_size
 	rotation = randf_range(0, 2*PI)*Vector3(1.,1.,1.)
-	
 	linear_velocity = Vector3.ZERO
 	angular_velocity = Vector3.ZERO
 
@@ -82,7 +137,6 @@ func roll():
 		randf_range(-1.,+1.),
 		randf_range(-1.,+1.)
 	))
-
 
 func shake(reason: String):
 	"""Move a bad rolled dice"""
@@ -109,7 +163,6 @@ func _on_sleeping_state_changed():
 	freeze = true
 	show_face(side)
 
-
 func upper_side():
 	"Returns which dice side is up, or 0 when none is clear"
 	var highest_y := -INF
@@ -129,7 +182,6 @@ func face_up_transform(value) -> Transform3D:
 	var cross = face_normal.cross(Vector3.UP).normalized()
 	var angle = face_normal.angle_to(Vector3.UP)
 	var rotated := Transform3D(transform)
-	# Edge case: face is down
 	if cross.length_squared()<0.1:
 		cross = Vector3.FORWARD
 	rotated.basis = rotated.basis.rotated(cross.normalized(), angle)
@@ -160,4 +212,3 @@ func highlight():
 
 func dehighlight() -> void:
 	highlight_face.visible = false
-	

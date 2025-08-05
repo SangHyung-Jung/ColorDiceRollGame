@@ -1,23 +1,25 @@
 # main.gd ─ DiceRollerControl 예제
 extends Node3D                                # 3D 루트(placeholder.tscn)
 
-# DiceRollerControl 스크립트 미리 불러오기
 const DiceRollerControl := preload(
 	"res://addons/dice_roller/dice_roller_control/dice_roller_control.gd"
 )
-# DiceDef 리소스 (주사위 1개 정의용)
+
 const DiceDef := preload(
 	"res://addons/dice_roller/dice_def.gd"      # ★ 실제 경로 확인
 )
 const DiceShape := preload("res://addons/dice_roller/dice_shape.gd")
 
+const PIPS_TEXTURE = preload("res://addons/dice_roller/dice/d6_dice/dice_texture.png")
+
 var dice_ctr : DiceRollerControl               # 런타임에 생성할 컨트롤
 
-	# 4. 주사위 5개 세트 구성 ------------------------
 func _make_d6(col: Color) -> DiceDef:
+	print("1. [main.gd] 주문서 생성 중... 색상: ", col)
 	var d := DiceDef.new()
 	d.shape = DiceShape.new("D6")
 	d.color = col
+	d.pips_texture = PIPS_TEXTURE
 	return d
 
 func _ready() -> void:
