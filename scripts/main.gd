@@ -15,7 +15,6 @@ const PIPS_TEXTURE = preload("res://addons/dice_roller/dice/d6_dice/dice_texture
 var dice_ctr : DiceRollerControl               # 런타임에 생성할 컨트롤
 
 func _make_d6(col: Color) -> DiceDef:
-	print("1. [main.gd] 주문서 생성 중... 색상: ", col)
 	var d := DiceDef.new()
 	d.shape = DiceShape.new("D6")
 	d.color = col

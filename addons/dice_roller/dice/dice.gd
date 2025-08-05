@@ -58,7 +58,6 @@ func _ready():
 
 func _update_visuals():
 	if not pips_texture_original:
-		printerr("Dice '", name, "': pips_texture_original is not set in the inspector!")
 		return
 	
 	var unique_material = StandardMaterial3D.new()

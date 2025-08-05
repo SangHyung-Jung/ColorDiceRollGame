@@ -66,14 +66,15 @@ var total_value:=0 :
 		return total
 
 func set_default_dice_set():
-	var new_set: Array[DiceDef] = []
-	for name in default_set:
-		var dice = DiceDef.new()
-		dice.name = name
-		dice.color = default_set[name].color
-		dice.shape = DiceShape.new("D6")
-		new_set.append(dice)
-	dice_set = new_set
+	#var new_set: Array[DiceDef] = []
+	#for name in default_set:
+		#var dice = DiceDef.new()
+		#dice.name = name
+		#dice.color = default_set[name].color
+		#dice.shape = DiceShape.new("D6")
+		#new_set.append(dice)
+	#dice_set = new_set
+	pass
 
 func ensure_valid_and_unique_dice_names():
 	var used_names: Dictionary = {}
@@ -127,9 +128,8 @@ func add_dice_escene(dice: DiceDef):
 		packed_scene = dice.shape.scene()
 	var scene = packed_scene.instantiate()
 	scene.name = dice.name
-	print("2. [DiceRoller.gd] 주사위 생성! '", scene.name, "'에 색상(", dice.color, ")을 설정합니다.")
 	scene.dice_color = dice.color
-	print("3. [DiceRoller.gd] 색상 설정 완료. 실제 적용된 색상: ", scene.dice_color)
+	
 	scene.pips_texture_original = dice.pips_texture
 
 	scene.roll_finished.connect(_on_finnished_dice_rolling.bind(dice.name))
