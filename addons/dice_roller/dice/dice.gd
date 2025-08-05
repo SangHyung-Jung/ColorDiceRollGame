@@ -9,8 +9,8 @@ var highlight_orientation = {}
 
 const dice_size := 2.0
 const dice_density := 10.0
-const ANGULAR_VELOCITY_THRESHOLD := 10.
-const LINEAR_VELOCITY_THRESHOLD := 0.2 * dice_size
+const ANGULAR_VELOCITY_THRESHOLD := 1.
+const LINEAR_VELOCITY_THRESHOLD := 0.1 * dice_size
 ## If the center of the dice stops above this elevation it is considered mounted
 const mounted_elevation = 0.8 * dice_size
 ## The minimal angle between faces (different in a d20)
@@ -19,16 +19,13 @@ const face_angle := 90.0
 func max_tilt():
 	return cos(deg_to_rad(face_angle/float(sides.size())))
 
-## Whether the dice is rolling
 var rolling := false
-## Accomulated roll time
 var roll_time := 0.0
 
-## Emited when a roll finishes
 signal roll_finished(int)
 
 func _init() -> void:
-	continuous_cd = false
+	continuous_cd = true
 	can_sleep = true
 	gravity_scale = 10
 	freeze_mode = RigidBody3D.FREEZE_MODE_STATIC
@@ -36,7 +33,7 @@ func _init() -> void:
 	physics_material_override.absorbent = true
 	physics_material_override.bounce = 0.1
 
-# Children that the sub classes should provide
+	physics_material_override.friction = 1.0
 
 @onready var collider : CollisionShape3D = $Collider
 @onready var highlight_face : Node3D = $FaceHighligth
@@ -45,14 +42,17 @@ func _init() -> void:
 func _adjust_to_size():
 	mass = dice_density * dice_size**3
 	collider.shape.margin = dice_size * 0.1
-	#collider.shape.size = dice_size * Vector3.ONE
 
 func _ready():
 	original_position = position
 	mesh.material_override = mesh.material_override.duplicate()
 	mesh.material_override.albedo_color = dice_color
 	_adjust_to_size()
+	self.sleeping_state_changed.connect(_on_sleeping_state_changed)
+	
 	stop()
+	
+	self.angular_damp = 1.0
 
 func stop():
 	dehighlight()
@@ -61,7 +61,7 @@ func stop():
 	position = original_position
 	position.y = 5 * dice_size
 	rotation = randf_range(0, 2*PI)*Vector3(1.,1.,1.)
-	#lock_rotation = true # TODO: should not be set?
+	
 	linear_velocity = Vector3.ZERO
 	angular_velocity = Vector3.ZERO
 
@@ -76,17 +76,16 @@ func roll():
 	lock_rotation = false
 	roll_time = 0
 	rolling = true
-	apply_torque_impulse( mass * TAU * Vector3(
-		randf_range(-1.,+1.), 0, randf_range(-1.,+1.)
-	))
-	apply_impulse( mass * Vector3(
-		randf_range(-1.,+1.), 0, randf_range(-1.,+1.)
+	var torque_strength = mass * 4.0
+	apply_torque_impulse( torque_strength * Vector3(
+		randf_range(-1.,+1.),
+		randf_range(-1.,+1.),
+		randf_range(-1.,+1.)
 	))
 
 
 func shake(reason: String):
 	"""Move a bad rolled dice"""
-	#print("Dice {0}: Reshaking {1}".format([name, reason]))
 	apply_impulse(
 		mass * 10. * Vector3(0,1,0),
 		dice_size * Vector3(randf_range(-1,1),randf_range(-1,1),randf_range(-1,1)),
@@ -96,25 +95,20 @@ func _process(_delta):
 	if not rolling: return
 	roll_time += _delta
 
-	if freeze: return # non physics movement on progress
-
-	if linear_velocity.length() > LINEAR_VELOCITY_THRESHOLD:
-		#print("Still moving: ", linear_velocity)
+func _on_sleeping_state_changed():
+	if not rolling or not self.sleeping:
 		return
-	if angular_velocity.length() > ANGULAR_VELOCITY_THRESHOLD:
-		#print("Still rolling: ", angular_velocity)
-		return
-	# Almost stopped but...
+	
 	if position.y > mounted_elevation:
 		return shake("mounted")
 	var side = upper_side()
 	if side == null:
 		return shake("tilted")
 
-	#print("Dice %s solved [%s] - %.02fs"%([name, side, roll_time]))
+	print("Dice %s solved by sleeping [%s] - %.02fs"%([name, side, roll_time]))
 	freeze = true
-	sleeping = true
 	show_face(side)
+
 
 func upper_side():
 	"Returns which dice side is up, or 0 when none is clear"
@@ -125,9 +119,6 @@ func upper_side():
 		if y < highest_y: continue
 		highest_y = y
 		highest_side = side
-	#print("{3} Face {0} from center {1} against threshold {2}".format([
-	#	highest_y, highest_y - global_position.y, max_tilt, name
-	#]))
 	if highest_y - global_position.y < max_tilt():
 		return null
 	return highest_side
@@ -165,7 +156,6 @@ func highlight():
 	var perpendicular_side = side-1 if side-1 else len(sides)
 	var perpendicular_direction = to_global(highlight_orientation[side]) - to_global(Vector3.ZERO)
 	highlight_face.look_at(to_global(sides[side]), perpendicular_direction)
-	#prints("side", side, "perpendicular", perpendicular_side)
 	highlight_face.visible = true
 
 func dehighlight() -> void:
