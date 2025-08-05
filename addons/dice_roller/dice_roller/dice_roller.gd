@@ -66,15 +66,14 @@ var total_value:=0 :
 		return total
 
 func set_default_dice_set():
-	#var new_set: Array[DiceDef] = []
-	#for name in default_set:
-		#var dice = DiceDef.new()
-		#dice.name = name
-		#dice.color = default_set[name].color
-		#dice.shape = DiceShape.new("D6")
-		#new_set.append(dice)
-	#dice_set = new_set
-	pass
+	var new_set: Array[DiceDef] = []
+	for name in default_set:
+		var dice = DiceDef.new()
+		dice.name = name
+		dice.color = default_set[name].color
+		dice.shape = DiceShape.new("D6")
+		new_set.append(dice)
+	dice_set = new_set
 
 func ensure_valid_and_unique_dice_names():
 	var used_names: Dictionary = {}
