@@ -85,15 +85,11 @@ func _generate_dice_texture(body_color: Color, pips_color: Color) -> ImageTextur
 	if source_image == null or source_image.is_empty():
 		return null
 
-	# ★★ 수정된 부분: 압축된 텍스처 포맷으로 인한 오류를 해결합니다. ★★
-	# Godot는 성능을 위해 텍스처를 VRAM 압축 포맷으로 자동 변환할 수 있습니다.
-	# 픽셀을 직접 수정하기 전에, 압축된 상태라면 먼저 압축을 풀어야 합니다.
 	if source_image.is_compressed():
 		if source_image.decompress() != OK:
 			printerr("Failed to decompress source image for dice '", name, "'")
 			return null
 
-	# 이제 안전하게 표준 포맷으로 변환할 수 있습니다.
 	source_image.convert(Image.FORMAT_RGBA8)
 
 	var new_image: Image = Image.create(source_image.get_width(), source_image.get_height(), false, Image.FORMAT_RGBA8)
@@ -149,20 +145,23 @@ func _process(_delta):
 	if not rolling: return
 	roll_time += _delta
 
+# ★★ 수정된 부분: 주사위가 멈추는 방식을 변경합니다. ★★
 func _on_sleeping_state_changed():
 	if not rolling or not self.sleeping:
 		return
-	
-	if position.y > mounted_elevation:
-		return shake("mounted")
+
+	# 주사위가 다른 곳에 걸치거나 기울어져도 다시 굴리지 않고,
+	# 현재 상태에서 가장 위에 있는 면을 결과로 즉시 사용하도록 수정합니다.
 	var side = upper_side()
-	if side == null:
-		return shake("tilted")
 
 	print("Dice %s solved by sleeping [%s] - %.02fs"%([name, side, roll_time]))
 	freeze = true
-	show_face(side)
 
+	# 빙글 도는 애니메이션(show_face) 대신, 즉시 결과를 하이라이트하고 신호를 보냅니다.
+	highlight()
+	roll_finished.emit(side)
+
+# ★★ 수정된 부분: 가장 위에 있는 면을 찾는 방식을 변경합니다. ★★
 func upper_side():
 	"Returns which dice side is up, or 0 when none is clear"
 	var highest_y := -INF
@@ -172,8 +171,11 @@ func upper_side():
 		if y < highest_y: continue
 		highest_y = y
 		highest_side = side
-	if highest_y - global_position.y < max_tilt():
-		return null
+	
+	# 기울어진 상태도 허용하기 위해, 각도를 확인하는 로직을 제거합니다.
+	# if highest_y - global_position.y < max_tilt():
+	# 	return null
+		
 	return highest_side
 
 func face_up_transform(value) -> Transform3D:
