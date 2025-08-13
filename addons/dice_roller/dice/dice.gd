@@ -34,8 +34,8 @@ func _init() -> void:
 	freeze_mode = RigidBody3D.FREEZE_MODE_STATIC
 	physics_material_override = PhysicsMaterial.new()
 	physics_material_override.absorbent = true
-	physics_material_override.bounce = 0.1
-	physics_material_override.friction = 0.7
+	physics_material_override.bounce = 0.01
+	physics_material_override.friction = 1.0
 
 @onready var collider : CollisionShape3D = $Collider
 @onready var highlight_face : Node3D = $FaceHighligth
@@ -43,7 +43,7 @@ func _init() -> void:
 
 func _adjust_to_size():
 	mass = dice_density * dice_size **3
-	collider.shape.margin = 0.01
+	#collider.shape.margin = 0.01
 
 func _ready():
 	original_position = position
@@ -55,7 +55,7 @@ func _ready():
 	stop()
 	
 	mesh.scale = Vector3(dice_size, dice_size, dice_size)
-	self.angular_damp = 1.0
+	self.angular_damp = 1.2
 
 func _update_visuals():
 	if not pips_texture_original:
@@ -126,19 +126,19 @@ func roll():
 	lock_rotation = false
 	roll_time = 0
 	rolling = true
-	var torque_strength = mass * 4.0
+	var torque_strength = mass * 10.0
 	apply_torque_impulse( torque_strength * Vector3(
 		randf_range(-1.,+1.),
 		randf_range(-1.,+1.),
 		randf_range(-1.,+1.)
 	))
-
-func shake(reason: String):
-	"""Move a bad rolled dice"""
-	apply_impulse(
-		mass * 10. * Vector3(0,1,0),
-		dice_size * Vector3(randf_range(-1,1),randf_range(-1,1),randf_range(-1,1)),
-	)
+#
+#func shake(reason: String):
+	#"""Move a bad rolled dice"""
+	#apply_impulse(
+		#mass * 10. * Vector3(0,1,0),
+		#dice_size * Vector3(randf_range(-1,1),randf_range(-1,1),randf_range(-1,1)),
+	#)
 
 func _process(_delta):
 	if not rolling: return
@@ -149,18 +149,14 @@ func _on_sleeping_state_changed():
 	if not rolling or not self.sleeping:
 		return
 
-	# 주사위가 다른 곳에 걸치거나 기울어져도 다시 굴리지 않고,
-	# 현재 상태에서 가장 위에 있는 면을 결과로 즉시 사용하도록 수정합니다.
 	var side = upper_side()
 
 	print("Dice %s solved by sleeping [%s] - %.02fs"%([name, side, roll_time]))
 	freeze = true
 
-	# 빙글 도는 애니메이션(show_face) 대신, 즉시 결과를 하이라이트하고 신호를 보냅니다.
 	highlight()
 	roll_finished.emit(side)
 
-# ★★ 수정된 부분: 가장 위에 있는 면을 찾는 방식을 변경합니다. ★★
 func upper_side():
 	"Returns which dice side is up, or 0 when none is clear"
 	var highest_y := -INF
@@ -170,11 +166,7 @@ func upper_side():
 		if y < highest_y: continue
 		highest_y = y
 		highest_side = side
-	
-	# 기울어진 상태도 허용하기 위해, 각도를 확인하는 로직을 제거합니다.
-	# if highest_y - global_position.y < max_tilt():
-	# 	return null
-		
+			
 	return highest_side
 
 func face_up_transform(value) -> Transform3D:
