@@ -57,14 +57,25 @@ func stop_shaking() -> void:
 # 컵을 쏟는 함수 (단순하고 강력하게 수정)
 func pour() -> void:
 	var tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
-	var pour_duration = 0.35 # 쏟는 시간 대폭 단축 (매우 빠르게)
+	var pour_duration = 0.5 # 쏟는 시간 대폭 단축 (매우 빠르게)
 	
 	# Z축을 기준으로 컵을 매우 깊게 기울여 확실히 쏟음
 	tween.tween_property(self, "rotation_degrees:z", initial_rotation.z + 130, pour_duration)
 	# 약간 안쪽을 보도록 Y축을 살짝 회전
-	tween.parallel().tween_property(self, "rotation_degrees:y", initial_rotation.y, pour_duration)
+	#tween.parallel().tween_property(self, "rotation_degrees:y", initial_rotation.y, pour_duration)
 	# 동시에, 왼쪽으로 짧고 빠르게 이동하여 '스냅' 효과를 줌
-	tween.parallel().tween_property(self, "global_position:x", initial_position.x - 6, 0.5)
+	# 동시에, 왼쪽으로 짧고 빠르게 이동하여 '스냅' 효과를 줌
+	tween.parallel().tween_property(self, "global_position:x", initial_position.x - 5, pour_duration)
+
+	# 쏟는 애니메이션이 끝날 때까지 대기
+	await tween.finished
+
+	# 컵을 오른쪽 끝으로 다시 이동시키고 똑바로 세움
+	var return_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	var return_duration = 1 # 돌아오는 애니메이션 시간
+
+	return_tween.parallel().tween_property(self, "global_position:x", initial_position.x + 10, return_duration)
+	return_tween.parallel().tween_property(self, "rotation_degrees", initial_rotation, return_duration)
 
 func reset() -> void:
 	global_position = initial_position
