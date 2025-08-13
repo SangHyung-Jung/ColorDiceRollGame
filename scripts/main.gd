@@ -1,4 +1,4 @@
-# main.gd - 물리 기반 주사위 컵 시뮬레이션 (수정됨)
+# main.gd - 물리 기반 주사위 컵 시뮬레이션 (결과 표시 및 다시 굴리기 추가)
 extends Node3D
 
 # 애드온의 핵심 데이터 구조는 계속 사용합니다.
@@ -17,6 +17,11 @@ var dice_nodes: Array[Node] = []
 # 주사위 컵 노드
 var cup: Node3D
 
+# 굴리기 결과 및 상태 관리 변수
+var _finished_dice_count := 0
+var _roll_results := {}
+var _roll_in_progress := false # 굴리기가 진행 중인지 (흔들기~쏟기~멈춤)
+
 func _ready() -> void:
 	# 1. 기본 3D 환경 설정
 	_setup_environment()
@@ -24,7 +29,7 @@ func _ready() -> void:
 	# 2. 주사위 컵 인스턴스화 및 위치 조정
 	cup = CupScene.instantiate()
 	# 컵을 바닥에서 더 높이, 화면 오른쪽에 배치
-	cup.position = Vector3(10, 10, 0)
+	cup.position = Vector3(10, 6, 0)
 	add_child(cup)
 	
 	# 3. 굴릴 주사위 설정 (예: D6 5개)
@@ -102,6 +107,11 @@ func _spawn_dice_in_cup() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
+			# 굴리기가 진행 중이 아니라면 (즉, 결과가 나온 상태라면) 다시 굴리기 시작
+			if not _roll_in_progress:
+				reset_roll()
+				_roll_in_progress = true # 새 굴리기 시작
+			
 			# 마우스를 누르면 계속 흔들기 시작
 			if cup.has_method("start_shaking"):
 				cup.start_shaking()
@@ -118,10 +128,38 @@ func _on_mouse_release() -> void:
 	# 2. 주사위에 훨씬 더 강한 힘 가하기
 	for dice in dice_nodes:
 		dice.apply_central_impulse(Vector3(randf_range(-50, -40), randf_range(3, 6), 0))
+		dice.rolling = true # rolling 플래그를 true로 설정
 	
 	# 3. 컵 쏟기
 	if cup.has_method("pour"):
 		cup.pour()
 
+# 각 주사위가 굴러 멈췄을 때 호출
+	# 각 주사위가 굴러 멈췄을 때 호출
 func _on_dice_roll_finished(value: int, dice_name: String):
 	print(dice_name, " rolled a ", value)
+	_finished_dice_count += 1
+	_roll_results[dice_name] = value
+	
+	# 모든 주사위가 굴러 멈췄는지 확인
+	if _finished_dice_count == dice_nodes.size():
+		print("\n--- Roll Finished! ---") # 총합 대신 굴리기 완료 메시지
+		_roll_in_progress = false # 굴리기 종료
+
+# 굴리기를 초기화하고 다시 시작할 준비
+func reset_roll() -> void:
+	# 기존 주사위 제거
+	for dice in dice_nodes:
+		dice.queue_free() # 씬에서 제거
+	dice_nodes.clear() # 배열 비우기
+
+	# 컵 위치 및 회전 초기화
+	if cup.has_method("reset"):
+		cup.reset()
+	
+	# 주사위들 초기화
+	_finished_dice_count = 0
+	_roll_results.clear()
+	
+	# 주사위들을 컵 안에 다시 스폰 (물리 활성화 상태로)
+	_spawn_dice_in_cup()

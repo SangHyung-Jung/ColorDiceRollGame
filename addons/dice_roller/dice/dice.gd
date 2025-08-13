@@ -30,13 +30,12 @@ signal roll_finished(int)
 func _init() -> void:
 	continuous_cd = true
 	can_sleep = true
-	# 물리 속성 조정: 중력 감소, 반발력 증가, 마찰 감소
-	gravity_scale = 5
+	gravity_scale = 10
 	freeze_mode = RigidBody3D.FREEZE_MODE_STATIC
 	physics_material_override = PhysicsMaterial.new()
 	physics_material_override.absorbent = true
-	physics_material_override.bounce = 0.3
-	physics_material_override.friction = 0.5
+	physics_material_override.bounce = 0.1
+	physics_material_override.friction = 1.0
 
 @onready var collider : CollisionShape3D = $Collider
 @onready var highlight_face : Node3D = $FaceHighligth
@@ -55,7 +54,7 @@ func _ready():
 	
 	stop()
 	
-	self.angular_damp = 0.5
+	self.angular_damp = 1.0
 
 func _update_visuals():
 	if not pips_texture_original:
@@ -109,7 +108,6 @@ func _generate_dice_texture(body_color: Color, pips_color: Color) -> ImageTextur
 func stop():
 	dehighlight()
 	freeze = true
-	sleeping = true
 	position = original_position
 	position.y = 5 * dice_size
 	rotation = randf_range(0, 2*PI)*Vector3(1.,1.,1.)

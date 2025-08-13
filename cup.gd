@@ -65,3 +65,7 @@ func pour() -> void:
 	tween.parallel().tween_property(self, "rotation_degrees:y", initial_rotation.y, pour_duration)
 	# 동시에, 왼쪽으로 짧고 빠르게 이동하여 '스냅' 효과를 줌
 	tween.parallel().tween_property(self, "global_position:x", initial_position.x - 6, 0.5)
+
+func reset() -> void:
+	global_position = initial_position
+	rotation_degrees = initial_rotation
