@@ -23,8 +23,8 @@ func _ready() -> void:
 
 	# 2. 주사위 컵 인스턴스화 및 위치 조정
 	cup = CupScene.instantiate()
-	# 컵을 바닥에서 떨어진 공중에 배치
-	cup.position = Vector3(0, 4, 0)
+	# 컵을 바닥에서 더 높이, 화면 오른쪽에 배치
+	cup.position = Vector3(10, 10, 0)
 	add_child(cup)
 	
 	# 3. 굴릴 주사위 설정 (예: D6 5개)
@@ -98,15 +98,30 @@ func _spawn_dice_in_cup() -> void:
 		
 		dice.roll_finished.connect(_on_dice_roll_finished.bind(dice.name))
 
-# 입력 처리
+# 입력 처리 (연속 흔들기 적용)
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
-			if cup.has_method("shake"):
-				cup.shake()
+			# 마우스를 누르면 계속 흔들기 시작
+			if cup.has_method("start_shaking"):
+				cup.start_shaking()
 		else:
-			if cup.has_method("pour"):
-				cup.pour()
+			# 마우스를 떼면 흔들기를 멈추고 쏟아냄
+			_on_mouse_release()
+
+# 마우스 버튼을 뗄 때의 동작을 처리하는 비동기 함수
+func _on_mouse_release() -> void:
+	# 1. 흔들기 중지 및 원위치 복귀 대기
+	if cup.has_method("stop_shaking"):
+		await cup.stop_shaking()
+	
+	# 2. 주사위에 훨씬 더 강한 힘 가하기
+	for dice in dice_nodes:
+		dice.apply_central_impulse(Vector3(randf_range(-50, -40), randf_range(3, 6), 0))
+	
+	# 3. 컵 쏟기
+	if cup.has_method("pour"):
+		cup.pour()
 
 func _on_dice_roll_finished(value: int, dice_name: String):
 	print(dice_name, " rolled a ", value)
