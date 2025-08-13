@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://co1yc17ks56wm" path="res://cup.gd" id="1_f5eb6"]
 
 [node name="Cup" type="RigidBody3D"]
+mass = 5.0
 gravity_scale = 0.0
 script = ExtResource("1_f5eb6")
 
@@ -15,7 +16,7 @@ height = 6.5
 sides = 16
 
 [node name="Inner" type="CSGCylinder3D" parent="Visuals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.02468, 0)
 operation = 2
 radius = 3.5
 height = 6.5

@@ -19,6 +19,10 @@ config/icon="res://icon.svg"
 
 Main="*res://scripts/main.gd"
 
+[editor]
+
+movie_writer/movie_file="C:/e/dice/output.avi"
+
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/dice_roller/plugin.cfg")

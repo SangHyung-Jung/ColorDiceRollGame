@@ -29,7 +29,7 @@ func _ready() -> void:
 	# 2. 주사위 컵 인스턴스화 및 위치 조정
 	cup = CupScene.instantiate()
 	# 컵을 바닥에서 더 높이, 화면 오른쪽에 배치
-	cup.position = Vector3(10, 6, 0)
+	cup.position = Vector3(10, 5, 0)
 	add_child(cup)
 	
 	# 3. 굴릴 주사위 설정 (예: D6 5개)
@@ -92,13 +92,14 @@ func _spawn_dice_in_cup() -> void:
 		dice.dice_color = d_def.color
 		dice.pips_texture_original = d_def.pips_texture
 		
-		# 주사위를 컵 내부의 좀 더 넓은 임의의 위치에 스폰
-		var spawn_pos = cup.global_position + Vector3(randf_range(-1.5, 1.5), 3.0, randf_range(-1.5, 1.5))
+		# 주사위를 컵 내부의 좀 더 넓은 임의의 위치에 스폰 (높이 및 초기 속도 조정)
+		var spawn_pos = cup.global_position + Vector3(randf_range(-2.5, 2.5), 8.0, randf_range(-2.5, 2.5))
 		dice.global_position = spawn_pos
 		
 		add_child(dice)
-		# 생성 후 즉시 물리 활성화
+		# 생성 후 즉시 물리 활성화 및 초기 하향 속도 부여
 		dice.freeze = false
+		dice.linear_velocity.y = -1.0 # 약간의 하향 속도
 		dice_nodes.append(dice)
 		
 		dice.roll_finished.connect(_on_dice_roll_finished.bind(dice.name))
@@ -118,9 +119,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		else:
 			# 마우스를 떼면 흔들기를 멈추고 쏟아냄
 			_on_mouse_release()
-
 # 마우스 버튼을 뗄 때의 동작을 처리하는 비동기 함수
 func _on_mouse_release() -> void:
+	# 전체 동작 속도 가속
 	# 1. 흔들기 중지 및 원위치 복귀 대기
 	if cup.has_method("stop_shaking"):
 		await cup.stop_shaking()

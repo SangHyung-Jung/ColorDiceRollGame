@@ -12,7 +12,7 @@ extends RigidBody3D
 var sides = {}
 var highlight_orientation = {}
 
-const dice_size := 2.0
+const dice_size := 0.80
 const dice_density := 10.0
 const ANGULAR_VELOCITY_THRESHOLD := 1.
 const LINEAR_VELOCITY_THRESHOLD := 0.1 * dice_size
@@ -35,15 +35,15 @@ func _init() -> void:
 	physics_material_override = PhysicsMaterial.new()
 	physics_material_override.absorbent = true
 	physics_material_override.bounce = 0.1
-	physics_material_override.friction = 1.0
+	physics_material_override.friction = 0.7
 
 @onready var collider : CollisionShape3D = $Collider
 @onready var highlight_face : Node3D = $FaceHighligth
 @onready var mesh = $DiceMesh
 
 func _adjust_to_size():
-	mass = dice_density * dice_size**3
-	collider.shape.margin = dice_size * 0.1
+	mass = dice_density * dice_size **3
+	collider.shape.margin = 0.01
 
 func _ready():
 	original_position = position
@@ -54,6 +54,7 @@ func _ready():
 	
 	stop()
 	
+	mesh.scale = Vector3(dice_size, dice_size, dice_size)
 	self.angular_damp = 1.0
 
 func _update_visuals():
