@@ -11,12 +11,12 @@ use_collision = true
 
 [node name="Outer" type="CSGCylinder3D" parent="Visuals"]
 radius = 4.0
-height = 6.0
+height = 6.5
 sides = 16
 
 [node name="Inner" type="CSGCylinder3D" parent="Visuals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 operation = 2
-radius = 3.8
-height = 6.0
+radius = 3.5
+height = 6.5
 sides = 16

@@ -27,8 +27,8 @@ func start_shaking() -> void:
 	
 	# 무한 루프 트윈 설정
 	shake_tween.tween_callback(func():
-		var random_pos_offset = Vector3(randf_range(-1.0, 1.0), randf_range(0.2, 0.8), randf_range(-1.0, 1.0))
-		var random_rot_offset = Vector3(randf_range(-25, 25), randf_range(-90, 90), randf_range(-25, 25))
+		var random_pos_offset = Vector3(randf_range(-1.5, 1.5), randf_range(0.3, 1.0), randf_range(-1.5, 1.5))
+		var random_rot_offset = Vector3(randf_range(-40, 40), randf_range(-180, 180), randf_range(-40, 40))
 		
 		var move_tween = get_tree().create_tween()
 		move_tween.parallel().tween_property(self, "global_position", initial_position + random_pos_offset, duration_per_shake)
@@ -57,15 +57,15 @@ func stop_shaking() -> void:
 # 컵을 쏟는 함수 (단순하고 강력하게 수정)
 func pour() -> void:
 	var tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
-	var pour_duration = 0.5 # 쏟는 시간 대폭 단축 (매우 빠르게)
+	var pour_duration = 0.5 # 기울기 및 Y축 회전 시간
+	var snap_x_duration = 0.6 # X축 스냅 이동 시간 (더 느리게)
 	
 	# Z축을 기준으로 컵을 매우 깊게 기울여 확실히 쏟음
 	tween.tween_property(self, "rotation_degrees:z", initial_rotation.z + 130, pour_duration)
-	# 약간 안쪽을 보도록 Y축을 살짝 회전
-	#tween.parallel().tween_property(self, "rotation_degrees:y", initial_rotation.y, pour_duration)
-	# 동시에, 왼쪽으로 짧고 빠르게 이동하여 '스냅' 효과를 줌
-	# 동시에, 왼쪽으로 짧고 빠르게 이동하여 '스냅' 효과를 줌
-	tween.parallel().tween_property(self, "global_position:x", initial_position.x - 5, pour_duration)
+	# 약간 안쪽을 보도록 Y축을 살짝 회전 (다시 활성화)
+	tween.parallel().tween_property(self, "rotation_degrees:y", initial_rotation.y - 20, pour_duration)
+	# 동시에, 왼쪽으로 짧고 빠르게 이동하여 '스냅' 효과를 줌 (시간 조정)
+	tween.parallel().tween_property(self, "global_position:x", initial_position.x - 5, snap_x_duration)
 
 	# 쏟는 애니메이션이 끝날 때까지 대기
 	await tween.finished
