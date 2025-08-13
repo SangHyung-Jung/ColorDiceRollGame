@@ -104,7 +104,6 @@ func _spawn_dice_in_cup() -> void:
 		
 		dice.roll_finished.connect(_on_dice_roll_finished.bind(dice.name))
 
-# 입력 처리 (연속 흔들기 적용)
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
@@ -119,9 +118,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		else:
 			# 마우스를 떼면 흔들기를 멈추고 쏟아냄
 			_on_mouse_release()
+
 # 마우스 버튼을 뗄 때의 동작을 처리하는 비동기 함수
 func _on_mouse_release() -> void:
-	# 전체 동작 속도 가속
 	# 1. 흔들기 중지 및 원위치 복귀 대기
 	if cup.has_method("stop_shaking"):
 		await cup.stop_shaking()
@@ -133,10 +132,9 @@ func _on_mouse_release() -> void:
 	
 	# 3. 컵 쏟기
 	if cup.has_method("pour"):
-		cup.pour()
+		await cup.pour()
 
 # 각 주사위가 굴러 멈췄을 때 호출
-	# 각 주사위가 굴러 멈췄을 때 호출
 func _on_dice_roll_finished(value: int, dice_name: String):
 	print(dice_name, " rolled a ", value)
 	_finished_dice_count += 1
@@ -146,6 +144,7 @@ func _on_dice_roll_finished(value: int, dice_name: String):
 	if _finished_dice_count == dice_nodes.size():
 		print("\n--- Roll Finished! ---") # 총합 대신 굴리기 완료 메시지
 		_roll_in_progress = false # 굴리기 종료
+		_display_results() # 결과 정렬 및 표시
 
 # 굴리기를 초기화하고 다시 시작할 준비
 func reset_roll() -> void:
@@ -164,3 +163,24 @@ func reset_roll() -> void:
 	
 	# 주사위들을 컵 안에 다시 스폰 (물리 활성화 상태로)
 	_spawn_dice_in_cup()
+
+# 주사위 결과를 화면 중앙에 정렬하고 각 면을 보여주는 함수
+func _display_results() -> void:
+	var center_x = 0.0
+	var start_x = center_x - (dice_nodes.size() - 1) * 1.5 # 주사위 간 간격 3.0, 절반
+	var display_y = 0.5 # 바닥 위
+	var display_z = 0.0 # 중앙
+	var move_duration = 0.5 # 이동 시간
+
+	for i in range(dice_nodes.size()):
+		var dice = dice_nodes[i]
+		var target_pos = Vector3(start_x + i * 3.0, display_y, display_z)
+		
+		var tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		
+		dice.freeze = false # 이동을 위해 일시적으로 freeze 해제
+		tween.parallel().tween_property(dice, "global_position", target_pos, move_duration)
+		
+		# show_face는 이미 freeze를 다시 true로 설정함
+		await tween.finished
+		dice.show_face(_roll_results[dice.name]) # 윗면을 보여주도록 회전
