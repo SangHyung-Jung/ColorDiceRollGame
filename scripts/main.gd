@@ -1,63 +1,112 @@
-# main.gd ─ DiceRollerControl 예제
-extends Node3D                                # 3D 루트(placeholder.tscn)
+# main.gd - 물리 기반 주사위 컵 시뮬레이션 (수정됨)
+extends Node3D
 
-const DiceRollerControl := preload(
-	"res://addons/dice_roller/dice_roller_control/dice_roller_control.gd"
-)
-
-const DiceDef := preload(
-	"res://addons/dice_roller/dice_def.gd"      # ★ 실제 경로 확인
-)
+# 애드온의 핵심 데이터 구조는 계속 사용합니다.
+const DiceDef := preload("res://addons/dice_roller/dice_def.gd")
 const DiceShape := preload("res://addons/dice_roller/dice_shape.gd")
-
+# 주사위 눈 텍스처 로드 (색상 적용에 필요)
 const PIPS_TEXTURE = preload("res://addons/dice_roller/dice/d6_dice/dice_texture.png")
 
-var dice_ctr : DiceRollerControl               # 런타임에 생성할 컨트롤
+# 주사위 컵 씬 로드
+const CupScene := preload("res://cup.tscn")
 
-func _make_d6(col: Color) -> DiceDef:
-	var d := DiceDef.new()
-	d.shape = DiceShape.new("D6")
-	d.color = col
-	d.pips_texture = PIPS_TEXTURE
-	return d
+# 생성할 주사위 목록
+var dice_set: Array[DiceDef] = []
+# 실제 주사위 노드들을 담을 배열
+var dice_nodes: Array[Node] = []
+# 주사위 컵 노드
+var cup: Node3D
 
 func _ready() -> void:
-	print("✅ 실행")                           # 초기화 확인용 로그
+	# 1. 기본 3D 환경 설정
+	_setup_environment()
 
-	# 1) UI 계층(CanvasLayer) 생성
-	var ui := CanvasLayer.new()
-	add_child(ui)
-
-	# 2) DiceRollerControl 인스턴스화
-	dice_ctr = DiceRollerControl.new()
-	ui.add_child(dice_ctr)
-
-	# 3) 화면 전체로 확장 ─ 앵커·오프셋 모두 0~1,0
-	dice_ctr.set_anchors_preset(Control.PRESET_FULL_RECT)
-	dice_ctr.set_offsets_preset(Control.PRESET_FULL_RECT)
+	# 2. 주사위 컵 인스턴스화 및 위치 조정
+	cup = CupScene.instantiate()
+	# 컵을 바닥에서 떨어진 공중에 배치
+	cup.position = Vector3(0, 4, 0)
+	add_child(cup)
 	
-	# 1-A. 롤러(박스) 자체를 키워서 원근을 확보
-	dice_ctr.roller_size = Vector3(15, 20, 10)   # 기본(9,12,5)보다 살짝 큼
-	dice_ctr.interactive = false              # 기본 클릭 롤 비활성화
-	dice_ctr.dice_set = [
-		_make_d6(Color.WHITE),
-		_make_d6(Color.RED),
-		_make_d6(Color.BLUE),
-		_make_d6(Color.BLACK),
-		_make_d6(Color.GREEN)
-	]
-	dice_ctr.roll_finnished.connect(_on_roll_finished)
+	# 3. 굴릴 주사위 설정 (예: D6 5개)
+	var d6_shape = DiceShape.new("D6")
+	var colors = [Color.WHITE, Color.RED, Color.BLUE, Color.BLACK, Color.GREEN]
+	for i in range(5):
+		var d_def = DiceDef.new()
+		d_def.name = "D6_" + str(i)
+		d_def.shape = d6_shape
+		d_def.color = colors[i]
+		# 색상을 입힐 기본 텍스처 지정
+		d_def.pips_texture = PIPS_TEXTURE
+		dice_set.append(d_def)
 
-func _on_roll_finished(total:int) -> void:
-	# 개별 결과는 Dictionary: { "D6": [3, 5] } 형태
-	var face : Dictionary = dice_ctr.per_dice_result()
-	print("🎲 총합:", total, "  개별:", face)
+	# 4. 주사위 인스턴스화 및 컵 안에 배치
+	_spawn_dice_in_cup()
 
-var _mouse_down := false                      # 눌렀는지 기록
-func _unhandled_input(event):
+func _setup_environment() -> void:
+	# 카메라 추가 (탑뷰, 직교 투영)
+	var camera = Camera3D.new()
+	add_child(camera)
+	camera.projection = Camera3D.PROJECTION_ORTHOGONAL
+	camera.size = 18 # 직교 투영 시의 줌 레벨 (숫자가 작을수록 확대)
+	camera.position = Vector3(0, 20, 0) # 매우 높은 곳에서 아래를 보도록 위치
+	camera.rotation_degrees = Vector3(-90, 0, 0) # X축으로 -90도 회전하여 바닥을 정면으로 보게 함
+
+	# 조명 추가
+	var light = DirectionalLight3D.new()
+	add_child(light)
+	light.light_energy = 1.0
+	light.shadow_enabled = true
+	light.transform.basis = Basis.from_euler(Vector3(-0.8, -0.3, 0))
+
+	# 바닥 추가
+	var floor = StaticBody3D.new()
+	floor.name = "Floor"
+	var floor_shape = CollisionShape3D.new()
+	var box_shape = BoxShape3D.new()
+	box_shape.size = Vector3(50, 1, 50)
+	floor_shape.shape = box_shape
+	floor.add_child(floor_shape)
+	var floor_mesh = MeshInstance3D.new()
+	var plane_mesh = PlaneMesh.new()
+	plane_mesh.size = Vector2(50, 50)
+	var floor_mat = StandardMaterial3D.new()
+	floor_mat.albedo_color = Color.DARK_SLATE_GRAY
+	plane_mesh.material = floor_mat
+	floor_mesh.mesh = plane_mesh
+	floor_mesh.position.y = 0.51 # 물리 형태와 맞춤
+	floor.add_child(floor_mesh)
+	
+	add_child(floor)
+	floor.position.y = -0.5
+
+func _spawn_dice_in_cup() -> void:
+	for d_def in dice_set:
+		var dice_scene = d_def.shape.scene()
+		var dice: Dice = dice_scene.instantiate()
+		dice.name = d_def.name
+		dice.dice_color = d_def.color
+		dice.pips_texture_original = d_def.pips_texture
+		
+		# 주사위를 컵 내부의 좀 더 넓은 임의의 위치에 스폰
+		var spawn_pos = cup.global_position + Vector3(randf_range(-1.5, 1.5), 3.0, randf_range(-1.5, 1.5))
+		dice.global_position = spawn_pos
+		
+		add_child(dice)
+		# 생성 후 즉시 물리 활성화
+		dice.freeze = false
+		dice_nodes.append(dice)
+		
+		dice.roll_finished.connect(_on_dice_roll_finished.bind(dice.name))
+
+# 입력 처리
+func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		if event.pressed and !_mouse_down:    # 누른 순간
-			_mouse_down = true
-		elif not event.pressed and _mouse_down:  # 떼는 순간
-			_mouse_down = false
-			dice_ctr.roll()                   # 여기서 굴림
+		if event.pressed:
+			if cup.has_method("shake"):
+				cup.shake()
+		else:
+			if cup.has_method("pour"):
+				cup.pour()
+
+func _on_dice_roll_finished(value: int, dice_name: String):
+	print(dice_name, " rolled a ", value)

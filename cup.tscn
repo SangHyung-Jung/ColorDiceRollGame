@@ -1,0 +1,33 @@
+[gd_scene load_steps=5 format=3 uid="uid://b5w7g2jko36l2"]
+
+[ext_resource type="Script" path="res://cup.gd" id="1_f5eb6"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_uxtk7"]
+height = 0.2
+radius = 4.0
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_k3vwn"]
+size = Vector3(8.2, 6, 0.2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_55sqf"]
+size = Vector3(0.2, 6, 8.2)
+
+[node name="Cup" type="RigidBody3D"]
+body_mode = 2
+script = ExtResource("1_f5eb6")
+gravity_scale = 0.0
+
+[node name="Visuals" type="CSGCombiner3D" parent="."]
+use_collision = true
+
+[node name="Outer" type="CSGCylinder3D" parent="Visuals"]
+radius = 4.0
+height = 6.0
+sides = 16
+
+[node name="Inner" type="CSGCylinder3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+operation = 2
+radius = 3.8
+height = 6.0
+sides = 16
