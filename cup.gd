@@ -13,25 +13,32 @@ func _ready() -> void:
 	initial_position = global_position
 	initial_rotation = rotation_degrees
 
-# 컵을 흔드는 함수 (수정됨)
+# 컵을 흔드는 함수 (빠르고 부드러운 회전 강조)
 func shake() -> void:
 	if is_shaking: return # 이미 흔들고 있다면 중복 실행 방지
 	is_shaking = true
 	
-	# Tween을 사용하여 부드럽게 흔드는 애니메이션 생성
-	var tween = create_tween().set_loops(3).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	var tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	
-	# 위아래 움직임은 줄이고, 회전을 추가하여 소용돌이처럼 섞음
-	tween.tween_property(self, "global_position", initial_position + Vector3(0, 0.5, 0), 0.15)
-	tween.parallel().tween_property(self, "rotation_degrees:y", initial_rotation.y + 15, 0.15)
-	tween.parallel().tween_property(self, "rotation_degrees:z", initial_rotation.z + 5, 0.15)
+	var duration_per_shake = 0.15 # 속도를 높이기 위해 시간 단축
+	var num_shakes = 5 # 흔드는 횟수 증가
 	
-	tween.tween_property(self, "global_position", initial_position, 0.15)
-	tween.parallel().tween_property(self, "rotation_degrees:y", initial_rotation.y - 15, 0.15)
-	tween.parallel().tween_property(self, "rotation_degrees:z", initial_rotation.z - 5, 0.15)
+	for i in range(num_shakes):
+		# 위치와 회전 목표를 무작위로 설정
+		var random_pos_offset = Vector3(randf_range(-1.0, 1.0), randf_range(0.2, 0.8), randf_range(-1.0, 1.0))
+		# Y축 회전(빙글빙글) 범위를 크게 늘림
+		var random_rot_offset = Vector3(randf_range(-25, 25), randf_range(-90, 90), randf_range(-25, 25))
+		
+		tween.tween_property(
+			self, "global_position", initial_position + random_pos_offset, duration_per_shake
+		)
+		tween.parallel().tween_property(
+			self, "rotation_degrees", initial_rotation + random_rot_offset, duration_per_shake
+		)
 
-	# 마지막에 원래 각도로 복귀
-	tween.chain().tween_property(self, "rotation_degrees", initial_rotation, 0.1)
+	# 흔들기가 모두 끝나면, 부드럽게 원래 상태로 복귀
+	tween.chain().tween_property(self, "global_position", initial_position, 0.2)
+	tween.parallel().tween_property(self, "rotation_degrees", initial_rotation, 0.2)
 
 	await tween.finished
 	is_shaking = false
