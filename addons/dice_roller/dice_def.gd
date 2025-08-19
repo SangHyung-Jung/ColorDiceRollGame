@@ -7,7 +7,7 @@ extends Resource
 
 ## The albedo color of the dice
 @export var color: Color = Color.ANTIQUE_WHITE
-
+@export var pips_texture: Texture2D
 ## The shape of the dice.
 ## It must be one of the keys a Dice Shape is registered on.
 @export var shape: DiceShape = DiceShape.new("D6"):

@@ -128,6 +128,9 @@ func add_dice_escene(dice: DiceDef):
 	var scene = packed_scene.instantiate()
 	scene.name = dice.name
 	scene.dice_color = dice.color
+	
+	scene.pips_texture_original = dice.pips_texture
+
 	scene.roll_finished.connect(_on_finnished_dice_rolling.bind(dice.name))
 	add_child(scene)
 	dices.append(scene)
