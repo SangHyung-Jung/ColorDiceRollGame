@@ -11,6 +11,7 @@ const PIPS_TEXTURE = preload("res://addons/dice_roller/dice/d6_dice/dice_texture
 const CupScene := preload("res://cup.tscn")
 
 # 생성할 주사위 목록
+const HAND_SIZE:int = 5			# 주사위 개수
 var dice_set: Array[DiceDef] = []
 # 실제 주사위 노드들을 담을 배열
 var dice_nodes: Array[Node] = []
@@ -19,8 +20,20 @@ var cup: Node3D
 
 # 굴리기 결과 및 상태 관리 변수
 var _finished_dice_count := 0
-var _roll_results := {}
+var _roll_results: Dictionary[String, int] = {}
 var _roll_in_progress := false # 굴리기가 진행 중인지 (흔들기~쏟기~멈춤)
+
+# --- Keep(선택) 관련 상태 ---
+var _selection_enabled := false                 # 결과가 정렬된 뒤에만 선택 허용
+var kept_dice: Array[Node3D] = []               # 선택(Keep)된 주사위 목록
+
+# --- Keep 영역(화면 왼쪽 상단) 배치 파라미터 ---
+const KEEP_ANCHOR := Vector3(-12, 3, -8)       # 시작 위치(씬 좌표계, 필요시 조정)
+const KEEP_STEP_X := 2.2                        # 가로 간격
+const KEEP_STEP_Z := 2.2                        # 세로(행) 간격
+const KEEP_COLS := 5                            # 한 줄에 몇 개까지
+
+var camera: Camera3D
 
 func _ready() -> void:
 	# 1. 기본 3D 환경 설정
@@ -35,7 +48,7 @@ func _ready() -> void:
 	# 3. 굴릴 주사위 설정 (예: D6 5개)
 	var d6_shape = DiceShape.new("D6")
 	var colors = [Color.WHITE, Color.RED, Color.BLUE, Color.BLACK, Color.GREEN]
-	for i in range(5):
+	for i in range(HAND_SIZE):
 		var d_def = DiceDef.new()
 		d_def.name = "D6_" + str(i)
 		d_def.shape = d6_shape
@@ -49,7 +62,7 @@ func _ready() -> void:
 
 func _setup_environment() -> void:
 	# 카메라 추가 (탑뷰, 직교 투영)
-	var camera = Camera3D.new()
+	camera = Camera3D.new()
 	add_child(camera)
 	camera.projection = Camera3D.PROJECTION_ORTHOGONAL
 	camera.size = 18 # 직교 투영 시의 줌 레벨 (숫자가 작을수록 확대)
@@ -98,26 +111,94 @@ func _spawn_dice_in_cup() -> void:
 		
 		add_child(dice)
 		# 생성 후 즉시 물리 활성화 및 초기 하향 속도 부여
+		dice.add_to_group('dice')
 		dice.freeze = false
 		dice.linear_velocity.y = -1.0 # 약간의 하향 속도
 		dice_nodes.append(dice)
 		
 		dice.roll_finished.connect(_on_dice_roll_finished.bind(dice.name))
 
+func _pick_dice_under_mouse(mouse_pos: Vector2) -> Node3D:
+	if camera == null:
+		return null
+	var from: Vector3 = camera.project_ray_origin(mouse_pos)
+	var dir: Vector3  = camera.project_ray_normal(mouse_pos)
+	var to: Vector3   = from + dir * 1000.0
+
+	var space := get_world_3d().direct_space_state
+	var hit := space.intersect_ray(PhysicsRayQueryParameters3D.create(from, to))
+	if hit.is_empty():
+		return null
+
+	var collider:Object = hit.get("collider")
+	if collider == null:
+		return null
+
+	# 주사위 노드 찾기: 콜라이더가 주사위 자신일 수도, 자식일 수도 있으니 위로 타고 올라감
+	var node := collider as Node
+	while node and node != self:
+		if node.is_in_group('dice'):
+			return node as Node3D
+		#if node.has_method("show_face") and node.has_method("apply_central_impulse"):
+			#return node as Node3D
+		node = node.get_parent()
+	return null
+
+func _keep_dice(dice: Node3D) -> void:
+	if kept_dice.has(dice):
+		return  # 이미 선택됨
+
+	# 굴림 후보에서 제거(다음 reset에서 삭제 대상에서 빠짐)
+	dice_nodes.erase(dice)
+
+	# 물리적 동작 정지(필요한 경우)
+	if "freeze" in dice:
+		dice.freeze = false  # 트윈 이동 위해 잠깐 해제
+	if "linear_velocity" in dice:
+		dice.linear_velocity = Vector3.ZERO
+	if "angular_velocity" in dice:
+		dice.angular_velocity = Vector3.ZERO
+
+	# 목표 위치 계산(왼쪽 상단부터 행렬 배치)
+	var idx := kept_dice.size()
+	var col := idx % KEEP_COLS
+	var row := int(idx / KEEP_COLS)
+	var target := KEEP_ANCHOR + Vector3(col * KEEP_STEP_X, 0, row * KEEP_STEP_Z)
+
+	# 부드럽게 이동 후 고정
+	var t := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	t.tween_property(dice, "global_position", target, 0.35)
+	await t.finished
+	if "freeze" in dice:
+		dice.freeze = true
+
+	kept_dice.append(dice)
+
+	# 어떤 주사위가 선택되었는지 출력 (이름, 값)
+	var val: int = int(_roll_results.get(dice.name, -1))  # 키 없으면 -1 반환 (권장)
+	print("[KEEP] ", dice.name, " -> value=", val)
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
-			# 굴리기가 진행 중이 아니라면 (즉, 결과가 나온 상태라면) 다시 굴리기 시작
+			# 선택 모드면: 우선 주사위 픽킹 시도
+			if _selection_enabled:
+				var hit_dice := _pick_dice_under_mouse(event.position)
+				if hit_dice != null:
+					_keep_dice(hit_dice)
+					return
+				# 주사위가 아니면 기존 흐름(새 굴리기 시작)으로 진행
+			# 선택 모드가 아니면 기존 흐름 그대로
 			if not _roll_in_progress:
 				reset_roll()
-				_roll_in_progress = true # 새 굴리기 시작
-			
-			# 마우스를 누르면 계속 흔들기 시작
+				_roll_in_progress = true
+				_selection_enabled = false   # ★ 선택모드 해제
 			if cup.has_method("start_shaking"):
 				cup.start_shaking()
 		else:
-			# 마우스를 떼면 흔들기를 멈추고 쏟아냄
-			_on_mouse_release()
+			# 굴리기 중일 때만 쏟기 실행
+			if _roll_in_progress:
+				_on_mouse_release()
 
 # 마우스 버튼을 뗄 때의 동작을 처리하는 비동기 함수
 func _on_mouse_release() -> void:
@@ -145,6 +226,7 @@ func _on_dice_roll_finished(value: int, dice_name: String):
 		print("\n--- Roll Finished! ---") # 총합 대신 굴리기 완료 메시지
 		_roll_in_progress = false # 굴리기 종료
 		_display_results() # 결과 정렬 및 표시
+		_selection_enabled = true
 
 # 굴리기를 초기화하고 다시 시작할 준비
 func reset_roll() -> void:
@@ -160,7 +242,20 @@ func reset_roll() -> void:
 	# 주사위들 초기화
 	_finished_dice_count = 0
 	_roll_results.clear()
-	
+
+	# 4) 새로 스폰해야 하는 개수만큼만 DiceDef 구성
+	dice_set.clear()
+	var d6_shape = DiceShape.new("D6")
+	var colors = [Color.WHITE, Color.RED, Color.BLUE, Color.BLACK, Color.GREEN]
+	for i in range(HAND_SIZE):
+		var d_def = DiceDef.new()
+		# 이름은 겹치지 않게 유니크하게
+		d_def.name = "D6_new_%s_%d" % [str(Time.get_ticks_msec()), i]
+		d_def.shape = d6_shape
+		d_def.color = colors[i % colors.size()]
+		d_def.pips_texture = PIPS_TEXTURE
+		dice_set.append(d_def)
+
 	# 주사위들을 컵 안에 다시 스폰 (물리 활성화 상태로)
 	_spawn_dice_in_cup()
 
@@ -184,3 +279,4 @@ func _display_results() -> void:
 		# show_face는 이미 freeze를 다시 true로 설정함
 		await tween.finished
 		dice.show_face(_roll_results[dice.name]) # 윗면을 보여주도록 회전
+	
