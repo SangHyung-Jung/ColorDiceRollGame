@@ -10,6 +10,20 @@ const PIPS_TEXTURE = preload("res://addons/dice_roller/dice/d6_dice/dice_texture
 # 주사위 컵 씬 로드
 const CupScene := preload("res://cup.tscn")
 
+# Dice 개수 컨트롤
+const DiceBag := preload("res://scripts/dice_bag.gd")
+
+# DiceBag 색 키 → 실제 Color 매핑
+const BAG_COLOR_MAP := {
+	"W": Color(1,1,1),  # White
+	"K": Color(0,0,0),  # Black
+	"R": Color(1,0,0),  # Red
+	"G": Color(0,1,0),  # Green
+	"B": Color(0,0,1),  # Blue
+}
+
+var bag: DiceBag
+
 # 생성할 주사위 목록
 const HAND_SIZE:int = 5			# 주사위 개수
 var dice_set: Array[DiceDef] = []
@@ -44,22 +58,29 @@ func _ready() -> void:
 	# 컵을 바닥에서 더 높이, 화면 오른쪽에 배치
 	cup.position = Vector3(10, 5, 0)
 	add_child(cup)
-	
-	# 3. 굴릴 주사위 설정 (예: D6 5개)
+
+	bag = DiceBag.new()
+	bag.setup_full()
+
 	var d6_shape = DiceShape.new("D6")
-	var colors = [Color.WHITE, Color.RED, Color.BLUE, Color.BLACK, Color.GREEN]
+	var HAND_SIZE := 5  # 프로젝트에서 쓰는 상수로 대체 가능
+
+	if not bag.can_draw(HAND_SIZE):
+		push_error("Bag empty at init"); return
+
+	dice_set.clear()
+	var keys := bag.draw_many(HAND_SIZE)   # 예: ["W","R","B","K","G"]
 	for i in range(HAND_SIZE):
 		var d_def = DiceDef.new()
 		d_def.name = "D6_" + str(i)
 		d_def.shape = d6_shape
-		d_def.color = colors[i]
-		# 색상을 입힐 기본 텍스처 지정
+		d_def.color = BAG_COLOR_MAP.get(keys[i], Color.WHITE)
 		d_def.pips_texture = PIPS_TEXTURE
 		dice_set.append(d_def)
 
 	# 4. 주사위 인스턴스화 및 컵 안에 배치
 	_spawn_dice_in_cup()
-
+	_tag_spawned_nodes_with_keys(keys)  # keys는 bag.draw_many(5)로 받은 배열
 func _setup_environment() -> void:
 	# 카메라 추가 (탑뷰, 직교 투영)
 	camera = Camera3D.new()
@@ -226,37 +247,75 @@ func _on_dice_roll_finished(value: int, dice_name: String):
 		print("\n--- Roll Finished! ---") # 총합 대신 굴리기 완료 메시지
 		_roll_in_progress = false # 굴리기 종료
 		_display_results() # 결과 정렬 및 표시
+		bag.debug_print()
 		_selection_enabled = true
 
-# 굴리기를 초기화하고 다시 시작할 준비
 func reset_roll() -> void:
-	# 기존 주사위 제거
-	for dice in dice_nodes:
-		dice.queue_free() # 씬에서 제거
-	dice_nodes.clear() # 배열 비우기
-
-	# 컵 위치 및 회전 초기화
-	if cup.has_method("reset"):
-		cup.reset()
-	
-	# 주사위들 초기화
+	# 0) 롤 카운터/결과 초기화
 	_finished_dice_count = 0
 	_roll_results.clear()
 
-	# 4) 새로 스폰해야 하는 개수만큼만 DiceDef 구성
-	dice_set.clear()
-	var d6_shape = DiceShape.new("D6")
-	var colors = [Color.WHITE, Color.RED, Color.BLUE, Color.BLACK, Color.GREEN]
-	for i in range(HAND_SIZE):
-		var d_def = DiceDef.new()
-		# 이름은 겹치지 않게 유니크하게
-		d_def.name = "D6_new_%s_%d" % [str(Time.get_ticks_msec()), i]
-		d_def.shape = d6_shape
-		d_def.color = colors[i % colors.size()]
-		d_def.pips_texture = PIPS_TEXTURE
-		dice_set.append(d_def)
+	# 컵 리셋(연출/상태 초기화)
+	cup.reset()
 
-	# 주사위들을 컵 안에 다시 스폰 (물리 활성화 상태로)
+	# 1) 컵 내부 치수 결정: 실린더면 값 읽고, 아니면 기본값 사용
+	var r: float = 2.8
+	var h: float = 6.0
+	var col: CollisionShape3D = cup.get_node_or_null("CollisionShape3D") as CollisionShape3D
+	if col and col.shape is CylinderShape3D:
+		var cyl := col.shape as CylinderShape3D
+		r = cyl.radius
+		h = cyl.height
+	# (그 외 모양은 기본 r/h 그대로 사용)
+
+	# 2) 남아있는(KEEP 제외) 주사위 재사용: 컵 '안'으로 재배치 + 물리 초기화
+	for d in dice_nodes:
+		if "freeze" in d: d.freeze = false
+		d.sleeping = false
+		d.linear_velocity = Vector3.ZERO
+		d.angular_velocity = Vector3.ZERO
+
+		var theta: float = randf() * TAU
+		var margin: float = 0.30
+		var rr: float = max(0.0, r - margin) * sqrt(randf())  # 가장자리 여유
+		var yy: float = -h * 0.5 + h * 0.70                   # 내부 높이 70% 지점
+		var local := Vector3(rr * cos(theta), yy, rr * sin(theta))
+		d.global_position = cup.to_global(local)
+
+		# 살짝 깨워서 굴림 안정화
+		d.apply_torque_impulse(Vector3(
+			randf_range(-0.6, 0.6),
+			randf_range(-0.2, 0.2),
+			randf_range(-0.6, 0.6)
+		))
+		d.apply_central_impulse(Vector3(
+			randf_range(-0.2, 0.2),
+			0.0,
+			randf_range(-0.2, 0.2)
+		))
+
+	# 3) 부족한 개수만 가방에서 보충 생성 (초기 클릭 시 need=0 → "순간 변경" 없음)
+	var HAND_SIZE := 5  # 프로젝트 상수 쓰고 계시면 그걸 사용
+	var need: int = HAND_SIZE - dice_nodes.size()
+
+	dice_set.clear()
+	if need > 0:
+		if not bag.can_draw(need):
+			print("⚠️ Bag empty on reset_roll (need=", need, ")")
+			# TODO: 챌린지 종료 처리(UI)
+			return
+
+		var d6_shape := DiceShape.new("D6")
+		var keys := bag.draw_many(need)  # 예: ["W","R",...]
+		for i in range(need):
+			var d_def := DiceDef.new()
+			d_def.name = "D6_new_%s_%d" % [str(Time.get_ticks_msec()), i]
+			d_def.shape = d6_shape
+			d_def.color = BAG_COLOR_MAP.get(keys[i], Color.WHITE)
+			d_def.pips_texture = PIPS_TEXTURE
+			dice_set.append(d_def)
+
+	# 4) 새로 필요한 것만 스폰(남은 주사위는 이미 컵 안에 재배치됨)
 	_spawn_dice_in_cup()
 
 # 주사위 결과를 화면 중앙에 정렬하고 각 면을 보여주는 함수
@@ -280,3 +339,15 @@ func _display_results() -> void:
 		await tween.finished
 		dice.show_face(_roll_results[dice.name]) # 윗면을 보여주도록 회전
 	
+func _end_challenge_due_to_empty_bag() -> void:
+	_roll_in_progress = false
+	_selection_enabled = false
+	print("⚠️ Dice bag is empty. Challenge ends.")
+	# TODO: 필요시 UI로 종료 알림/버튼 비활성화 등 처리
+
+# 새로 스폰된 주사위 노드들에 가방 색 키를 메타로 태깅
+func _tag_spawned_nodes_with_keys(keys: Array) -> void:
+	var n:int = min(dice_nodes.size(), keys.size())
+	for i in range(n):
+		var d = dice_nodes[i]
+		d.set_meta("bag_key", keys[i])
