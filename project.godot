@@ -29,4 +29,4 @@ enabled=PackedStringArray("res://addons/dice_roller/plugin.cfg")
 
 [physics]
 
-common/physics_ticks_per_second=90
+common/physics_ticks_per_second=120
