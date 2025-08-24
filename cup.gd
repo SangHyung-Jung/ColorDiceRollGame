@@ -7,11 +7,32 @@ var initial_rotation: Vector3
 var is_shaking := false
 var shake_tween: Tween # 현재 실행중인 흔들기 트윈을 저장할 변수
 
+@onready var inside_area: Area3D = $InsideArea
+
 func _ready() -> void:
 	# RigidBody3D 모드는 Kinematic으로 .tscn 파일에서 직접 설정됩니다.
 	initial_position = global_position
 	initial_rotation = rotation_degrees
+	
+	# Area3D의 신호를 이 스크립트의 함수와 연결합니다.
+	inside_area.body_entered.connect(_on_body_entered_cup)
+	inside_area.body_exited.connect(_on_body_exited_cup)
 
+
+func _on_body_entered_cup(body: Node3D) -> void:
+	# 들어온 바디가 Dice 클래스인지 확인 (또는 'dice' 그룹에 속하는지 확인)
+	if body is Dice:
+		print(body.name, " entered the cup.")
+		# 주사위에 "컵 안" 물리 효과를 적용하는 함수 호출
+		body.apply_inside_cup_physics()
+
+# 주사위가 컵 밖으로 나갔을 때 호출될 함수
+func _on_body_exited_cup(body: Node3D) -> void:
+	if body is Dice:
+		print(body.name, " exited the cup.")
+		# 주사위에 "컵 밖" (기본) 물리 효과를 적용하는 함수 호출
+		body.apply_outside_cup_physics()
+		
 # 흔들기 시작 (무한 반복)
 func start_shaking() -> void:
 	if is_shaking: return

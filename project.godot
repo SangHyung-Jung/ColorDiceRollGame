@@ -26,3 +26,7 @@ movie_writer/movie_file="C:/e/dice/output.avi"
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/dice_roller/plugin.cfg")
+
+[physics]
+
+common/physics_ticks_per_second=90

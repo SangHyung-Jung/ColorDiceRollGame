@@ -45,6 +45,25 @@ func _adjust_to_size():
 	mass = dice_density * dice_size **3
 	#collider.shape.margin = 0.01
 
+func apply_inside_cup_physics() -> void:
+	# 컵 안에서는 중력이 거의 없거나 약하게 만들어 떠다니는 느낌을 줌
+	gravity_scale = 10
+	# 공기 저항(감속)을 줄여 더 활발하게 움직이게 함
+	linear_damp = 0.5
+	angular_damp = 0.5
+	physics_material_override.bounce = 0.5
+	# 마찰력을 줄여 더 잘 미끄러지게 함
+	if physics_material_override:
+		physics_material_override.friction = 0.2
+
+func apply_outside_cup_physics() -> void:
+	gravity_scale = 10
+	linear_damp = -1.0 # -1은 프로젝트 기본값 사용
+	angular_damp = 1.2
+	if physics_material_override:
+		physics_material_override.friction = 1.0
+
+
 func _ready():
 	original_position = position
 	_adjust_to_size()
@@ -56,7 +75,9 @@ func _ready():
 	
 	mesh.scale = Vector3(dice_size, dice_size, dice_size)
 	self.angular_damp = 1.2
-
+	apply_inside_cup_physics()
+	
+	
 func _update_visuals():
 	if not pips_texture_original:
 		return
