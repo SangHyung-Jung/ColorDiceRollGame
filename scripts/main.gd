@@ -12,7 +12,8 @@ const CupScene := preload("res://cup.tscn")
 
 # Dice 개수 컨트롤
 const DiceBag := preload("res://scripts/dice_bag.gd")
-
+const ComboSelect := preload("res://scripts/combo_select.gd")
+var combo_sel: ComboSelect
 # DiceBag 색 키 → 실제 Color 매핑
 const BAG_COLOR_MAP := {
 	"W": Color(1,1,1),  # White
@@ -23,6 +24,9 @@ const BAG_COLOR_MAP := {
 }
 
 var bag: DiceBag
+
+const ComboRules := preload("res://scripts/combo_rules.gd")
+var total_score: int = 0    # 없으면 추가
 
 # 생성할 주사위 목록
 const HAND_SIZE:int = 5			# 주사위 개수
@@ -81,6 +85,9 @@ func _ready() -> void:
 	# 4. 주사위 인스턴스화 및 컵 안에 배치
 	_spawn_dice_in_cup()
 	_tag_spawned_nodes_with_keys(keys)  # keys는 bag.draw_many(5)로 받은 배열
+	combo_sel = ComboSelect.new()
+	add_child(combo_sel)
+	combo_sel.committed.connect(_on_combo_committed)
 func _setup_environment() -> void:
 	# 카메라 추가 (탑뷰, 직교 투영)
 	camera = Camera3D.new()
@@ -200,6 +207,22 @@ func _keep_dice(dice: Node3D) -> void:
 	print("[KEEP] ", dice.name, " -> value=", val)
 
 func _unhandled_input(event: InputEvent) -> void:
+	# C키: 조합선택 모드 토글 (삼항식/토스트 대신 print)
+	if event is InputEventKey and event.pressed and not event.echo:
+		var ke := event as InputEventKey
+		if ke.keycode == KEY_C:
+			if combo_sel.active:
+				combo_sel.exit()
+				print("조합선택 OFF")
+			else:
+				combo_sel.enter()
+				print("조합선택 ON (좌클릭 선택/해제, 우클릭 확정)")
+			return
+
+	# 선택 모드가 이벤트를 소비하면 여기서 종료
+	if combo_sel.process_input(event):
+		return
+
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
 			# 선택 모드면: 우선 주사위 픽킹 시도
@@ -351,3 +374,66 @@ func _tag_spawned_nodes_with_keys(keys: Array) -> void:
 	for i in range(n):
 		var d = dice_nodes[i]
 		d.set_meta("bag_key", keys[i])
+		
+func _on_combo_committed(nodes: Array) -> void:
+	if nodes.is_empty():
+		print("조합이 없습니다(선택 안됨).")
+		return
+
+	var dd: Array = []
+	var picked_labels: Array[String] = []
+
+	for n in nodes:
+		var v: int = -1
+		if typeof(_roll_results) == TYPE_DICTIONARY and _roll_results.has(n.name):
+			v = int(_roll_results[n.name])
+		var d := ComboRules.DieData.from_node(n, v)
+		dd.append(d)
+
+		var lbl := _color_label(n, d.color)
+		picked_labels.append("%s-%d" % [lbl, d.value])
+
+	print("[선택] ", picked_labels)
+
+	var r := ComboRules.eval_combo(dd)
+	if not r.ok:
+		print("조합이 없습니다.")
+		return
+
+	print("조합: %s | 크기: %d | +%d점" % [ComboRules.combo_name(r.combo_type), r.size, r.points])
+	total_score += r.points
+	print("누적 점수: %d" % total_score)
+
+	# ✅ 매칭된 주사위 제거
+	_remove_combo_dice(nodes)
+
+	# 선택 강조 해제
+	if combo_sel and combo_sel.is_inside_tree():
+		combo_sel.clear()
+
+func _color_label(n: Node, c: Color) -> String:
+	if n.has_meta("bag_key"):
+		return str(n.get_meta("bag_key"))     # "W","K","R","G","B"
+	if c == Color.RED: return "R"
+	if c == Color.GREEN: return "G"
+	if c == Color.BLUE: return "B"
+	if c == Color.WHITE: return "W"
+	if c == Color.BLACK: return "K"
+	return c.to_html(false)                   # 예: "ffcc00"
+
+# 조합으로 사용된 주사위 제거(짧은 축소 애니메이션 후 삭제)
+func _remove_combo_dice(nodes: Array) -> void:
+	for n in nodes:
+		if n == null: 
+			continue
+		if !is_instance_valid(n):
+			continue
+
+		# roll 결과 캐시 정리(있을 때만)
+		if typeof(_roll_results) == TYPE_DICTIONARY and _roll_results.has(n.name):
+			_roll_results.erase(n.name)
+
+		# 살짝 축소 연출 후 삭제 (Godot 4)
+		var t := create_tween()
+		t.tween_property(n, "scale", n.scale * 0.01, 0.18)
+		t.tween_callback(Callable(n, "queue_free"))
