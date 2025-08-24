@@ -22,7 +22,7 @@ const SHAKE_RADIUS := 1.0
 
 # --- 대각선 섞기 파라미터 ---
 # 우측 상단(X:+, Y:+, Z:-)에서 좌측 하단(X:-, Y:-, Z:+)으로 움직이는 벡터
-const DIAGONAL_VECTOR := Vector3(1.3, 1.0, -1.3)
+const DIAGONAL_VECTOR := Vector3(1.1, 1.0, -1.1)
 
 @onready var inside_area: Area3D = $InsideArea
 
@@ -32,6 +32,7 @@ func _ready() -> void:
 	
 	inside_area.body_entered.connect(_on_body_entered_cup)
 	inside_area.body_exited.connect(_on_body_exited_cup)
+	continuous_cd = true
 
 func _process(delta: float) -> void:
 	if is_shaking:
@@ -76,8 +77,8 @@ func stop_shaking() -> void:
 	is_shaking = false
 	
 	var return_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	return_tween.parallel().tween_property(self, "global_position", initial_position, 0.1)
-	return_tween.parallel().tween_property(self, "rotation_degrees", initial_rotation, 0.1)
+	return_tween.parallel().tween_property(self, "global_position", initial_position, 0.2)
+	return_tween.parallel().tween_property(self, "rotation_degrees", initial_rotation, 0.2)
 	
 	await return_tween.finished
 
@@ -85,13 +86,15 @@ func stop_shaking() -> void:
 func _on_body_entered_cup(body: Node3D) -> void:
 	if body is Dice:
 		body.apply_inside_cup_physics()
+		
 func _on_body_exited_cup(body: Node3D) -> void:
 	if body is Dice:
 		body.apply_outside_cup_physics()
+		
 func pour() -> void:
 	var tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
-	var pour_duration = 0.4
-	var snap_x_duration = 0.5
+	var pour_duration = 0.5
+	var snap_x_duration = 0.6
 	tween.tween_property(self, "rotation_degrees:z", initial_rotation.z + 130, pour_duration)
 	tween.parallel().tween_property(self, "rotation_degrees:y", initial_rotation.y - 20, pour_duration)
 	tween.parallel().tween_property(self, "global_position:x", initial_position.x - 5, snap_x_duration)
@@ -100,6 +103,7 @@ func pour() -> void:
 	var return_duration = 1
 	return_tween.parallel().tween_property(self, "global_position:x", initial_position.x + 10, return_duration)
 	return_tween.parallel().tween_property(self, "rotation_degrees", initial_rotation, return_duration)
+	
 func reset() -> void:
 	global_position = initial_position
 	rotation_degrees = initial_rotation
