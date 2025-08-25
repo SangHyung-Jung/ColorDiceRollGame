@@ -49,20 +49,20 @@ uv1_triplanar = true
 height = 4.5
 radius = 3.5
 
-[node name="Cup" type="RigidBody3D"]
-mass = 5.0
-gravity_scale = 0.0
+[node name="Cup" type="Node3D"]
 script = ExtResource("1_f5eb6")
 
-[node name="Visuals" type="CSGCombiner3D" parent="."]
+[node name="PhysicsBody" type="AnimatableBody3D" parent="."]
 
-[node name="Outer" type="CSGCylinder3D" parent="Visuals"]
+[node name="Visuals" type="CSGCombiner3D" parent="PhysicsBody"]
+
+[node name="Outer" type="CSGCylinder3D" parent="PhysicsBody/Visuals"]
 radius = 4.0
 height = 6.5
 sides = 32
 material = SubResource("StandardMaterial3D_ponjl")
 
-[node name="Inner" type="CSGCylinder3D" parent="Visuals"]
+[node name="Inner" type="CSGCylinder3D" parent="PhysicsBody/Visuals"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.02468, 0)
 operation = 2
 radius = 3.5
@@ -70,25 +70,25 @@ height = 4.5
 sides = 32
 material = SubResource("StandardMaterial3D_hxhe5")
 
-[node name="CollisionMesh" type="CSGCombiner3D" parent="."]
+[node name="CollisionMesh" type="CSGCombiner3D" parent="PhysicsBody"]
 visible = false
 use_collision = true
 
-[node name="CollisionOuter" type="CSGCylinder3D" parent="CollisionMesh"]
+[node name="CollisionOuter" type="CSGCylinder3D" parent="PhysicsBody/CollisionMesh"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.25, 0)
 radius = 8.0
 height = 9.0
 sides = 16
 
-[node name="CollisionInner" type="CSGCylinder3D" parent="CollisionMesh"]
+[node name="CollisionInner" type="CSGCylinder3D" parent="PhysicsBody/CollisionMesh"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.02468, 0)
 operation = 2
 radius = 3.5
 height = 6.5
 sides = 16
 
-[node name="InsideArea" type="Area3D" parent="."]
+[node name="InsideArea" type="Area3D" parent="PhysicsBody"]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="InsideArea"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PhysicsBody/InsideArea"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.025, 0)
 shape = SubResource("CylinderShape3D_ponjl")

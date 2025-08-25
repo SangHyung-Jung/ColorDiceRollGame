@@ -68,7 +68,7 @@ func _ready() -> void:
 
 	# 2-1. 컵의 충돌 및 상태 관리를 위한 설정
 	cup_collision_mesh = cup.get_node("CollisionMesh")
-	var cup_inside_area: Area3D = cup.get_node("InsideArea")
+	var cup_inside_area: Area3D = cup.get_node("PhysicsBody/InsideArea")
 	cup_inside_area.body_entered.connect(_on_dice_entered_cup)
 	cup_inside_area.body_exited.connect(_on_dice_exited_cup)
 

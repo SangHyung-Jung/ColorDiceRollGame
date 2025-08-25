@@ -1,5 +1,5 @@
 # cup.gd - 주사위 컵의 동작을 제어하는 스크립트 (섞기 방식 선택 기능 추가)
-extends RigidBody3D
+extends Node3D
 
 # --- 섞기 방식을 선택하기 위한 Enum과 Export 변수 ---
 enum ShakeType { 
@@ -24,7 +24,7 @@ const SHAKE_RADIUS := 1.0
 # 우측 상단(X:+, Y:+, Z:-)에서 좌측 하단(X:-, Y:-, Z:+)으로 움직이는 벡터
 const DIAGONAL_VECTOR := Vector3(1.1, 1.0, -1.1)
 
-@onready var inside_area: Area3D = $InsideArea
+@onready var inside_area: Area3D = $PhysicsBody/InsideArea
 
 func _ready() -> void:
 	initial_position = global_position
@@ -32,7 +32,6 @@ func _ready() -> void:
 	
 	inside_area.body_entered.connect(_on_body_entered_cup)
 	inside_area.body_exited.connect(_on_body_exited_cup)
-	continuous_cd = true
 
 func _process(delta: float) -> void:
 	if is_shaking:
@@ -82,7 +81,8 @@ func stop_shaking() -> void:
 	
 	await return_tween.finished
 
-# ... _on_body_entered_cup, _on_body_exited_cup, pour, reset 함수는 기존과 동일 ...
+# These functions now just pass through the signal to the dice
+# The actual physics properties are on the Dice themselves.
 func _on_body_entered_cup(body: Node3D) -> void:
 	if body is Dice:
 		body.apply_inside_cup_physics()
