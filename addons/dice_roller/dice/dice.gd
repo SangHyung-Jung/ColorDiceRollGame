@@ -12,7 +12,7 @@ extends RigidBody3D
 var sides = {}
 var highlight_orientation = {}
 
-const dice_size := 0.70
+const dice_size := 0.65
 const dice_density := 1.0
 const ANGULAR_VELOCITY_THRESHOLD := 1.
 const LINEAR_VELOCITY_THRESHOLD := 0.3 * dice_size
@@ -28,6 +28,7 @@ var roll_time := 0.0
 signal roll_finished(int)
 
 func _init() -> void:
+	
 	continuous_cd = true
 	contact_monitor = true
 	max_contacts_reported = 5
@@ -49,7 +50,7 @@ func _adjust_to_size():
 
 func apply_inside_cup_physics() -> void:
 	# 컵 안에서는 중력이 거의 없거나 약하게 만들어 떠다니는 느낌을 줌
-	gravity_scale = 14
+	gravity_scale = 40
 	# 공기 저항(감속)을 줄여 더 활발하게 움직이게 함
 	linear_damp = 0.1
 	angular_damp = 0.5
@@ -57,7 +58,7 @@ func apply_inside_cup_physics() -> void:
 	# 마찰력을 줄여 더 잘 미끄러지게 함
 	if physics_material_override:
 		physics_material_override.friction = 0.1
-		physics_material_override.bounce = 0.3
+		physics_material_override.bounce = 0.7
 
 func apply_outside_cup_physics() -> void:
 	gravity_scale = 10

@@ -16,13 +16,13 @@ var is_shaking := false
 var shake_time := 0.0
 
 # --- 공용 및 원형 섞기 파라미터 ---
-const SHAKE_SPEED := 15.0
+const SHAKE_SPEED := 18.0
 const TILT_AMOUNT := 15.0
 const SHAKE_RADIUS := 1.0
 
 # --- 대각선 섞기 파라미터 ---
 # 우측 상단(X:+, Y:+, Z:-)에서 좌측 하단(X:-, Y:-, Z:+)으로 움직이는 벡터
-const DIAGONAL_VECTOR := Vector3(1.1, 1.0, -1.1)
+const DIAGONAL_VECTOR := Vector3(1.15, 1.0, -1.15)
 
 @onready var inside_area: Area3D = $PhysicsBody/InsideArea
 
