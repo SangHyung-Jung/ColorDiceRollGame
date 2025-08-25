@@ -35,6 +35,9 @@ var dice_set: Array[DiceDef] = []
 var dice_nodes: Array[Node] = []
 # 주사위 컵 노드
 var cup: Node3D
+var cup_collision_mesh: Node3D
+var dice_in_cup_count := 0
+
 
 # 굴리기 결과 및 상태 관리 변수
 var _finished_dice_count := 0
@@ -62,6 +65,13 @@ func _ready() -> void:
 	# 컵을 바닥에서 더 높이, 화면 오른쪽에 배치
 	cup.position = Vector3(10, 5, 0)
 	add_child(cup)
+
+	# 2-1. 컵의 충돌 및 상태 관리를 위한 설정
+	cup_collision_mesh = cup.get_node("CollisionMesh")
+	var cup_inside_area: Area3D = cup.get_node("InsideArea")
+	cup_inside_area.body_entered.connect(_on_dice_entered_cup)
+	cup_inside_area.body_exited.connect(_on_dice_exited_cup)
+
 
 	bag = DiceBag.new()
 	bag.setup_full()
@@ -252,7 +262,7 @@ func _on_mouse_release() -> void:
 	
 	# 2. 주사위에 훨씬 더 강한 힘 가하기
 	for dice in dice_nodes:
-		dice.apply_central_impulse(Vector3(randf_range(-50, -40), randf_range(3, 6), 0))
+		dice.apply_central_impulse(Vector3(randf_range(-25, -20), randf_range(3, 6), 0))
 		dice.rolling = true # rolling 플래그를 true로 설정
 	
 	# 3. 컵 쏟기
@@ -267,7 +277,8 @@ func _on_dice_roll_finished(value: int, dice_name: String):
 	
 	# 모든 주사위가 굴러 멈췄는지 확인
 	if _finished_dice_count == dice_nodes.size():
-		print("\n--- Roll Finished! ---") # 총합 대신 굴리기 완료 메시지
+		print("
+--- Roll Finished! ---") # 총합 대신 굴리기 완료 메시지
 		_roll_in_progress = false # 굴리기 종료
 		_display_results() # 결과 정렬 및 표시
 		bag.debug_print()
@@ -280,6 +291,11 @@ func reset_roll() -> void:
 
 	# 컵 리셋(연출/상태 초기화)
 	cup.reset()
+	# 컵 충돌 활성화 및 카운터 초기화
+	if cup_collision_mesh:
+		cup_collision_mesh.use_collision = true
+	dice_in_cup_count = dice_nodes.size()
+
 
 	# 1) 컵 내부 치수 결정: 실린더면 값 읽고, 아니면 기본값 사용
 	var r: float = 2.8
@@ -374,7 +390,22 @@ func _tag_spawned_nodes_with_keys(keys: Array) -> void:
 	for i in range(n):
 		var d = dice_nodes[i]
 		d.set_meta("bag_key", keys[i])
-		
+
+# --- Cup Area Signal Handlers ---
+
+func _on_dice_entered_cup(body: Node3D) -> void:
+	if body is Dice:
+		dice_in_cup_count += 1
+
+func _on_dice_exited_cup(body: Node3D) -> void:
+	if body is Dice:
+		dice_in_cup_count -= 1
+		if dice_in_cup_count <= 0:
+			if cup_collision_mesh:
+				cup_collision_mesh.use_collision = false
+				print("All dice exited cup, disabling collision mesh.")
+
+
 func _on_combo_committed(nodes: Array) -> void:
 	if nodes.is_empty():
 		print("조합이 없습니다(선택 안됨).")

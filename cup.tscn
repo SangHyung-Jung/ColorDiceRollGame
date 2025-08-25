@@ -39,8 +39,6 @@ noise = SubResource("FastNoiseLite_fabric")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hxhe5"]
 albedo_color = Color(0.1, 0.4, 0.2, 1)
-metallic = 0.0
-roughness = 1.0
 normal_enabled = true
 normal_scale = 0.2
 normal_texture = SubResource("NoiseTexture2D_fabric")
@@ -77,9 +75,9 @@ visible = false
 use_collision = true
 
 [node name="CollisionOuter" type="CSGCylinder3D" parent="CollisionMesh"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.037, -0.5, 0)
-radius = 6.0
-height = 7.5
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.25, 0)
+radius = 8.0
+height = 9.0
 sides = 16
 
 [node name="CollisionInner" type="CSGCylinder3D" parent="CollisionMesh"]
