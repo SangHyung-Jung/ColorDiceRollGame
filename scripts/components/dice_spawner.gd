@@ -155,6 +155,34 @@ func display_dice_results(roll_results: Dictionary) -> void:
 		await tween.finished
 		dice.show_face(roll_results[dice.name])
 
+func position_dice_in_hand(dice_nodes: Array[Node3D]) -> void:
+	var start_x = - (dice_nodes.size() - 1) * GameConstants.DICE_SPACING_HAND / 2.0
+	for i in range(dice_nodes.size()):
+		var dice = dice_nodes[i]
+		var target_pos = Vector3(start_x + i * GameConstants.DICE_SPACING_HAND, GameConstants.HAND_DICE_Y, GameConstants.HAND_DICE_Z)
+		
+		var tween: Tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		dice.freeze = false
+		tween.parallel().tween_property(dice, "global_position", target_pos, GameConstants.MOVE_DURATION)
+		# Optionally, add a slight rotation
+		tween.parallel().tween_property(dice, "rotation_degrees", Vector3(randf_range(-10, 10), randf_range(0, 360), randf_range(-10, 10)), GameConstants.MOVE_DURATION)
+		await tween.finished
+		dice.freeze = true # Freeze after positioning
+
+func position_dice_in_field(dice_nodes: Array[Node3D]) -> void:
+	var start_x = - (dice_nodes.size() - 1) * GameConstants.DICE_SPACING_FIELD / 2.0
+	for i in range(dice_nodes.size()):
+		var dice = dice_nodes[i]
+		var target_pos = Vector3(start_x + i * GameConstants.DICE_SPACING_FIELD, GameConstants.FIELD_DICE_Y, GameConstants.FIELD_DICE_Z)
+		
+		var tween: Tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		dice.freeze = false
+		tween.parallel().tween_property(dice, "global_position", target_pos, GameConstants.MOVE_DURATION)
+		# Optionally, add a slight rotation
+		tween.parallel().tween_property(dice, "rotation_degrees", Vector3(randf_range(-10, 10), randf_range(0, 360), randf_range(-10, 10)), GameConstants.MOVE_DURATION)
+		await tween.finished
+		dice.freeze = true # Freeze after positioning
+
 ## 남은 주사위들을 컵 안으로 재배치합니다
 ## 물리 속성을 초기화하고 컵 내부 적절한 위치에 배치합니다
 func reset_dice_in_cup() -> void:
@@ -262,3 +290,29 @@ func clear_dice_set() -> void:
 
 	print("초기화 후 dice_set 크기: ", dice_set.size())
 	print("=== clear_dice_set 완료 ===")
+
+func remove_dice_permanently(dice_to_remove: Array) -> void:
+	print("=== remove_dice_permanently 시작 ===")
+	print("영구 제거할 주사위 개수: ", dice_to_remove.size())
+	print("제거 전 dice_nodes 크기: ", dice_nodes.size())
+
+	for dice in dice_to_remove:
+		if dice in dice_nodes:
+			# dice_nodes에서 제거
+			dice_nodes.erase(dice)
+
+			# dice_set에서도 해당하는 정의 제거
+			for i in range(dice_set.size() - 1, -1, -1):  # 역순으로 순회
+				if dice_set[i].name == dice.name:
+					dice_set.remove_at(i)
+					break
+			
+			# 실제 노드 제거
+			if is_instance_valid(dice):
+				dice.queue_free()
+		else:
+			printerr("Attempted to permanently remove a dice not in dice_nodes: ", dice.name)
+
+	print("제거 후 dice_nodes 크기: ", dice_nodes.size())
+	print("제거 후 dice_set 크기: ", dice_set.size())
+	print("=== remove_dice_permanently 완료 ===")

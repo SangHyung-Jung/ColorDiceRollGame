@@ -21,7 +21,8 @@ static func pick_dice_under_mouse(camera: Camera3D, mouse_pos: Vector2, world: W
 
 	# 물리 공간에서 레이캐스팅 수행
 	var space := world.direct_space_state
-	var hit := space.intersect_ray(PhysicsRayQueryParameters3D.create(from, to))
+	var query = PhysicsRayQueryParameters3D.create(from, to)
+	var hit := space.intersect_ray(query)
 	if hit.is_empty():
 		return null  # 아무것도 맞지 않음
 

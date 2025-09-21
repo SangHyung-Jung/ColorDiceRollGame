@@ -1,0 +1,58 @@
+[
+	{
+		"id": "mom",
+		"name": "엄마",
+		"rule_text": "용돈 뺏기",
+		"description": "족보 성공 시 획득하는 자금($) 감소합니다.",
+		"script_path": "res://scripts/boss_rules/mom_rule.gd"
+	},
+	{
+		"id": "park_keeper",
+		"name": "공원 관리인",
+		"rule_text": "자리 정리",
+		"description": "매 턴, 필드(Field)의 무작위 주사위 1개가 '고정'되어 그 턴에는 조합에 사용할 수 없습니다.",
+		"script_path": "res://scripts/boss_rules/park_keeper_rule.gd"
+	},
+	{
+		"id": "alley_boss",
+		"name": "골목대장",
+		"rule_text": "통행세",
+		"description": "이번 대결에서 족보에 사용된 주사위는 게임에서 영구적으로 제거됩니다.",
+		"script_path": "res://scripts/boss_rules/alley_boss_rule.gd"
+	},
+	{
+		"id": "warehouse_owner",
+		"name": "창고 주인",
+		"rule_text": "보관료",
+		"description": "족보로 점수를 얻을 때마다 보유한 자금($)의 10%를 잃습니다.",
+		"script_path": "res://scripts/boss_rules/warehouse_owner_rule.gd"
+	},
+	{
+		"id": "house_manager",
+		"name": "하우스 매니저",
+		"rule_text": "하우스 규칙",
+		"description": "가장 오른쪽에 있는 조커(소품)의 효과가 비활성화됩니다.",
+		"script_path": "res://scripts/boss_rules/house_manager_rule.gd"
+	},
+	{
+		"id": "vip_host",
+		"name": "VIP 호스트",
+		"rule_text": "패 뒤섞기",
+		"description": "턴 시작 시, 패(Hand)에 있는 주사위들의 색상이 무작위로 바뀝니다.",
+		"script_path": "res://scripts/boss_rules/vip_host_rule.gd"
+	},
+	{
+		"id": "casino_director",
+		"name": "카지노 지배인",
+		"rule_text": "시간 압박",
+		"description": "턴을 종료할 때마다(점수 획득 여부 무관) 목표 점수가 5%씩 증가합니다.",
+		"script_path": "res://scripts/boss_rules/casino_director_rule.gd"
+	},
+	{
+		"id": "final_boss",
+		"name": "최후의 승부사",
+		"rule_text": "마지막 승부",
+		"description": "목표 점수가 2배가 되고, 모든 조커의 효과가 50% 확률로만 발동합니다.",
+		"script_path": "res://scripts/boss_rules/final_boss_rule.gd"
+	}
+]

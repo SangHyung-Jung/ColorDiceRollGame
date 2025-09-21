@@ -8,9 +8,14 @@ extends Node
 signal roll_finished()
 # 주사위가 Keep 영역으로 이동되었을 때 발생
 signal dice_kept(dice: Node3D)
+signal hand_dice_updated(dice_data: Array)
+signal field_dice_updated(dice_data: Array)
+signal dice_removed_for_combo(dice_nodes: Array[Node3D])
 
 # === 핵심 게임 데이터 ===
 var bag: DiceBag  # 주사위 가방 (자원 관리)
+var hand_dice: Array[Node3D] = [] # Dice currently in the player's hand
+var field_dice: Array[Node3D] = [] # Dice moved to the field
 var _finished_dice_count: int = 0  # 굴리기 완료된 주사위 개수
 var _roll_results: Dictionary[String, int] = {}  # 주사위별 결과값 저장
 var _roll_in_progress: bool = false  # 현재 굴리기 진행 중 여부
@@ -116,6 +121,18 @@ func remove_combo_dice(nodes: Array) -> void:
 		tween.tween_property(n, "scale", n.scale * 0.01, 0.18)
 		tween.tween_callback(Callable(n, "queue_free"))
 
+	dice_removed_for_combo.emit(nodes)
+
+func move_dice_to_field(dice_to_move: Array[Node3D]) -> void:
+	for dice in dice_to_move:
+		if hand_dice.has(dice):
+			hand_dice.erase(dice)
+			field_dice.append(dice)
+			# TODO: Animate dice movement from hand area to field area
+
+	hand_dice_updated.emit(_get_dice_display_data(hand_dice))
+	field_dice_updated.emit(_get_dice_display_data(field_dice))
+
 func _reset_roll_state() -> void:
 	_finished_dice_count = 0
 	_roll_results.clear()
@@ -149,3 +166,49 @@ func _on_dice_exited_cup(body: Node3D) -> void:
 			if cup_collision_mesh:
 				cup_collision_mesh.use_collision = false
 				print("All dice exited cup, disabling collision mesh.")
+
+func _get_dice_display_data(dice_nodes: Array[Node3D]) -> Array:
+	var display_data: Array = []
+	for dice in dice_nodes:
+		if dice and is_instance_valid(dice):
+			var color_name = ""
+			if dice.has_method("get_dice_color"): # Assuming Dice class has this method
+				var color = dice.get_dice_color()
+				if color == Color.WHITE: color_name = "W"
+				elif color == Color.BLACK: color_name = "K"
+				elif color == Color.RED: color_name = "R"
+				elif color == Color.GREEN: color_name = "G"
+				elif color == Color.BLUE: color_name = "B"
+				else: color_name = color.to_html(false)
+			
+			var value = _roll_results.get(dice.name, -1) # Get value from roll results
+			var sides = 6 # Default, assuming D6 for now
+			if dice.has_method("get_sides"): # Assuming Dice class has this method
+				sides = dice.get_sides()
+
+			display_data.append({
+				"color": dice.get_dice_color() if dice.has_method("get_dice_color") else Color.WHITE,
+				"value": value,
+				"sides": sides
+			})
+		else:
+			display_data.append("Invalid Dice") # Fallback for invalid instances
+	return display_data
+
+func highlight_dice(dice_nodes: Array[Node3D], highlight: bool) -> void:
+	for dice in dice_nodes:
+		if dice and is_instance_valid(dice) and dice.has_method("highlight"):
+			dice.highlight(highlight)
+
+func set_dice_fixed(dice: Node3D, fixed: bool) -> void:
+	if dice and is_instance_valid(dice):
+		dice.set_meta("fixed", fixed)
+		if dice.has_method("set_fixed_visual"):
+			dice.set_fixed_visual(fixed)
+
+func get_usable_dice(dice_array: Array[Node3D]) -> Array[Node3D]:
+	var usable_dice: Array[Node3D] = []
+	for dice in dice_array:
+		if dice and is_instance_valid(dice) and not dice.get_meta("fixed", false):
+			usable_dice.append(dice)
+	return usable_dice

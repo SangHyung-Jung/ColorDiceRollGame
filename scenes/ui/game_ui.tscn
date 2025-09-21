@@ -1,0 +1,303 @@
+[gd_scene load_steps=6 format=3 uid="uid://bub6wihddpdyx"]
+
+[ext_resource type="Script" uid="uid://uhwrdsokndhk" path="res://scripts/ui/game_ui.gd" id="1_gd"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg_panel"]
+bg_color = Color(0.1, 0.1, 0.1, 0.8)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_hover"]
+bg_color = Color(0.3, 0.5, 0.7, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.2, 0.3, 0.4, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+expand_margin_left = 5.0
+expand_margin_top = 2.0
+expand_margin_right = 5.0
+expand_margin_bottom = 2.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_pressed"]
+bg_color = Color(0.1, 0.3, 0.5, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.05, 0.15, 0.25, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+expand_margin_left = 5.0
+expand_margin_top = 2.0
+expand_margin_right = 5.0
+expand_margin_bottom = 2.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_normal"]
+bg_color = Color(0.2, 0.4, 0.6, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.1, 0.2, 0.3, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+expand_margin_left = 5.0
+expand_margin_top = 2.0
+expand_margin_right = 5.0
+expand_margin_bottom = 2.0
+
+[node name="GameUI" type="CanvasLayer"]
+script = ExtResource("1_gd")
+
+[node name="MainContainer" type="MarginContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+
+
+[node name="RootHBox" type="HBoxContainer" parent="MainContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 15
+
+[node name="LeftPanelContainer" type="PanelContainer" parent="MainContainer/RootHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.25
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg_panel")
+
+[node name="LeftVBox" type="VBoxContainer" parent="MainContainer/RootHBox/LeftPanelContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="MainContainer/RootHBox/LeftPanelContainer/LeftVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "Score: 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="FundsLabel" type="Label" parent="MainContainer/RootHBox/LeftPanelContainer/LeftVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "Funds: $0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HandCountLabel" type="Label" parent="MainContainer/RootHBox/LeftPanelContainer/LeftVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "Hand: 4"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="InvestCountLabel" type="Label" parent="MainContainer/RootHBox/LeftPanelContainer/LeftVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "Invest: 5"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LeftSpacer" type="Control" parent="MainContainer/RootHBox/LeftPanelContainer/LeftVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CenterVBox" type="VBoxContainer" parent="MainContainer/RootHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.5
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="TopFieldHBox" type="HBoxContainer" parent="MainContainer/RootHBox/CenterVBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 30
+alignment = 1
+
+[node name="StageLabel" type="Label" parent="MainContainer/RootHBox/CenterVBox/TopFieldHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "Stage: 1 - 집"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="OpponentLabel" type="Label" parent="MainContainer/RootHBox/CenterVBox/TopFieldHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "Opponent: 상대 1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TargetScoreLabel" type="Label" parent="MainContainer/RootHBox/CenterVBox/TopFieldHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "Target Score: 300"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BossRuleLabel" type="RichTextLabel" parent="MainContainer/RootHBox/CenterVBox"]
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_colors/default_color = Color(1, 0.8, 0.2, 1)
+theme_override_font_sizes/normal_font_size = 22
+text = "Boss Rule: None"
+fit_content = true
+scroll_active = false
+
+[node name="DiceDisplays" type="VBoxContainer" parent="MainContainer/RootHBox/CenterVBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="HandDiceDisplay" type="HBoxContainer" parent="MainContainer/RootHBox/CenterVBox/DiceDisplays"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="HandDiceLabel" type="Label" parent="MainContainer/RootHBox/CenterVBox/DiceDisplays/HandDiceDisplay"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "Hand Dice:"
+
+[node name="HandDicePlaceholder" type="HBoxContainer" parent="MainContainer/RootHBox/CenterVBox/DiceDisplays/HandDiceDisplay"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="FieldDiceDisplay" type="HBoxContainer" parent="MainContainer/RootHBox/CenterVBox/DiceDisplays"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="FieldDiceLabel" type="Label" parent="MainContainer/RootHBox/CenterVBox/DiceDisplays/FieldDiceDisplay"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "Field Dice:"
+
+[node name="FieldDicePlaceholder" type="HBoxContainer" parent="MainContainer/RootHBox/CenterVBox/DiceDisplays/FieldDiceDisplay"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="DiceRollingArea" type="Control" parent="MainContainer/RootHBox/CenterVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="RightPanelContainer" type="PanelContainer" parent="MainContainer/RootHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.25
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg_panel")
+
+[node name="RightVBox" type="VBoxContainer" parent="MainContainer/RootHBox/RightPanelContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="ActionButtons" type="HBoxContainer" parent="MainContainer/RootHBox/RightPanelContainer/RightVBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 30
+alignment = 1
+
+[node name="SubmitComboButton" type="Button" parent="MainContainer/RootHBox/RightPanelContainer/RightVBox/ActionButtons"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
+text = "조합 제출"
+
+[node name="InvestButton" type="Button" parent="MainContainer/RootHBox/RightPanelContainer/RightVBox/ActionButtons"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
+text = "투자"
+
+[node name="HelpButton" type="Button" parent="MainContainer/RootHBox/RightPanelContainer/RightVBox/ActionButtons"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
+text = "도움말"
+
+[node name="RightSpacer" type="Control" parent="MainContainer/RootHBox/RightPanelContainer/RightVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HelpPanel" type="PanelContainer" parent="."]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg_panel")
+
+[node name="VBox" type="VBoxContainer" parent="HelpPanel"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="GuideText" type="RichTextLabel" parent="HelpPanel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/default_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/normal_font_size = 20
+text = "게임 가이드 내용이 여기에 들어갑니다."
+fit_content = true
+
+[node name="CloseHelpButton" type="Button" parent="HelpPanel/VBox"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
+text = "닫기"

@@ -270,3 +270,21 @@ func highlight():
 
 func dehighlight() -> void:
 	highlight_face.visible = false
+
+func set_fixed_visual(fixed: bool) -> void:
+	if fixed:
+		# Example: Change color to gray or add a transparent overlay
+		# For now, let's just change the albedo color to a darker shade
+		if mesh.material_override is StandardMaterial3D:
+			mesh.material_override.albedo_color = Color.GRAY
+		print(name, " is now fixed.")
+	else:
+		# Restore original color
+		if mesh.material_override is StandardMaterial3D:
+			mesh.material_override.albedo_color = dice_color # Assuming dice_color is the original color
+		print(name, " is no longer fixed.")
+
+func set_dice_color(new_color: Color) -> void:
+	dice_color = new_color # Update the internal dice_color variable
+	_update_visuals() # Re-render the dice with the new color
+	print(name, " color changed to ", new_color)

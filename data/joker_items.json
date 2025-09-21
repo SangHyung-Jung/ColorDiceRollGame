@@ -1,0 +1,31 @@
+
+[
+    {
+        "id": "joker_reroll",
+        "name": "리롤 조커",
+        "description": "패에 있는 주사위를 한 번 더 굴릴 수 있습니다.",
+        "price": 100,
+        "effect": {"type": "reroll_hand"}
+    },
+    {
+        "id": "joker_extra_submission",
+        "name": "추가 제출 조커",
+        "description": "제출 횟수를 1회 추가합니다.",
+        "price": 150,
+        "effect": {"type": "add_submission", "value": 1}
+    },
+    {
+        "id": "joker_extra_invest",
+        "name": "추가 투자 조커",
+        "description": "투자 횟수를 1회 추가합니다.",
+        "price": 120,
+        "effect": {"type": "add_invest", "value": 1}
+    },
+    {
+        "id": "joker_score_boost",
+        "name": "점수 부스트 조커",
+        "description": "이번 턴에 획득하는 점수를 2배로 만듭니다.",
+        "price": 200,
+        "effect": {"type": "score_multiplier", "value": 2}
+    }
+]

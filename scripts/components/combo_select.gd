@@ -6,6 +6,7 @@ signal committed(dice_nodes: Array)
 var active: bool = false
 var _sel := {}                       # id -> Node3D
 var _order: Array[Node3D] = []
+var game_manager: GameManager # Reference to GameManager
 
 const SELECT_SCALE := Vector3(1.12, 1.12, 1.12)
 const SELECT_TINT  := Color(1.0, 0.92, 0.55, 1.0)
@@ -15,6 +16,9 @@ func enter() -> void:
 func exit() -> void:
 	active = false
 	clear()
+
+func initialize(gm: GameManager):
+	game_manager = gm
 
 func clear() -> void:
 	for n in _order: _set_selected(n, false)
@@ -71,5 +75,11 @@ func _pick(ev: InputEventMouse) -> Node:
 	q.collide_with_bodies = true
 	var hit: Dictionary = space.intersect_ray(q)
 	if hit.has("collider"):
-		return hit["collider"]
+		var potential_dice = _dice_root(hit["collider"])
+		if potential_dice != null:
+			# Check if the dice is usable by GameManager
+			var all_dice = game_manager.hand_dice + game_manager.field_dice
+			var usable_dice = game_manager.get_usable_dice(all_dice)
+			if usable_dice.has(potential_dice):
+				return potential_dice
 	return null

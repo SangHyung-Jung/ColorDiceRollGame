@@ -63,3 +63,12 @@ const POUR_Z_ROTATION := 130.0  # 쏟을 때 Z축 회전각
 const POUR_Y_ROTATION := -20.0  # 쏟을 때 Y축 회전각
 const POUR_X_POSITION := -5.0  # 쏟을 때 X축 이동거리
 const RETURN_X_POSITION := 10.0  # 복귀 시 X축 위치
+
+# === 핸드/필드 주사위 배치 설정 ===
+const DICE_SPACING_HAND := 2.0 # 핸드 주사위 간격
+const HAND_DICE_Y := 0.5 # 핸드 주사위 Y 위치
+const HAND_DICE_Z := -10.0 # 핸드 주사위 Z 위치
+
+const DICE_SPACING_FIELD := 2.0 # 필드 주사위 간격
+const FIELD_DICE_Y := 0.5 # 필드 주사위 Y 위치
+const FIELD_DICE_Z := -15.0 # 필드 주사위 Z 위치
