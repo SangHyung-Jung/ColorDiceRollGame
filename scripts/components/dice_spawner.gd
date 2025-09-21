@@ -25,19 +25,27 @@ func initialize(cup: Node3D) -> void:
 ## 주사위들을 컵 내부에 생성합니다
 ## @param dice_definitions: 생성할 주사위들의 정의 배열
 func spawn_dice_in_cup(dice_definitions: Array[DiceDef]) -> void:
-	dice_set = dice_definitions
+	print("=== spawn_dice_in_cup 시작 ===")
+	print("새로 생성할 주사위 개수: ", dice_definitions.size())
+	print("기존 주사위 개수: ", dice_nodes.size())
 
+	# ★ 수정: 기존 dice_set에 추가 (덮어쓰기 방지)
+	dice_set.append_array(dice_definitions)
+	
 	# 각 주사위 정의에 따라 3D 주사위 노드 생성
-	for d_def in dice_set:
-		# 애드온에서 주사위 씩 인스턴스 생성
+	for i in range(dice_definitions.size()):
+		var d_def = dice_definitions[i]
+		print("주사위 ", i, " 생성 시작: ", d_def.name)
+		
+		# 애드온에서 주사위 씬 인스턴스 생성
 		var dice_scene = d_def.shape.scene()
 		var dice: Dice = dice_scene.instantiate()
-
+		
 		# 주사위 속성 설정
 		dice.name = d_def.name
 		dice.dice_color = d_def.color
 		dice.pips_texture_original = d_def.pips_texture
-
+		
 		# 컵 내부 랜덤 위치에 생성
 		var spawn_pos = cup_ref.global_position + Vector3(
 			randf_range(-GameConstants.CUP_SPAWN_RADIUS, GameConstants.CUP_SPAWN_RADIUS),
@@ -45,16 +53,28 @@ func spawn_dice_in_cup(dice_definitions: Array[DiceDef]) -> void:
 			randf_range(-GameConstants.CUP_SPAWN_RADIUS, GameConstants.CUP_SPAWN_RADIUS)
 		)
 		dice.global_position = spawn_pos
-
-		# 씩에 추가 및 물리 설정
-		get_parent().add_child(dice)
+		print("주사위 생성 위치: ", spawn_pos)
+		
+		# ★ 해결책: 명확한 부모 노드 지정
+		var main_node = get_tree().current_scene
+		if main_node == null:
+			main_node = get_parent()  # 폴백
+		
+		print("부모 노드: ", main_node.name)
+		main_node.add_child(dice)
+		
 		dice.add_to_group('dice')  # 주사위 그룹에 추가 (선택용)
 		dice.freeze = false  # 물리 활성화
 		dice.linear_velocity.y = GameConstants.DICE_SPAWN_VELOCITY  # 초기 하향 속도
 		dice_nodes.append(dice)
-
+		
+		print("주사위 ", i, " 생성 완료. dice_nodes 크기: ", dice_nodes.size())
+		
 		# 굴리기 완료 시그널 연결
 		dice.roll_finished.connect(_on_dice_roll_finished.bind(dice.name))
+	
+	print("=== spawn_dice_in_cup 완료 ===")
+	print("총 주사위 개수: ", dice_nodes.size())
 
 ## 개별 주사위의 굴리기 완료 시그널 전달
 ## @param value: 주사위 결과값
@@ -131,8 +151,14 @@ func display_dice_results(roll_results: Dictionary) -> void:
 		await tween.finished
 		dice.show_face(roll_results[dice.name])
 
+## 남은 주사위들을 컵 안으로 재배치합니다
+## 물리 속성을 초기화하고 컵 내부 적절한 위치에 배치합니다
 func reset_dice_in_cup() -> void:
-	# 컵 내부 치수 결정
+	print("=== 주사위 리셋 시작 ===")
+	print("현재 주사위 개수: ", dice_nodes.size())
+	print("컵 위치: ", cup_ref.global_position)
+
+	# 컵 내부 치수 확인 (기존 로직 유지)
 	var r: float = 2.8
 	var h: float = 6.0
 	var col: CollisionShape3D = cup_ref.get_node_or_null("CollisionShape3D") as CollisionShape3D
@@ -140,23 +166,28 @@ func reset_dice_in_cup() -> void:
 		var cyl := col.shape as CylinderShape3D
 		r = cyl.radius
 		h = cyl.height
+	print("컵 반지름: ", r, ", 높이: ", h)
 
 	# 남아있는 주사위들을 컵 안으로 재배치
-	for d in dice_nodes:
+	for i in range(dice_nodes.size()):
+		var d = dice_nodes[i]
 		if "freeze" in d:
 			d.freeze = false
 		d.sleeping = false
 		d.linear_velocity = Vector3.ZERO
 		d.angular_velocity = Vector3.ZERO
 
+		# 컵 내부 원통형 영역에 배치 (기존 로직 사용)
 		var theta: float = randf() * TAU
 		var margin: float = 0.30
 		var rr: float = max(0.0, r - margin) * sqrt(randf())
-		var yy: float = -h * 0.5 + h * 0.70
+		var yy: float = -h * 0.5 + h * 0.70  # 내부 높이 70% 지점
 		var local := Vector3(rr * cos(theta), yy, rr * sin(theta))
 		d.global_position = cup_ref.to_global(local)
 
-		# 살짝 깨워서 굴림 안정화
+		print("주사위 ", i, " 위치: ", d.global_position)
+
+		# 초기 물리 자극 (약하게)
 		d.apply_torque_impulse(Vector3(
 			randf_range(-0.6, 0.6),
 			randf_range(-0.2, 0.2),
@@ -168,10 +199,28 @@ func reset_dice_in_cup() -> void:
 			randf_range(-0.2, 0.2)
 		))
 
+	print("=== 주사위 리셋 완료 ===")
+## 주사위들을 제거합니다 (Keep이나 조합 사용 시)
+## @param dice_to_remove: 제거할 주사위 노드들
 func remove_dice(dice_to_remove: Array) -> void:
+	print("=== remove_dice 시작 ===")
+	print("제거할 주사위 개수: ", dice_to_remove.size())
+	print("제거 전 dice_nodes 크기: ", dice_nodes.size())
+
 	for dice in dice_to_remove:
 		if dice in dice_nodes:
+			# dice_nodes에서 제거
 			dice_nodes.erase(dice)
+
+			# dice_set에서도 해당하는 정의 제거
+			for i in range(dice_set.size() - 1, -1, -1):  # 역순으로 순회
+				if dice_set[i].name == dice.name:
+					dice_set.remove_at(i)
+					break
+
+	print("제거 후 dice_nodes 크기: ", dice_nodes.size())
+	print("제거 후 dice_set 크기: ", dice_set.size())
+	print("=== remove_dice 완료 ===")
 
 func get_dice_nodes() -> Array[Node]:
 	return dice_nodes
@@ -179,5 +228,14 @@ func get_dice_nodes() -> Array[Node]:
 func get_dice_count() -> int:
 	return dice_nodes.size()
 
+## 주사위 세트를 완전히 초기화합니다 (새 게임 시작 등)
 func clear_dice_set() -> void:
+	print("=== clear_dice_set 시작 ===")
+	print("초기화 전 dice_set 크기: ", dice_set.size())
+	print("초기화 전 dice_nodes 크기: ", dice_nodes.size())
+
 	dice_set.clear()
+	# dice_nodes는 실제 노드 제거 시에만 정리됨
+
+	print("초기화 후 dice_set 크기: ", dice_set.size())
+	print("=== clear_dice_set 완료 ===")
