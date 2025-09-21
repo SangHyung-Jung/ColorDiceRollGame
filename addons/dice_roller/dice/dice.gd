@@ -19,7 +19,7 @@ const LINEAR_VELOCITY_THRESHOLD := 0.3 * dice_size
 const mounted_elevation = 0.8 * dice_size
 const face_angle := 90.0
 
-const MAX_VELOCITY := 15.0               # 최대 속도 제한
+const MAX_VELOCITY := 30.0               # 최대 속도 제한
 const MAX_DISTANCE_FROM_ORIGIN := 30.0  # 원점에서 최대 거리
 const FORCE_STOP_TIME := 20.0           # 강제 정지 시간
 
