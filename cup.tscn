@@ -1,6 +1,6 @@
 [gd_scene load_steps=9 format=3 uid="uid://b5w7g2jko36l2"]
 
-[ext_resource type="Script" uid="uid://co1yc17ks56wm" path="res://cup.gd" id="1_f5eb6"]
+[ext_resource type="Script" uid="uid://co1yc17ks56wm" path="res://scripts/components/cup.gd" id="1_f5eb6"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_leather"]
 frequency = 0.2
@@ -57,15 +57,16 @@ script = ExtResource("1_f5eb6")
 [node name="Visuals" type="CSGCombiner3D" parent="PhysicsBody"]
 
 [node name="Outer" type="CSGCylinder3D" parent="PhysicsBody/Visuals"]
-radius = 4.0
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3, 0)
+radius = 6.0
 height = 6.5
 sides = 32
 material = SubResource("StandardMaterial3D_ponjl")
 
 [node name="Inner" type="CSGCylinder3D" parent="PhysicsBody/Visuals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.02468, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2, 0)
 operation = 2
-radius = 3.5
+radius = 5.5
 height = 4.5
 sides = 32
 material = SubResource("StandardMaterial3D_hxhe5")
@@ -75,15 +76,14 @@ visible = false
 use_collision = true
 
 [node name="CollisionOuter" type="CSGCylinder3D" parent="PhysicsBody/CollisionMesh"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.25, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.5, 0)
 radius = 8.0
 height = 9.0
 sides = 16
 
 [node name="CollisionInner" type="CSGCylinder3D" parent="PhysicsBody/CollisionMesh"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.02468, 0)
 operation = 2
-radius = 3.5
+radius = 5.5
 height = 6.5
 sides = 16
 

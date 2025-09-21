@@ -54,14 +54,14 @@ func _adjust_to_size():
 
 func apply_inside_cup_physics() -> void:
 	# 컵 안에서는 중력이 거의 없거나 약하게 만들어 떠다니는 느낌을 줌
-	gravity_scale = 30                    # 40 → 30으로 감소
+	gravity_scale = 80                    # 40 → 30으로 감소
 	# 공기 저항(감속)을 줄여 더 활발하게 움직이게 함
-	linear_damp = 0.3                     # 0.1 → 0.3으로 증가 (더 빨리 감속)
-	angular_damp = 0.8                    # 0.5 → 0.8로 증가
+	linear_damp = 0.01                     # 0.1 → 0.3으로 증가 (더 빨리 감속)
+	angular_damp = 0.1                    # 0.5 → 0.8로 증가
 	
 	if physics_material_override:
-		physics_material_override.friction = 0.2   # 0.1 → 0.2
-		physics_material_override.bounce = 0.3     # 0.7 → 0.3으로 대폭 감소
+		physics_material_override.friction = 0.5   # 0.1 → 0.2
+		physics_material_override.bounce = 0.95     # 0.7 → 0.3으로 대폭 감소
 
 func apply_outside_cup_physics() -> void:
 	gravity_scale = 10
