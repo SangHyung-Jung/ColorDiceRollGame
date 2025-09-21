@@ -28,12 +28,12 @@ const KEEP_STEP_Z := 2.2  # 세로 방향(행 간격) 주사위 간격
 const KEEP_COLS := 5  # 한 줄에 배치할 최대 주사위 개수
 
 # === 카메라 시스템 설정 ===
-const CAMERA_HEIGHT := 20.0  # 카메라 높이 (Y축)
+const CAMERA_HEIGHT := 30.0  # 카메라 높이 (Y축)
 const CAMERA_SIZE := 18.0  # 직교투영 시 줌 레벨 (작을수록 확대)
 const CAMERA_ROTATION := Vector3(-90, 0, 0)  # 탑뷰를 위한 카메라 회전각
 
 # === 3D 환경 설정 ===
-const FLOOR_SIZE := Vector3(50, 1, 50)  # 바닥 크기 (가로, 높이, 세로)
+const FLOOR_SIZE := Vector3(50, 0, 50)  # 바닥 크기 (가로, 높이, 세로)
 const FLOOR_COLOR := Color.DARK_SLATE_GRAY  # 바닥 색상
 
 # === 주사위 컵 설정 ===
@@ -42,8 +42,10 @@ const CUP_SPAWN_HEIGHT := 8.0  # 주사위 생성 높이
 const CUP_SPAWN_RADIUS := 2.5  # 컵 내부 주사위 생성 반경
 
 # === 주사위 물리 시뮬레이션 ===
-const DICE_IMPULSE_RANGE := Vector2(-25, -20)  # 주사위 쏟을 때 X축 힘의 범위
-const DICE_IMPULSE_Y_RANGE := Vector2(3, 6)  # 주사위 쏟을 때 Y축 힘의 범위
+const DICE_IMPULSE_RANGE := Vector2(-35, -25)  # 주사위 쏟을 때 X축 힘의 범위 (더 강하게)
+const DICE_IMPULSE_Y_RANGE := Vector2(8, 12)  # 주사위 쏟을 때 Y축 힘의 범위 (더 높이)
+const DICE_IMPULSE_Z_RANGE := Vector2(-15, 15)  # 주사위 쏟을 때 Z축 힘의 범위 (추가)
+const DICE_TORQUE_RANGE := Vector2(-20, 20)  # 주사위 회전력 범위 (추가)
 const DICE_SPAWN_VELOCITY := -1.0  # 생성 시 초기 하향 속도
 
 # === 애니메이션 타이밍 ===

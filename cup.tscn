@@ -77,18 +77,18 @@ use_collision = true
 
 [node name="CollisionOuter" type="CSGCylinder3D" parent="PhysicsBody/CollisionMesh"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.5, 0)
-radius = 8.0
-height = 9.0
+radius = 7.0
+height = 7.0
 sides = 16
 
 [node name="CollisionInner" type="CSGCylinder3D" parent="PhysicsBody/CollisionMesh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
 operation = 2
-radius = 4.5
+radius = 4.0
 height = 4.5
 sides = 16
 
 [node name="InsideArea" type="Area3D" parent="PhysicsBody"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="PhysicsBody/InsideArea"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.025, 0)
 shape = SubResource("CylinderShape3D_ponjl")

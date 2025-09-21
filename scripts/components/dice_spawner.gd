@@ -70,6 +70,14 @@ func spawn_dice_in_cup(dice_definitions: Array[DiceDef]) -> void:
 		dice.add_to_group('dice')  # 주사위 그룹에 추가 (선택용)
 		dice.freeze = false  # 물리 활성화
 		dice.linear_velocity.y = GameConstants.DICE_SPAWN_VELOCITY  # 초기 하향 속도
+
+		# 컵 내부에서도 약간의 회전력 적용 (자연스러운 움직임)
+		dice.apply_torque_impulse(Vector3(
+			randf_range(GameConstants.DICE_TORQUE_RANGE.x * 0.3, GameConstants.DICE_TORQUE_RANGE.y * 0.3),
+			randf_range(GameConstants.DICE_TORQUE_RANGE.x * 0.3, GameConstants.DICE_TORQUE_RANGE.y * 0.3),
+			randf_range(GameConstants.DICE_TORQUE_RANGE.x * 0.3, GameConstants.DICE_TORQUE_RANGE.y * 0.3)
+		))
+
 		dice_nodes.append(dice)
 		
 		print("주사위 ", i, " 생성 완료. dice_nodes 크기: ", dice_nodes.size())
@@ -131,11 +139,20 @@ func tag_spawned_nodes_with_keys(keys: Array) -> void:
 
 func apply_dice_impulse() -> void:
 	for dice in dice_nodes:
+		# 더 강한 중앙 힘 적용 (X, Y, Z축 모두)
 		dice.apply_central_impulse(Vector3(
 			randf_range(GameConstants.DICE_IMPULSE_RANGE.x, GameConstants.DICE_IMPULSE_RANGE.y),
 			randf_range(GameConstants.DICE_IMPULSE_Y_RANGE.x, GameConstants.DICE_IMPULSE_Y_RANGE.y),
-			0
+			randf_range(GameConstants.DICE_IMPULSE_Z_RANGE.x, GameConstants.DICE_IMPULSE_Z_RANGE.y)
 		))
+
+		# 회전력 추가로 더 많이 굴리게 함
+		dice.apply_torque_impulse(Vector3(
+			randf_range(GameConstants.DICE_TORQUE_RANGE.x, GameConstants.DICE_TORQUE_RANGE.y),
+			randf_range(GameConstants.DICE_TORQUE_RANGE.x, GameConstants.DICE_TORQUE_RANGE.y),
+			randf_range(GameConstants.DICE_TORQUE_RANGE.x, GameConstants.DICE_TORQUE_RANGE.y)
+		))
+
 		dice.rolling = true
 
 func display_dice_results(roll_results: Dictionary) -> void:
@@ -198,7 +215,7 @@ func reset_dice_in_cup() -> void:
 		var theta: float = randf() * TAU
 		var margin: float = 0.30
 		var rr: float = max(0.0, r - margin) * sqrt(randf())
-		var yy: float = -h * 0.5 + h * 0.70  # 내부 높이 70% 지점
+		var yy: float = -h * 0.5 + h * 0.3  # 내부 높이 70% 지점
 		var local := Vector3(rr * cos(theta), yy, rr * sin(theta))
 
 		print("  로컬 계산: theta=", theta, ", rr=", rr, ", yy=", yy)
@@ -210,16 +227,16 @@ func reset_dice_in_cup() -> void:
 		print("  새 위치: ", d.global_position)
 		print("  컵 기준 상대 위치: ", d.global_position - cup_ref.global_position)
 
-		# 초기 물리 자극 (약하게)
+		# 리셋 시에도 회전력 적용 (컵 내부에서 자연스러운 움직임)
 		d.apply_torque_impulse(Vector3(
-			randf_range(-0.6, 0.6),
-			randf_range(-0.2, 0.2),
-			randf_range(-0.6, 0.6)
+			randf_range(GameConstants.DICE_TORQUE_RANGE.x * 0.4, GameConstants.DICE_TORQUE_RANGE.y * 0.4),
+			randf_range(GameConstants.DICE_TORQUE_RANGE.x * 0.2, GameConstants.DICE_TORQUE_RANGE.y * 0.2),
+			randf_range(GameConstants.DICE_TORQUE_RANGE.x * 0.4, GameConstants.DICE_TORQUE_RANGE.y * 0.4)
 		))
 		d.apply_central_impulse(Vector3(
-			randf_range(-0.2, 0.2),
+			randf_range(-0.3, 0.3),
 			0.0,
-			randf_range(-0.2, 0.2)
+			randf_range(-0.3, 0.3)
 		))
 
 	print("=== 주사위 리셋 완료 ===")

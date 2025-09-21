@@ -20,9 +20,11 @@ var is_shaking := false        # 현재 흔들기 중인지 여부
 var shake_time := 0.0          # 흔들기 애니메이션 누적 시간
 
 # === 흔들기 애니메이션 파라미터 ===
-const SHAKE_SPEED := 18.0      # 흔들기 속도 (높을수록 빠름)
-const TILT_AMOUNT := 15.0      # 기울기 정도 (도 단위)
-const SHAKE_RADIUS := 1.0      # 원형 흔들기 반지름
+const SHAKE_SPEED := 18.0      # 흔들기 속도 (더 빠르게)
+const TILT_AMOUNT := 20.0      # 기울기 정도 (더 크게)
+const SHAKE_RADIUS := 1.0      # 원형 흔들기 반지름 (더 크게)
+const VERTICAL_SHAKE := 0.8    # 수직 흔들기 강도 (Y축 움직임)
+const DICE_SHAKE_FORCE := 3.0  # 흔들기 중 주사위에 가할 힘
 
 # 대각선 흔들기를 위한 이동 벡터
 # 우측 상단에서 좌측 하단으로 움직이는 3D 방향
@@ -55,10 +57,11 @@ func _process_shaking(delta: float) -> void:
 	# 설정된 흔들기 타입에 따라 다른 애니메이션 실행
 	match current_shake_type:
 		ShakeType.CIRCULAR:
-			# 원형 궤도 이동 계산
+			# 원형 궤도 이동 계산 (Y축 움직임 추가)
 			var offset_x = cos(shake_time) * SHAKE_RADIUS
 			var offset_z = sin(shake_time) * SHAKE_RADIUS
-			global_position = initial_position + Vector3(offset_x, 0, offset_z)
+			var offset_y = sin(shake_time * 2.3) * VERTICAL_SHAKE  # 수직 진동 추가
+			global_position = initial_position + Vector3(offset_x, offset_y, offset_z)
 
 			# 원형 움직임에 맞는 자연스러운 기울기 애니메이션
 			var tilt_x = sin(shake_time * 0.9) * TILT_AMOUNT
@@ -67,14 +70,20 @@ func _process_shaking(delta: float) -> void:
 			rotation_degrees.z = initial_rotation.z + tilt_z
 
 		ShakeType.DIAGONAL:
-			# 대각선 왕복 움직임 (역동적인 패턴)
+			# 대각선 왕복 움직임 (역동적인 패턴 + Y축 움직임)
 			var movement_factor = sin(shake_time)
-			global_position = initial_position + DIAGONAL_VECTOR * movement_factor
+			var vertical_factor = sin(shake_time * 1.7) * VERTICAL_SHAKE  # 다른 주기로 수직 움직임
+			var movement_vector = DIAGONAL_VECTOR * movement_factor + Vector3(0, vertical_factor, 0)
+			global_position = initial_position + movement_vector
 
 			# 대각선 움직임에 맞는 동적 기울기
 			var tilt = TILT_AMOUNT * movement_factor
 			rotation_degrees.z = initial_rotation.z + tilt
 			rotation_degrees.x = initial_rotation.x - tilt
+
+	# 흔들기 중 컵 내부 주사위들에 힘 적용
+	_apply_shake_forces_to_dice()
+		
 
 
 ## 흔들기 시작 - 이미 흔들고 있다면 무시
@@ -134,3 +143,46 @@ func pour() -> void:
 func reset() -> void:
 	global_position = initial_position
 	rotation_degrees = initial_rotation
+
+## 흔들기 중에 컵 내부 주사위들에 힘을 가해 더 활발하게 움직이게 함
+func _apply_shake_forces_to_dice() -> void:
+	# 컵 안에 있는 주사위들 찾기
+	var dice_in_cup = inside_area.get_overlapping_bodies()
+
+	# 매 프레임마다 적용하면 너무 강하므로 간헐적으로 적용
+	if int(shake_time * 10) % 3 == 0:  # 0.3초마다 적용
+		for body in dice_in_cup:
+			if body.has_method("apply_central_impulse"):
+				# 컵 움직임 방향에 따른 힘 계산
+				var shake_direction = Vector3.ZERO
+				match current_shake_type:
+					ShakeType.CIRCULAR:
+						shake_direction = Vector3(
+							-sin(shake_time) * DICE_SHAKE_FORCE,
+							cos(shake_time * 2.3) * DICE_SHAKE_FORCE * 0.5,
+							cos(shake_time) * DICE_SHAKE_FORCE
+						)
+					ShakeType.DIAGONAL:
+						var factor = cos(shake_time)
+						shake_direction = Vector3(
+							DIAGONAL_VECTOR.x * factor * DICE_SHAKE_FORCE,
+							sin(shake_time * 1.7) * DICE_SHAKE_FORCE * 0.6,
+							DIAGONAL_VECTOR.z * factor * DICE_SHAKE_FORCE
+						)
+
+				# 랜덤 요소 추가로 더 자연스러운 움직임
+				shake_direction += Vector3(
+					randf_range(-2, 2),
+					randf_range(-1, 3),
+					randf_range(-2, 2)
+				)
+
+				body.apply_central_impulse(shake_direction)
+
+				# 회전력도 추가
+				if body.has_method("apply_torque_impulse"):
+					body.apply_torque_impulse(Vector3(
+						randf_range(-5, 5),
+						randf_range(-3, 3),
+						randf_range(-5, 5)
+					))
