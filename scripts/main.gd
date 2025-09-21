@@ -101,11 +101,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 func _on_roll_started() -> void:
-	_reset_roll()
 	game_manager.start_roll()
 	input_manager.set_roll_in_progress(true)
 	input_manager.set_selection_enabled(false)
-
+	_reset_roll()
 	if cup.has_method("start_shaking"):
 		cup.start_shaking()
 
