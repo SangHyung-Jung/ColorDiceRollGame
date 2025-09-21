@@ -19,6 +19,10 @@ const LINEAR_VELOCITY_THRESHOLD := 0.3 * dice_size
 const mounted_elevation = 0.8 * dice_size
 const face_angle := 90.0
 
+const MAX_VELOCITY := 15.0               # 최대 속도 제한
+const MAX_DISTANCE_FROM_ORIGIN := 30.0  # 원점에서 최대 거리
+const FORCE_STOP_TIME := 20.0           # 강제 정지 시간
+
 func max_tilt():
 	return cos(deg_to_rad(face_angle/float(sides.size())))
 
@@ -37,8 +41,8 @@ func _init() -> void:
 	freeze_mode = RigidBody3D.FREEZE_MODE_STATIC
 	physics_material_override = PhysicsMaterial.new()
 	physics_material_override.absorbent = true
-	physics_material_override.bounce = 0.5
-	physics_material_override.friction = 1.0
+	physics_material_override.bounce = 0.2
+	physics_material_override.friction = 1.5
 
 @onready var collider : CollisionShape3D = $Collider
 @onready var highlight_face : Node3D = $FaceHighligth
@@ -50,23 +54,22 @@ func _adjust_to_size():
 
 func apply_inside_cup_physics() -> void:
 	# 컵 안에서는 중력이 거의 없거나 약하게 만들어 떠다니는 느낌을 줌
-	gravity_scale = 40
+	gravity_scale = 30                    # 40 → 30으로 감소
 	# 공기 저항(감속)을 줄여 더 활발하게 움직이게 함
-	linear_damp = 0.1
-	angular_damp = 0.5
-	#collider.shape.margin = -0.2
-	# 마찰력을 줄여 더 잘 미끄러지게 함
+	linear_damp = 0.3                     # 0.1 → 0.3으로 증가 (더 빨리 감속)
+	angular_damp = 0.8                    # 0.5 → 0.8로 증가
+	
 	if physics_material_override:
-		physics_material_override.friction = 0.1
-		physics_material_override.bounce = 0.7
+		physics_material_override.friction = 0.2   # 0.1 → 0.2
+		physics_material_override.bounce = 0.3     # 0.7 → 0.3으로 대폭 감소
 
 func apply_outside_cup_physics() -> void:
 	gravity_scale = 10
-	linear_damp = -1.0 # -1은 프로젝트 기본값 사용
-	angular_damp = 0.8
+	linear_damp = 2.0 # -1은 프로젝트 기본값 사용
+	angular_damp = 3.0
 	if physics_material_override:
-		physics_material_override.friction = 0.6
-
+		physics_material_override.friction = 2.0   # 0.6 → 2.0 (높은 마찰력)
+		physics_material_override.bounce = 0.1     # 기본값 → 0.1 (거의 안 튕김)
 
 func _ready():
 	original_position = position
@@ -168,6 +171,43 @@ func roll():
 func _process(_delta):
 	if not rolling: return
 	roll_time += _delta
+
+	# ★ 속도 제한
+	if linear_velocity.length() > MAX_VELOCITY:
+		linear_velocity = linear_velocity.normalized() * MAX_VELOCITY
+		print("⚠️ ", name, " 속도 제한 적용: ", linear_velocity.length())
+	
+	# ★ 거리 제한 (원점에서 너무 멀리 가면 강제 정지)
+	if global_position.length() > MAX_DISTANCE_FROM_ORIGIN:
+		print("⚠️ ", name, " 경계 밖으로 나감 - 강제 정지")
+		_force_stop()
+		return
+	
+	# ★ 시간 제한 (너무 오래 굴러가면 강제 정지)
+	if roll_time > FORCE_STOP_TIME:
+		print("⚠️ ", name, " 시간 초과 - 강제 정지")
+		_force_stop()
+		return
+
+func _force_stop():
+	"""주사위를 강제로 정지시킵니다"""
+	rolling = false
+	linear_velocity = Vector3.ZERO
+	angular_velocity = Vector3.ZERO
+	freeze = true
+	
+	# 안전한 위치로 이동 (필요시)
+	if global_position.length() > MAX_DISTANCE_FROM_ORIGIN:
+		global_position = Vector3(
+			randf_range(-5, 5),
+			2,
+			randf_range(-5, 5)
+		)
+	
+	# 결과 결정 (랜덤하게)
+	var random_face = randi_range(1, 6)
+	print("🎲 ", name, " 강제 정지 결과: ", random_face)
+	roll_finished.emit(random_face)
 
 # ★★ 수정된 부분: 주사위가 멈추는 방식을 변경합니다. ★★
 func _on_sleeping_state_changed():
