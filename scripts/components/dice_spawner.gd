@@ -29,6 +29,10 @@ func spawn_dice_in_cup(dice_definitions: Array[DiceDef]) -> void:
 	print("새로 생성할 주사위 개수: ", dice_definitions.size())
 	print("기존 주사위 개수: ", dice_nodes.size())
 
+	# 컵 위치 정보 출력 (비교용)
+	if cup_ref:
+		print("컵 위치 (생성 시): ", cup_ref.global_position)
+
 	# ★ 수정: 기존 dice_set에 추가 (덮어쓰기 방지)
 	dice_set.append_array(dice_definitions)
 	
@@ -156,7 +160,15 @@ func display_dice_results(roll_results: Dictionary) -> void:
 func reset_dice_in_cup() -> void:
 	print("=== 주사위 리셋 시작 ===")
 	print("현재 주사위 개수: ", dice_nodes.size())
-	print("컵 위치: ", cup_ref.global_position)
+
+	# 컵 위치 상세 디버깅
+	print("컵 참조 존재: ", cup_ref != null)
+	if cup_ref:
+		print("컵 global_position: ", cup_ref.global_position)
+		print("컵 position: ", cup_ref.position)
+		print("컵 transform.origin: ", cup_ref.transform.origin)
+		print("컵 이름: ", cup_ref.name)
+		print("컵 부모: ", cup_ref.get_parent().name if cup_ref.get_parent() else "없음")
 
 	# 컵 내부 치수 확인 (기존 로직 유지)
 	var r: float = 2.8
@@ -166,11 +178,16 @@ func reset_dice_in_cup() -> void:
 		var cyl := col.shape as CylinderShape3D
 		r = cyl.radius
 		h = cyl.height
-	print("컵 반지름: ", r, ", 높이: ", h)
+		print("컵 콜리전 모양 발견 - 반지름: ", r, ", 높이: ", h)
+	else:
+		print("컵 콜리전 모양 미발견 - 기본값 사용: 반지름=", r, ", 높이=", h)
 
 	# 남아있는 주사위들을 컵 안으로 재배치
 	for i in range(dice_nodes.size()):
 		var d = dice_nodes[i]
+		print("주사위 ", i, " (", d.name, ") 리셋 시작")
+		print("  기존 위치: ", d.global_position)
+
 		if "freeze" in d:
 			d.freeze = false
 		d.sleeping = false
@@ -183,9 +200,15 @@ func reset_dice_in_cup() -> void:
 		var rr: float = max(0.0, r - margin) * sqrt(randf())
 		var yy: float = -h * 0.5 + h * 0.70  # 내부 높이 70% 지점
 		var local := Vector3(rr * cos(theta), yy, rr * sin(theta))
-		d.global_position = cup_ref.to_global(local)
 
-		print("주사위 ", i, " 위치: ", d.global_position)
+		print("  로컬 계산: theta=", theta, ", rr=", rr, ", yy=", yy)
+		print("  로컬 벡터: ", local)
+
+		var new_global_pos = cup_ref.to_global(local)
+		d.global_position = new_global_pos
+
+		print("  새 위치: ", d.global_position)
+		print("  컵 기준 상대 위치: ", d.global_position - cup_ref.global_position)
 
 		# 초기 물리 자극 (약하게)
 		d.apply_torque_impulse(Vector3(
