@@ -72,8 +72,6 @@ theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 
-
-
 [node name="RootHBox" type="HBoxContainer" parent="MainContainer"]
 layout_mode = 2
 mouse_filter = 2

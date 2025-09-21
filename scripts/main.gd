@@ -149,7 +149,17 @@ func _connect_signals() -> void:
 	journey_manager.boss_rule_applied.connect(game_ui.update_boss_rule)
 
 func _unhandled_input(event: InputEvent) -> void:
-	if input_manager.handle_input(event):
+	# Only process input if it's within the dice rolling area and not handled by GUI
+	if event is InputEventMouseButton and event.is_pressed():
+		if game_ui.dice_rolling_area != null and game_ui.dice_rolling_area.get_global_rect().has_point(event.position):
+			if input_manager.handle_input(event):
+				get_viewport().set_input_as_handled()
+		else:
+			# If click is outside dice rolling area, but still a mouse press,
+			# it might be on a UI element that is not ignored.
+			# We don't want to handle it as game input.
+			pass # Do nothing, let GUI handle it if it's not ignored.
+	elif input_manager.handle_input(event): # For other input events (keyboard, etc.)
 		get_viewport().set_input_as_handled()
 
 func _on_roll_started() -> void:

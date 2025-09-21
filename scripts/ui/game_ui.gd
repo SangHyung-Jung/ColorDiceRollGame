@@ -14,6 +14,7 @@ extends CanvasLayer
 @onready var submit_combo_button = $MainContainer/RootHBox/RightPanelContainer/RightVBox/ActionButtons/SubmitComboButton
 @onready var invest_button = $MainContainer/RootHBox/RightPanelContainer/RightVBox/ActionButtons/InvestButton
 @onready var help_button = $MainContainer/RootHBox/RightPanelContainer/RightVBox/ActionButtons/HelpButton
+@onready var dice_rolling_area = $MainContainer/RootHBox/CenterVBox/DiceRollingArea
 @onready var help_panel = $HelpPanel
 @onready var guide_text_label = $HelpPanel/VBox/GuideText
 @onready var close_help_button = $HelpPanel/VBox/CloseHelpButton
@@ -23,7 +24,7 @@ signal invest_pressed()
 
 func _ready():
 	submit_combo_button.pressed.connect(on_submit_combo_pressed)
-	invest_button.pressed.connect(on_invest_pressed)
+	invest_button.connect("pressed", Callable(self, "on_invest_pressed"))
 	help_button.pressed.connect(_on_help_button_pressed)
 	close_help_button.pressed.connect(_on_close_help_button_pressed)
 	update_boss_rule("None") # Initial state
