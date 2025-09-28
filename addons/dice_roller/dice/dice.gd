@@ -19,9 +19,8 @@ const LINEAR_VELOCITY_THRESHOLD := 0.3 * dice_size
 const mounted_elevation = 0.8 * dice_size
 const face_angle := 90.0
 
-const MAX_VELOCITY := 100.0               # 최대 속도 제한
+const MAX_VELOCITY := 50.0               # 최대 속도 제한
 const MAX_DISTANCE_FROM_ORIGIN := 30.0  # 원점에서 최대 거리
-const FORCE_STOP_TIME := 20.0           # 강제 정지 시간
 
 func max_tilt():
 	return cos(deg_to_rad(face_angle/float(sides.size())))
@@ -60,7 +59,7 @@ func apply_inside_cup_physics() -> void:
 	
 	if physics_material_override:
 		physics_material_override.friction = 0.5   # 0.1 → 0.2
-		physics_material_override.bounce = 0.95     # 0.7 → 0.3으로 대폭 감소
+		physics_material_override.bounce = 0.7     # 0.7 → 0.3으로 대폭 감소
 
 func apply_outside_cup_physics() -> void:
 	gravity_scale = 50
@@ -181,12 +180,7 @@ func _process(_delta):
 		print("⚠️ ", name, " 경계 밖으로 나감 - 강제 정지")
 		_force_stop()
 		return
-	
-	# ★ 시간 제한 (너무 오래 굴러가면 강제 정지)
-	if roll_time > FORCE_STOP_TIME:
-		print("⚠️ ", name, " 시간 초과 - 강제 정지")
-		_force_stop()
-		return
+
 
 func _force_stop():
 	"""주사위를 강제로 정지시킵니다"""

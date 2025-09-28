@@ -57,12 +57,12 @@ func _setup_floor(parent: Node3D) -> void:
 	floor_mat.albedo_color = GameConstants.FLOOR_COLOR
 	plane_mesh.material = floor_mat
 	floor_mesh.mesh = plane_mesh
-	floor_mesh.position.y = 0.51  # 충돌 모양과 맞춤
+	floor_mesh.position.y = 1.1  # 충돌 모양과 맞춤
 	floor.add_child(floor_mesh)
 
 	# 씩에 추가 및 위치 설정
 	parent.add_child(floor)
-	floor.position.y = -0.5
+	floor.position.y = 0
 
 ## 설정된 카메라를 반환합니다
 ## 다른 시스템에서 레이캐스팅 등에 사용
