@@ -20,11 +20,11 @@ var is_shaking := false        # 현재 흔들기 중인지 여부
 var shake_time := 0.0          # 흔들기 애니메이션 누적 시간
 
 # === 흔들기 애니메이션 파라미터 ===
-const SHAKE_SPEED := 18.0      # 흔들기 속도 (더 빠르게)
-const TILT_AMOUNT := 20.0      # 기울기 정도 (더 크게)
+const SHAKE_SPEED := 12.0      # 흔들기 속도 (더 빠르게)
+const TILT_AMOUNT := 15.0      # 기울기 정도 (더 크게)
 const SHAKE_RADIUS := 1.0      # 원형 흔들기 반지름 (더 크게)
 const VERTICAL_SHAKE := 0.8    # 수직 흔들기 강도 (Y축 움직임)
-const DICE_SHAKE_FORCE := 3.0  # 흔들기 중 주사위에 가할 힘
+const DICE_SHAKE_FORCE := 1.0  # 흔들기 중 주사위에 가할 힘
 
 # 대각선 흔들기를 위한 이동 벡터
 # 우측 상단에서 좌측 하단으로 움직이는 3D 방향
@@ -150,7 +150,7 @@ func _apply_shake_forces_to_dice() -> void:
 	var dice_in_cup = inside_area.get_overlapping_bodies()
 
 	# 매 프레임마다 적용하면 너무 강하므로 간헐적으로 적용
-	if int(shake_time * 10) % 3 == 0:  # 0.3초마다 적용
+	if int(shake_time * 20) % 2 == 0:  # 0.3초마다 적용
 		for body in dice_in_cup:
 			if body.has_method("apply_central_impulse"):
 				# 컵 움직임 방향에 따른 힘 계산
