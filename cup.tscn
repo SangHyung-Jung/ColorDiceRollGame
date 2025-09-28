@@ -101,6 +101,6 @@ shape = SubResource("CylinderShape3D_ponjl")
 [node name="CupFloor" type="StaticBody3D" parent="PhysicsBody"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="PhysicsBody/CupFloor"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.5, 0)
 shape = SubResource("CylinderShape3D_hxhe5")
 debug_color = Color(0.354844, 0.496896, 0.957978, 0.42)

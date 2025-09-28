@@ -136,14 +136,12 @@ func stop():
 	dehighlight()
 	freeze = true
 	position = original_position
-	position.y = 5 * dice_size
 	rotation = randf_range(0, 2*PI)*Vector3(1.,1.,1.)
 	linear_velocity = Vector3.ZERO
 	angular_velocity = Vector3.ZERO
 
 func roll():
 	"""Roll the dice"""
-	if position.y < dice_size*2: stop()
 	dehighlight()
 	linear_velocity = Vector3(-dice_size, 0, -dice_size)
 	angular_velocity = Vector3.ZERO
@@ -158,13 +156,6 @@ func roll():
 		randf_range(-1.,+1.),
 		randf_range(-1.,+1.)
 	))
-#
-#func shake(reason: String):
-	#"""Move a bad rolled dice"""
-	#apply_impulse(
-		#mass * 10. * Vector3(0,1,0),
-		#dice_size * Vector3(randf_range(-1,1),randf_range(-1,1),randf_range(-1,1)),
-	#)
 
 func _process(_delta):
 	if not rolling: return
