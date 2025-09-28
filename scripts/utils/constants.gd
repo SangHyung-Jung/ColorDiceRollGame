@@ -37,7 +37,7 @@ const FLOOR_SIZE := Vector3(50, 0, 50)  # 바닥 크기 (가로, 높이, 세로)
 const FLOOR_COLOR := Color.DARK_SLATE_GRAY  # 바닥 색상
 
 # === 주사위 컵 설정 ===
-const CUP_POSITION := Vector3(10, 7, 0)  # 컵 배치 위치
+const CUP_POSITION := Vector3(10, 10, 0)  # 컵 배치 위치
 const CUP_SPAWN_HEIGHT := 3.0  # 주사위 생성 높이
 const CUP_SPAWN_RADIUS := 2.0  # 컵 내부 주사위 생성 반경
 

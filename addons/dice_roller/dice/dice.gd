@@ -59,7 +59,7 @@ func apply_inside_cup_physics() -> void:
 	
 	if physics_material_override:
 		physics_material_override.friction = 0.5   # 0.1 → 0.2
-		physics_material_override.bounce = 0.7     # 0.7 → 0.3으로 대폭 감소
+		physics_material_override.bounce = 0.5     # 0.7 → 0.3으로 대폭 감소
 
 func apply_outside_cup_physics() -> void:
 	gravity_scale = 50
