@@ -55,6 +55,7 @@ script = ExtResource("1_f5eb6")
 [node name="PhysicsBody" type="AnimatableBody3D" parent="."]
 
 [node name="Visuals" type="CSGCombiner3D" parent="PhysicsBody"]
+visible = false
 
 [node name="Outer" type="CSGCylinder3D" parent="PhysicsBody/Visuals"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3, 0)
@@ -72,29 +73,28 @@ sides = 32
 material = SubResource("StandardMaterial3D_hxhe5")
 
 [node name="CollisionMesh" type="CSGCombiner3D" parent="PhysicsBody"]
-visible = false
 use_collision = true
 
 [node name="CupBottom" type="CSGCylinder3D" parent="PhysicsBody/CollisionMesh"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.5, 0)
-radius = 4.2
-height = 1.0
+visible = false
+radius = 8.0
 sides = 16
 
 [node name="CupOuterWall" type="CSGCylinder3D" parent="PhysicsBody/CollisionMesh"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.5, 0)
 radius = 4.5
-height = 5.0
+height = 7.0
 sides = 16
 
 [node name="CupInnerSpace" type="CSGCylinder3D" parent="PhysicsBody/CollisionMesh"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.5, 0)
 operation = 2
-radius = 4.0
+radius = 3.5
 height = 4.0
 sides = 16
 
 [node name="InsideArea" type="Area3D" parent="PhysicsBody"]
+visible = false
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="PhysicsBody/InsideArea"]
 shape = SubResource("CylinderShape3D_ponjl")
