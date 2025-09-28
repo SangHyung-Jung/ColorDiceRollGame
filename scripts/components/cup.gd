@@ -19,6 +19,10 @@ var initial_rotation: Vector3  # 컵의 초기 회전각 (원위치 복귀용)
 var is_shaking := false        # 현재 흔들기 중인지 여부
 var shake_time := 0.0          # 흔들기 애니메이션 누적 시간
 
+# === 충돌 메시 참조들 추가 ===
+@onready var cup_ceiling_collision: Node3D = $PhysicsBody/CupCeiling  # 천장 충돌체
+@onready var inside_area: Area3D = $PhysicsBody/InsideArea
+
 # === 흔들기 애니메이션 파라미터 ===
 const SHAKE_SPEED := 12.0      # 흔들기 속도 (더 빠르게)
 const TILT_AMOUNT := 15.0      # 기울기 정도 (더 크게)
@@ -30,9 +34,6 @@ const DICE_SHAKE_FORCE := 1.0  # 흔들기 중 주사위에 가할 힘
 # 우측 상단에서 좌측 하단으로 움직이는 3D 방향
 const DIAGONAL_VECTOR := Vector3(1.15, 1.0, -1.15)
 
-# 컵 내부 영역 감지를 위한 Area3D (주사위 진입/이탈 감지)
-@onready var inside_area: Area3D = $PhysicsBody/InsideArea
-
 ## 컵 초기화 - 위치 저장 및 시그널 연결
 func _ready() -> void:
 	# 원래 위치와 회전각 저장 (애니메이션 후 복귀용)
@@ -42,6 +43,17 @@ func _ready() -> void:
 	# 주사위가 컵 안팎으로 이동할 때의 이벤트 연결
 	inside_area.body_entered.connect(_on_body_entered_cup)
 	inside_area.body_exited.connect(_on_body_exited_cup)
+
+## 천장 충돌 활성화/비활성화
+func _set_ceiling_collision(enabled: bool) -> void:
+	if cup_ceiling_collision and cup_ceiling_collision.has_node("CollisionShape3D"):
+		var collision_shape = cup_ceiling_collision.get_node("CollisionShape3D")
+		collision_shape.disabled = not enabled
+		print("컵 천장 충돌: ", "활성화" if enabled else "비활성화")
+
+## 주사위 생성이 시작될 때 천장 활성화
+func enable_ceiling_for_spawn() -> void:
+	_set_ceiling_collision(true)
 
 ## 매 프레임마다 흔들기 애니메이션 처리
 func _process(delta: float) -> void:
@@ -84,15 +96,13 @@ func _process_shaking(delta: float) -> void:
 	# 흔들기 중 컵 내부 주사위들에 힘 적용
 	_apply_shake_forces_to_dice()
 		
-
-
 ## 흔들기 시작 - 이미 흔들고 있다면 무시
 func start_shaking() -> void:
 	if is_shaking:
 		return  # 이미 흔들기 중
 	is_shaking = true
 	shake_time = 0.0  # 시간 초기화
-
+	_set_ceiling_collision(true)
 ## 흔들기 중지 및 원위치 복귀 (비동기)
 ## 부드러운 트위닝으로 원래 위치로 돌아갑니다
 func stop_shaking() -> void:
@@ -113,6 +123,7 @@ func stop_shaking() -> void:
 func _on_body_entered_cup(body: Node3D) -> void:
 	if body is Dice:
 		body.apply_inside_cup_physics()  # 컵 내부 물리 속성 적용
+	
 
 ## 주사위가 컵에서 나갔을 때 호출
 ## 주사위의 물리 속성을 컵 외부에 맞게 조정
@@ -123,6 +134,9 @@ func _on_body_exited_cup(body: Node3D) -> void:
 ## 컵 쏟기 애니메이션 (비동기)
 ## 컵을 기울여서 주사위들을 밖으로 쏟는 동작
 func pour() -> void:
+	# 천장 충돌 비활성화 - 주사위가 나갈 수 있도록
+	_set_ceiling_collision(false)
+
 	# 1단계: 컵 기울이기 및 좌측 이동
 	var tween: Tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
 	var pour_duration = 0.5

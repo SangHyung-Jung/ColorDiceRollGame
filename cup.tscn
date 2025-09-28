@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://b5w7g2jko36l2"]
+[gd_scene load_steps=11 format=3 uid="uid://b5w7g2jko36l2"]
 
 [ext_resource type="Script" uid="uid://co1yc17ks56wm" path="res://scripts/components/cup.gd" id="1_f5eb6"]
 
@@ -53,6 +53,10 @@ radius = 3.5
 height = 0.5
 radius = 3.4
 
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_358bg"]
+height = 0.5
+radius = 4.5
+
 [node name="Cup" type="Node3D"]
 script = ExtResource("1_f5eb6")
 
@@ -104,3 +108,10 @@ shape = SubResource("CylinderShape3D_ponjl")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.5, 0)
 shape = SubResource("CylinderShape3D_hxhe5")
 debug_color = Color(0.354844, 0.496896, 0.957978, 0.42)
+
+[node name="CupCeiling" type="StaticBody3D" parent="PhysicsBody"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PhysicsBody/CupCeiling"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.7, 0)
+shape = SubResource("CylinderShape3D_358bg")
+debug_color = Color(0.160658, 0.563861, 0.837649, 0.42)
