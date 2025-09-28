@@ -146,7 +146,7 @@ func _reset_roll() -> void:
 	print("=== _reset_roll 시작 ===")
 
 	# 남은 주사위들을 컵으로 재배치
-	dice_spawner.reset_dice_in_cup()
+	await dice_spawner.reset_dice_in_cup_with_settlement()
 	game_manager.dice_in_cup_count = dice_spawner.get_dice_count()
 
 	print("리셋 후 주사위 개수: ", dice_spawner.get_dice_count())

@@ -172,74 +172,55 @@ func display_dice_results(roll_results: Dictionary) -> void:
 		await tween.finished
 		dice.show_face(roll_results[dice.name])
 
-## 남은 주사위들을 컵 안으로 재배치합니다
-## 물리 속성을 초기화하고 컵 내부 적절한 위치에 배치합니다
-func reset_dice_in_cup() -> void:
-	print("=== 주사위 리셋 시작 ===")
+## 향상된 리셋 함수 - 정착 시간 포함
+## 주사위를 컵 위에서 떨어뜨리고 정착까지 대기합니다
+func reset_dice_in_cup_with_settlement() -> void:
+	print("=== 주사위 리셋 시작 (정착 대기 포함) ===")
 	print("현재 주사위 개수: ", dice_nodes.size())
 
 	# 컵 위치 상세 디버깅
 	print("컵 참조 존재: ", cup_ref != null)
 	if cup_ref:
 		print("컵 global_position: ", cup_ref.global_position)
-		print("컵 position: ", cup_ref.position)
-		print("컵 transform.origin: ", cup_ref.transform.origin)
-		print("컵 이름: ", cup_ref.name)
-		print("컵 부모: ", cup_ref.get_parent().name if cup_ref.get_parent() else "없음")
 
-	# 컵 내부 치수 확인 (기존 로직 유지)
-	var r: float = 2.8
-	var h: float = 6.0
-	var col: CollisionShape3D = cup_ref.get_node_or_null("CollisionShape3D") as CollisionShape3D
-	if col and col.shape is CylinderShape3D:
-		var cyl := col.shape as CylinderShape3D
-		r = cyl.radius
-		h = cyl.height
-		print("컵 콜리전 모양 발견 - 반지름: ", r, ", 높이: ", h)
-	else:
-		print("컵 콜리전 모양 미발견 - 기본값 사용: 반지름=", r, ", 높이=", h)
-
-	# 남아있는 주사위들을 컵 안으로 재배치
+	# 남아있는 주사위들을 컵 위에서 떨어뜨리기
 	for i in range(dice_nodes.size()):
 		var d = dice_nodes[i]
 		print("주사위 ", i, " (", d.name, ") 리셋 시작")
 		print("  기존 위치: ", d.global_position)
 
+		# 물리 상태 초기화
 		if "freeze" in d:
 			d.freeze = false
 		d.sleeping = false
 		d.linear_velocity = Vector3.ZERO
 		d.angular_velocity = Vector3.ZERO
 
-		# 컵 내부 원통형 영역에 배치 (기존 로직 사용)
-		var theta: float = randf() * TAU
-		var margin: float = 0.30
-		var rr: float = max(0.0, r - margin) * sqrt(randf())
-		var yy: float = -h * 0.5 + h * 0.3  # 내부 높이 70% 지점
-		var local := Vector3(rr * cos(theta), yy, rr * sin(theta))
+		# 컵 위 높은 곳에 배치 (spawn_dice_in_cup과 동일한 로직)
+		var spawn_pos = cup_ref.global_position + Vector3(
+			randf_range(-GameConstants.CUP_SPAWN_RADIUS, GameConstants.CUP_SPAWN_RADIUS),
+			GameConstants.CUP_SPAWN_HEIGHT,  # 새로 생성되는 주사위와 동일한 높이
+			randf_range(-GameConstants.CUP_SPAWN_RADIUS, GameConstants.CUP_SPAWN_RADIUS)
+		)
+		d.global_position = spawn_pos
+		print("  새 위치 (컵 위): ", d.global_position)
 
-		print("  로컬 계산: theta=", theta, ", rr=", rr, ", yy=", yy)
-		print("  로컬 벡터: ", local)
+		# 새로 생성되는 주사위와 동일한 초기 속도 적용
+		d.linear_velocity.y = GameConstants.DICE_SPAWN_VELOCITY  # 초기 하향 속도
 
-		var new_global_pos = cup_ref.to_global(local)
-		d.global_position = new_global_pos
-
-		print("  새 위치: ", d.global_position)
-		print("  컵 기준 상대 위치: ", d.global_position - cup_ref.global_position)
-
-		# 리셋 시에도 회전력 적용 (컵 내부에서 자연스러운 움직임)
+		# 새로 생성되는 주사위와 동일한 회전력 적용
 		d.apply_torque_impulse(Vector3(
-			randf_range(GameConstants.DICE_TORQUE_RANGE.x * 0.4, GameConstants.DICE_TORQUE_RANGE.y * 0.4),
-			randf_range(GameConstants.DICE_TORQUE_RANGE.x * 0.2, GameConstants.DICE_TORQUE_RANGE.y * 0.2),
-			randf_range(GameConstants.DICE_TORQUE_RANGE.x * 0.4, GameConstants.DICE_TORQUE_RANGE.y * 0.4)
-		))
-		d.apply_central_impulse(Vector3(
-			randf_range(-0.3, 0.3),
-			0.0,
-			randf_range(-0.3, 0.3)
+			randf_range(GameConstants.DICE_TORQUE_RANGE.x * 0.3, GameConstants.DICE_TORQUE_RANGE.y * 0.3),
+			randf_range(GameConstants.DICE_TORQUE_RANGE.x * 0.3, GameConstants.DICE_TORQUE_RANGE.y * 0.3),
+			randf_range(GameConstants.DICE_TORQUE_RANGE.x * 0.3, GameConstants.DICE_TORQUE_RANGE.y * 0.3)
 		))
 
-	print("=== 주사위 리셋 완료 ===")
+	print("=== 주사위 리셋 완료 - 정착 대기 시작 ===")
+	
+	# 주사위들이 컵 바닥에 정착할 때까지 대기
+	await wait_for_dice_settlement()
+
+
 ## 주사위들을 제거합니다 (Keep이나 조합 사용 시)
 ## @param dice_to_remove: 제거할 주사위 노드들
 func remove_dice(dice_to_remove: Array) -> void:
@@ -279,3 +260,14 @@ func clear_dice_set() -> void:
 
 	print("초기화 후 dice_set 크기: ", dice_set.size())
 	print("=== clear_dice_set 완료 ===")
+
+## 주사위들이 컵 바닥에 정착할 때까지 대기하는 함수
+## 리셋 후 흔들기를 시작하기 전에 호출되어야 합니다
+func wait_for_dice_settlement() -> void:
+	print("=== 주사위 정착 대기 시작 ===")
+	print("대기 시간: ", GameConstants.DICE_SETTLEMENT_TIME, "초")
+	
+	# 정착 시간만큼 대기
+	await get_tree().create_timer(GameConstants.DICE_SETTLEMENT_TIME).timeout
+	
+	print("=== 주사위 정착 완료 ===")

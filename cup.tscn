@@ -85,7 +85,7 @@ sides = 16
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
 operation = 2
 radius = 4.0
-height = 4.5
+height = 6.5
 sides = 16
 
 [node name="InsideArea" type="Area3D" parent="PhysicsBody"]

@@ -19,7 +19,7 @@ const LINEAR_VELOCITY_THRESHOLD := 0.3 * dice_size
 const mounted_elevation = 0.8 * dice_size
 const face_angle := 90.0
 
-const MAX_VELOCITY := 30.0               # 최대 속도 제한
+const MAX_VELOCITY := 100.0               # 최대 속도 제한
 const MAX_DISTANCE_FROM_ORIGIN := 30.0  # 원점에서 최대 거리
 const FORCE_STOP_TIME := 20.0           # 강제 정지 시간
 
@@ -32,7 +32,6 @@ var roll_time := 0.0
 signal roll_finished(int)
 
 func _init() -> void:
-	
 	continuous_cd = true
 	contact_monitor = true
 	max_contacts_reported = 5
@@ -64,11 +63,11 @@ func apply_inside_cup_physics() -> void:
 		physics_material_override.bounce = 0.95     # 0.7 → 0.3으로 대폭 감소
 
 func apply_outside_cup_physics() -> void:
-	gravity_scale = 10
-	linear_damp = 2.0 # -1은 프로젝트 기본값 사용
+	gravity_scale = 50
+	linear_damp = 0.01 # -1은 프로젝트 기본값 사용
 	angular_damp = 3.0
 	if physics_material_override:
-		physics_material_override.friction = 2.0   # 0.6 → 2.0 (높은 마찰력)
+		physics_material_override.friction = 1.0   # 0.6 → 2.0 (높은 마찰력)
 		physics_material_override.bounce = 0.1     # 기본값 → 0.1 (거의 안 튕김)
 
 func _ready():
@@ -194,7 +193,7 @@ func _force_stop():
 	rolling = false
 	linear_velocity = Vector3.ZERO
 	angular_velocity = Vector3.ZERO
-	freeze = true
+	sleeping = true
 	
 	# 안전한 위치로 이동 (필요시)
 	if global_position.length() > MAX_DISTANCE_FROM_ORIGIN:

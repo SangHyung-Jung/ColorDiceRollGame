@@ -38,15 +38,16 @@ const FLOOR_COLOR := Color.DARK_SLATE_GRAY  # 바닥 색상
 
 # === 주사위 컵 설정 ===
 const CUP_POSITION := Vector3(10, 5, 0)  # 컵 배치 위치
-const CUP_SPAWN_HEIGHT := 8.0  # 주사위 생성 높이
-const CUP_SPAWN_RADIUS := 2.5  # 컵 내부 주사위 생성 반경
+const CUP_SPAWN_HEIGHT := 3.0  # 주사위 생성 높이
+const CUP_SPAWN_RADIUS := 2.0  # 컵 내부 주사위 생성 반경
 
 # === 주사위 물리 시뮬레이션 ===
-const DICE_IMPULSE_RANGE := Vector2(-35, -25)  # 주사위 쏟을 때 X축 힘의 범위 (더 강하게)
+const DICE_IMPULSE_RANGE := Vector2(10, 50)  # 주사위 쏟을 때 X축 힘의 범위 (더 강하게)
 const DICE_IMPULSE_Y_RANGE := Vector2(8, 12)  # 주사위 쏟을 때 Y축 힘의 범위 (더 높이)
 const DICE_IMPULSE_Z_RANGE := Vector2(-15, 15)  # 주사위 쏟을 때 Z축 힘의 범위 (추가)
 const DICE_TORQUE_RANGE := Vector2(-20, 20)  # 주사위 회전력 범위 (추가)
-const DICE_SPAWN_VELOCITY := -1.0  # 생성 시 초기 하향 속도
+const DICE_SPAWN_VELOCITY := 10.0  # 생성 시 초기 하향 속도
+const DICE_SETTLEMENT_TIME := 2.5  # 주사위가 컵 바닥에 정착하는 데 필요한 시간 (초)
 
 # === 애니메이션 타이밍 ===
 const MOVE_DURATION := 0.5  # 주사위 결과 정렬 시 이동 시간
