@@ -101,10 +101,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 func _on_roll_started() -> void:
+	await _reset_roll()
 	game_manager.start_roll()
 	input_manager.set_roll_in_progress(true)
 	input_manager.set_selection_enabled(false)
-	_reset_roll()
+
 	if cup.has_method("start_shaking"):
 		cup.start_shaking()
 
@@ -145,6 +146,9 @@ func _remove_combo_dice(nodes: Array) -> void:
 func _reset_roll() -> void:
 	print("=== _reset_roll 시작 ===")
 
+	cup.reset()
+	print("컵 위치 리셋 완료")
+
 	# 남은 주사위들을 컵으로 재배치
 	await dice_spawner.reset_dice_in_cup_with_settlement()
 	game_manager.dice_in_cup_count = dice_spawner.get_dice_count()
@@ -166,6 +170,9 @@ func _reset_roll() -> void:
 		print("새 주사위 정의 생성됨: ", new_dice_defs.size())
 		dice_spawner.spawn_dice_in_cup(new_dice_defs)
 		print("새 주사위 스폰 완료")
+		# ★ 수정: 새로 생성된 주사위들도 정착 대기
+		await dice_spawner.wait_for_dice_settlement()
+		print("새 주사위 정착 완료")
 
 	print("최종 주사위 개수: ", dice_spawner.get_dice_count())
 	print("=== _reset_roll 완료 ===")

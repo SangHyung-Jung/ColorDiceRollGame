@@ -44,8 +44,6 @@ func start_roll() -> void:
 	_roll_in_progress = true
 	_selection_enabled = false
 
-	# 컵 상태 리셋
-	cup.reset()
 	if cup_collision_mesh:
 		cup_collision_mesh.use_collision = true
 
