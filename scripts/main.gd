@@ -70,7 +70,7 @@ func _spawn_initial_dice() -> void:
 		return
 
 	var dice_defs = dice_spawner.create_dice_definitions(game_manager.bag, GameConstants.HAND_SIZE)
-	dice_spawner.spawn_dice_in_cup(dice_defs)
+	dice_spawner.reset_and_spawn_all_dice(dice_defs)
 
 	var keys = []
 	for def in dice_defs:
@@ -146,36 +146,33 @@ func _remove_combo_dice(nodes: Array) -> void:
 func _reset_roll() -> void:
 	print("=== _reset_roll 시작 ===")
 
+	# 먼저 컵을 원래 위치로 리셋
 	cup.reset()
 	print("컵 위치 리셋 완료")
 
-	# 남은 주사위들을 컵으로 재배치
-	await dice_spawner.reset_dice_in_cup_with_settlement()
-	game_manager.dice_in_cup_count = dice_spawner.get_dice_count()
-
-	print("리셋 후 주사위 개수: ", dice_spawner.get_dice_count())
+	print("현재 주사위 개수: ", dice_spawner.get_dice_count())
 	print("필요한 총 개수: ", GameConstants.HAND_SIZE)
 
-	# 부족한 개수만큼 새 주사위 생성
+	# 부족한 개수 계산
 	var need = GameConstants.HAND_SIZE - dice_spawner.get_dice_count()
 	print("새로 생성할 주사위 개수: ", need)
 
+	# ★ 새로운 방식: 먼저 새 주사위 정의 생성 (물리적 생성은 나중에)
+	var new_dice_defs: Array[DiceSpawner.DiceDef] = []
 	if need > 0:
 		if not game_manager.can_draw_dice(need):
 			print("⚠️ Bag empty on reset_roll (need=", need, ")")
 			game_manager.end_challenge_due_to_empty_bag()
 			return
-
-		var new_dice_defs = dice_spawner.create_new_dice_definitions(game_manager.bag, need)
+		new_dice_defs = dice_spawner.create_new_dice_definitions(game_manager.bag, need)
 		print("새 주사위 정의 생성됨: ", new_dice_defs.size())
-		dice_spawner.spawn_dice_in_cup(new_dice_defs)
-		print("새 주사위 스폰 완료")
-		# ★ 수정: 새로 생성된 주사위들도 정착 대기
-		await dice_spawner.wait_for_dice_settlement()
-		print("새 주사위 정착 완료")
 
+	# ★ 핵심: 재활용과 새 생성을 동시에 처리
+	await dice_spawner.reset_and_spawn_all_dice(new_dice_defs)
+	
+	game_manager.dice_in_cup_count = dice_spawner.get_dice_count()
 	print("최종 주사위 개수: ", dice_spawner.get_dice_count())
-	print("=== _reset_roll 완료 ===")
+	print("=== _reset_roll 완료 - 모든 주사위 정착됨 ===")
 
 # 마우스 릴리즈 처리
 func _input(event: InputEvent) -> void:

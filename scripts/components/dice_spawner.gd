@@ -22,26 +22,49 @@ var cup_ref: Node3D                # 컵 참조 (생성 위치 계산용)
 func initialize(cup: Node3D) -> void:
 	cup_ref = cup
 
-## 주사위들을 컵 내부에 생성합니다
-## @param dice_definitions: 생성할 주사위들의 정의 배열
-func spawn_dice_in_cup(dice_definitions: Array[DiceDef]) -> void:
-	print("=== spawn_dice_in_cup 시작 ===")
-	print("새로 생성할 주사위 개수: ", dice_definitions.size())
-	print("기존 주사위 개수: ", dice_nodes.size())
+# dice_spawner.gd에 새 함수 추가
+## 재활용 주사위와 새 주사위를 동시에 처리합니다
+## @param new_dice_defs: 새로 생성할 주사위 정의들
+func reset_and_spawn_all_dice(new_dice_defs: Array[DiceDef]) -> void:
+	print("=== 통합 주사위 리셋 시작 ===")
+	print("재활용 주사위: ", dice_nodes.size())
+	print("새 생성 주사위: ", new_dice_defs.size())
 
-	# 컵 위치 정보 출력 (비교용)
-	if cup_ref:
-		print("컵 위치 (생성 시): ", cup_ref.global_position)
+	# 1단계: 기존 주사위들을 컵 위로 이동 (물리 초기화만, 대기 없음)
+	for i in range(dice_nodes.size()):
+		var d = dice_nodes[i]
+		print("재활용 주사위 ", i, " (", d.name, ") 리셋")
 
-	# ★ 수정: 기존 dice_set에 추가 (덮어쓰기 방지)
-	dice_set.append_array(dice_definitions)
-	
-	# 각 주사위 정의에 따라 3D 주사위 노드 생성
-	for i in range(dice_definitions.size()):
-		var d_def = dice_definitions[i]
-		print("주사위 ", i, " 생성 시작: ", d_def.name)
+		# 물리 상태 초기화
+		if "freeze" in d:
+			d.freeze = false
+		d.sleeping = false
+		d.linear_velocity = Vector3.ZERO
+		d.angular_velocity = Vector3.ZERO
+
+		# 컵 위 높은 곳에 배치
+		var spawn_pos = cup_ref.global_position + Vector3(
+			randf_range(-GameConstants.CUP_SPAWN_RADIUS, GameConstants.CUP_SPAWN_RADIUS),
+			GameConstants.CUP_SPAWN_HEIGHT,
+			randf_range(-GameConstants.CUP_SPAWN_RADIUS, GameConstants.CUP_SPAWN_RADIUS)
+		)
+		d.global_position = spawn_pos
+
+		# 초기 속도와 회전력 적용
+		d.linear_velocity.y = GameConstants.DICE_SPAWN_VELOCITY
+		d.apply_torque_impulse(Vector3(
+			randf_range(GameConstants.DICE_TORQUE_RANGE.x * 0.3, GameConstants.DICE_TORQUE_RANGE.y * 0.3),
+			randf_range(GameConstants.DICE_TORQUE_RANGE.x * 0.3, GameConstants.DICE_TORQUE_RANGE.y * 0.3),
+			randf_range(GameConstants.DICE_TORQUE_RANGE.x * 0.3, GameConstants.DICE_TORQUE_RANGE.y * 0.3)
+		))
+
+	# 2단계: 새 주사위들 생성 (대기 없이 바로 생성)
+	dice_set.append_array(new_dice_defs)
+	for i in range(new_dice_defs.size()):
+		var d_def = new_dice_defs[i]
+		print("새 주사위 ", i, " 생성: ", d_def.name)
 		
-		# 애드온에서 주사위 씬 인스턴스 생성
+		# 새 주사위 인스턴스 생성
 		var dice_scene = d_def.shape.scene()
 		var dice: Dice = dice_scene.instantiate()
 		
@@ -50,28 +73,25 @@ func spawn_dice_in_cup(dice_definitions: Array[DiceDef]) -> void:
 		dice.dice_color = d_def.color
 		dice.pips_texture_original = d_def.pips_texture
 		
-		# 컵 내부 랜덤 위치에 생성
+		# 컵 위 랜덤 위치에 생성 (재활용 주사위와 동일한 방식)
 		var spawn_pos = cup_ref.global_position + Vector3(
 			randf_range(-GameConstants.CUP_SPAWN_RADIUS, GameConstants.CUP_SPAWN_RADIUS),
 			GameConstants.CUP_SPAWN_HEIGHT,
 			randf_range(-GameConstants.CUP_SPAWN_RADIUS, GameConstants.CUP_SPAWN_RADIUS)
 		)
 		dice.global_position = spawn_pos
-		print("주사위 생성 위치: ", spawn_pos)
 		
-		# ★ 해결책: 명확한 부모 노드 지정
+		# 부모 노드에 추가
 		var main_node = get_tree().current_scene
 		if main_node == null:
-			main_node = get_parent()  # 폴백
-		
-		print("부모 노드: ", main_node.name)
+			main_node = get_parent()
 		main_node.add_child(dice)
 		
-		dice.add_to_group('dice')  # 주사위 그룹에 추가 (선택용)
-		dice.freeze = false  # 물리 활성화
-		dice.linear_velocity.y = GameConstants.DICE_SPAWN_VELOCITY  # 초기 하향 속도
+		dice.add_to_group('dice')
+		dice.freeze = false
+		dice.linear_velocity.y = GameConstants.DICE_SPAWN_VELOCITY
 
-		# 컵 내부에서도 약간의 회전력 적용 (자연스러운 움직임)
+		# 회전력 적용
 		dice.apply_torque_impulse(Vector3(
 			randf_range(GameConstants.DICE_TORQUE_RANGE.x * 0.3, GameConstants.DICE_TORQUE_RANGE.y * 0.3),
 			randf_range(GameConstants.DICE_TORQUE_RANGE.x * 0.3, GameConstants.DICE_TORQUE_RANGE.y * 0.3),
@@ -80,13 +100,15 @@ func spawn_dice_in_cup(dice_definitions: Array[DiceDef]) -> void:
 
 		dice_nodes.append(dice)
 		
-		print("주사위 ", i, " 생성 완료. dice_nodes 크기: ", dice_nodes.size())
-		
 		# 굴리기 완료 시그널 연결
 		dice.roll_finished.connect(_on_dice_roll_finished.bind(dice.name))
+
+	print("=== 모든 주사위 배치 완료 - 정착 대기 시작 ===")
 	
-	print("=== spawn_dice_in_cup 완료 ===")
-	print("총 주사위 개수: ", dice_nodes.size())
+	# 3단계: 모든 주사위가 정착할 때까지 한 번만 대기
+	await wait_for_dice_settlement()
+	
+	print("=== 통합 주사위 리셋 완료 ===")
 
 ## 개별 주사위의 굴리기 완료 시그널 전달
 ## @param value: 주사위 결과값
@@ -174,51 +196,6 @@ func display_dice_results(roll_results: Dictionary) -> void:
 
 ## 향상된 리셋 함수 - 정착 시간 포함
 ## 주사위를 컵 위에서 떨어뜨리고 정착까지 대기합니다
-func reset_dice_in_cup_with_settlement() -> void:
-	print("=== 주사위 리셋 시작 (정착 대기 포함) ===")
-	print("현재 주사위 개수: ", dice_nodes.size())
-
-	# 컵 위치 상세 디버깅
-	print("컵 참조 존재: ", cup_ref != null)
-	if cup_ref:
-		print("컵 global_position: ", cup_ref.global_position)
-
-	# 남아있는 주사위들을 컵 위에서 떨어뜨리기
-	for i in range(dice_nodes.size()):
-		var d = dice_nodes[i]
-		print("주사위 ", i, " (", d.name, ") 리셋 시작")
-		print("  기존 위치: ", d.global_position)
-
-		# 물리 상태 초기화
-		if "freeze" in d:
-			d.freeze = false
-		d.sleeping = false
-		d.linear_velocity = Vector3.ZERO
-		d.angular_velocity = Vector3.ZERO
-
-		# 컵 위 높은 곳에 배치 (spawn_dice_in_cup과 동일한 로직)
-		var spawn_pos = cup_ref.global_position + Vector3(
-			randf_range(-GameConstants.CUP_SPAWN_RADIUS, GameConstants.CUP_SPAWN_RADIUS),
-			GameConstants.CUP_SPAWN_HEIGHT,  # 새로 생성되는 주사위와 동일한 높이
-			randf_range(-GameConstants.CUP_SPAWN_RADIUS, GameConstants.CUP_SPAWN_RADIUS)
-		)
-		d.global_position = spawn_pos
-		print("  새 위치 (컵 위): ", d.global_position)
-
-		# 새로 생성되는 주사위와 동일한 초기 속도 적용
-		d.linear_velocity.y = GameConstants.DICE_SPAWN_VELOCITY  # 초기 하향 속도
-
-		# 새로 생성되는 주사위와 동일한 회전력 적용
-		d.apply_torque_impulse(Vector3(
-			randf_range(GameConstants.DICE_TORQUE_RANGE.x * 0.3, GameConstants.DICE_TORQUE_RANGE.y * 0.3),
-			randf_range(GameConstants.DICE_TORQUE_RANGE.x * 0.3, GameConstants.DICE_TORQUE_RANGE.y * 0.3),
-			randf_range(GameConstants.DICE_TORQUE_RANGE.x * 0.3, GameConstants.DICE_TORQUE_RANGE.y * 0.3)
-		))
-
-	print("=== 주사위 리셋 완료 - 정착 대기 시작 ===")
-	
-	# 주사위들이 컵 바닥에 정착할 때까지 대기
-	await wait_for_dice_settlement()
 
 
 ## 주사위들을 제거합니다 (Keep이나 조합 사용 시)
