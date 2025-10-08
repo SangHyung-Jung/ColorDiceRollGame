@@ -27,6 +27,11 @@ const KEEP_STEP_X := 2.2  # 가로 방향 주사위 간격
 const KEEP_STEP_Z := 2.2  # 세로 방향(행 간격) 주사위 간격
 const KEEP_COLS := 5  # 한 줄에 배치할 최대 주사위 개수
 
+# === Field (투자) 시스템 설정 ===
+# 투자된 주사위들을 배치할 영역의 파라미터들
+const FIELD_ANCHOR := Vector3(-8, 1, -12)      # 첫 번째 투자 주사위가 배치될 시작 위치
+const FIELD_STEP_X := 2.5                     # 가로 방향 투자 주사위 간격
+
 # === 카메라 시스템 설정 ===
 const CAMERA_HEIGHT := 30.0  # 카메라 높이 (Y축)
 const CAMERA_SIZE := 18.0  # 직교투영 시 줌 레벨 (작을수록 확대)

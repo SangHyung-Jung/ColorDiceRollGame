@@ -13,7 +13,6 @@ class_name MainScreen
 @onready var result_label: Label = $HSplitContainer/GameArea/InteractionUI/HBoxContainer/ResultLabel
 @onready var sub_viewport: SubViewport = $HSplitContainer/GameArea/RollingArea/SubViewport
 @onready var rolling_area: SubViewportContainer = $HSplitContainer/GameArea/RollingArea
-
 # === 3D 씬 참조 ===
 var world_3d: Node3D
 var scene_manager: SceneManager
@@ -23,6 +22,7 @@ var score_manager: ScoreManager
 var dice_spawner: DiceSpawner
 var combo_select: ComboSelect
 var cup: Node3D
+var invested_dice: Array[Node3D] = []
 
 # === 리소스 로드 ===
 const CupScene := preload("res://cup.tscn")
@@ -83,10 +83,8 @@ func _spawn_initial_dice() -> void:
 
 func _connect_signals() -> void:
 	input_manager.roll_started.connect(_on_roll_started)
-	input_manager.dice_selected.connect(_on_dice_selected)
 	game_manager.roll_finished.connect(_on_roll_finished)
 	dice_spawner.dice_roll_finished.connect(_on_dice_roll_finished)
-	combo_select.committed.connect(_on_combo_committed)
 	
 	# UI 버튼 연결
 	submit_button.pressed.connect(_on_submit_pressed)
@@ -115,19 +113,18 @@ func _on_rolling_area_gui_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 
 func _on_roll_started() -> void:
+	combo_select.exit()
 	await _reset_roll()
 	game_manager.start_roll()
 	input_manager.set_roll_in_progress(true)
-	input_manager.set_selection_enabled(false)
 	if cup.has_method("start_shaking"):
 		cup.start_shaking()
 
-func _on_dice_selected(dice: Node3D) -> void:
-	game_manager.keep_dice(dice)
+
 
 func _on_roll_finished() -> void:
 	input_manager.set_roll_in_progress(false)
-	input_manager.set_selection_enabled(true)
+	combo_select.enter()
 	dice_spawner.display_dice_results(game_manager.get_roll_results())
 
 func _on_dice_roll_finished(value: int, dice_name: String) -> void:
@@ -135,14 +132,20 @@ func _on_dice_roll_finished(value: int, dice_name: String) -> void:
 	if game_manager.check_if_all_dice_finished(dice_spawner.get_dice_count()):
 		_on_roll_finished()
 
-func _on_combo_committed(nodes: Array) -> void:
-	if score_manager.evaluate_and_score_combo(nodes, game_manager.get_roll_results()):
-		_remove_combo_dice(nodes)
-		Main.current_score = score_manager.get_total_score()
-		_update_ui_from_gamestate()
+func _on_submit_pressed() -> void:
+	var nodes_to_submit = combo_select.get_selected_nodes()
+	if nodes_to_submit.is_empty():
+		print("조합을 제출하려면 먼저 주사위를 선택하세요.")
+		return
 
-	if combo_select and combo_select.is_inside_tree():
+	if score_manager.evaluate_and_score_combo(nodes_to_submit, game_manager.get_roll_results()):
+		_remove_combo_dice(nodes_to_submit)
 		combo_select.clear()
+		Main.current_score = score_manager.get_total_score()
+		Main.hands_left -= 1
+		_update_ui_from_gamestate()
+	else:
+		print("유효하지 않은 조합입니다.")
 
 func _remove_combo_dice(nodes: Array) -> void:
 	game_manager.remove_combo_dice(nodes)
@@ -166,15 +169,44 @@ func _on_mouse_release() -> void:
 	if cup.has_method("pour"):
 		await cup.pour()
 
-# --- UI 연결 함수 ---
-func _on_submit_pressed() -> void:
-	print("조합 제출 버튼 눌림")
-	# TODO: 조합 제출 로직 연결
-	# 예: combo_select.commit_selection()
+
 	
 func _on_invest_pressed() -> void:
-	print("투자 버튼 눌림")
-	# TODO: 투자 로직 연결
+	if not combo_select.active:
+		print("투자를 하려면 C키를 눌러 조합 선택 모드를 활성화하세요.")
+		return
+	
+	if Main.invests_left <= 0:
+		print("남은 투자 횟수가 없습니다.")
+		return
+
+	var nodes_to_invest = combo_select.pop_selected_nodes()
+	if nodes_to_invest.is_empty():
+		print("투자할 주사위를 먼저 선택하세요.")
+		return
+
+	_invest_dice(nodes_to_invest)
+	Main.invests_left -= 1
+	_update_ui_from_gamestate()
+
+func _invest_dice(nodes: Array) -> void:
+	dice_spawner.remove_dice(nodes)
+	
+	for dice in nodes:
+		var idx = invested_dice.size()
+		var target_pos = GameConstants.FIELD_ANCHOR + Vector3(idx * GameConstants.FIELD_STEP_X, 0, 0)
+		
+		if "freeze" in dice:
+			dice.freeze = false # Tween을 위해 일시적으로 해제
+		
+		var tween: Tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		tween.tween_property(dice, "global_position", target_pos, GameConstants.KEEP_MOVE_DURATION)
+		await tween.finished
+		
+		if "freeze" in dice:
+			dice.freeze = true
+		
+		invested_dice.append(dice)
 
 # --- Public API ---
 func update_stage(stage_num: int) -> void:

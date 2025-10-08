@@ -248,12 +248,8 @@ func show_face(value):
 	roll_finished.emit(value)
 
 func highlight():
-	var side = upper_side()
-	var side_orientation: Vector3 = sides[side].normalized()
-	var perpendicular_side = side-1 if side-1 else len(sides)
-	var perpendicular_direction = to_global(highlight_orientation[side]) - to_global(Vector3.ZERO)
-	highlight_face.look_at(to_global(sides[side]), perpendicular_direction)
-	highlight_face.visible = true
+	# highlight_face.visible = true # 유저 요청으로 비활성화
+	pass
 
 func dehighlight() -> void:
 	highlight_face.visible = false

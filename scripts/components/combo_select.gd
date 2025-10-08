@@ -1,14 +1,12 @@
 extends Node3D
 class_name ComboSelect
 
-signal committed(dice_nodes: Array)
-
 var active: bool = false
 var _sel := {}                       # id -> Node3D
 var _order: Array[Node3D] = []
 
-const SELECT_SCALE := Vector3(1.12, 1.12, 1.12)
-const SELECT_TINT  := Color(1.0, 0.92, 0.55, 1.0)
+const SELECT_SCALE := Vector3(1.25, 1.25, 1.25)
+const SELECT_TINT  := Color(0.0, 1.0, 1.0, 1.0) # Cyan
 
 func enter() -> void:
 	active = true
@@ -20,17 +18,20 @@ func clear() -> void:
 	for n in _order: _set_selected(n, false)
 	_sel.clear(); _order.clear()
 
+func get_selected_nodes() -> Array[Node3D]:
+	return _order.duplicate()
+
+func pop_selected_nodes() -> Array[Node3D]:
+	var nodes = _order.duplicate()
+	clear()
+	return nodes
+
 func process_input(event: InputEvent) -> bool:
 	if not active: return false
-	if event is InputEventMouseButton and event.pressed:
-		var mb := event as InputEventMouseButton
-		if mb.button_index == MOUSE_BUTTON_LEFT:
-			var hit: Node = _pick(mb)
-			if hit != null: _toggle(hit)
-			return true
-		elif mb.button_index == MOUSE_BUTTON_RIGHT:
-			emit_signal("committed", _order.duplicate())
-			return true
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		var hit: Node = _pick(event)
+		if hit != null: _toggle(hit)
+		return true
 	return false
 
 func _toggle(hit: Node) -> void:
@@ -50,16 +51,30 @@ func _dice_root(n: Node) -> Node3D:
 	return null
 
 func _set_selected(d: Node3D, on: bool) -> void:
+	var mesh := d.get_node_or_null("DiceMesh") as MeshInstance3D
+	if not mesh:
+		print("ERROR: Could not find DiceMesh on ", d.name)
+		return
+
 	if not d.has_meta("orig_scale"): d.set_meta("orig_scale", d.scale)
-	var mesh := d.get_node_or_null("MeshInstance3D")
-	if mesh and not d.has_meta("orig_mod"): d.set_meta("orig_mod", mesh.modulate)
+
+	var mat := mesh.get_active_material(0) as StandardMaterial3D
+	if not mat:
+		print("ERROR: Could not find material on ", d.name)
+		# 재질이 없어도 스케일은 변경 시도
+		if on:
+			d.scale = (d.get_meta("orig_scale") as Vector3) * SELECT_SCALE
+		else:
+			d.scale = d.get_meta("orig_scale") as Vector3
+		return
+
+	# 메시와 재질 모두 유효함
 	if on:
 		d.scale = (d.get_meta("orig_scale") as Vector3) * SELECT_SCALE
-		if mesh: mesh.modulate = SELECT_TINT
+		mat.albedo_color = SELECT_TINT
 	else:
 		d.scale = d.get_meta("orig_scale") as Vector3
-		if mesh: mesh.modulate = (d.get_meta("orig_mod") as Color)
-
+		mat.albedo_color = Color.WHITE
 func _pick(ev: InputEventMouse) -> Node:
 	var cam: Camera3D = get_viewport().get_camera_3d()
 	if cam == null: return null
