@@ -1,0 +1,23 @@
+게임 화면 (Main.tscn) UI 구성:
+
+정보 표시 UI (Label 노드):
+게임 화면 좌측 1/3 을 차지하여 크게 만듬.
+주사위를 굴리는 화면과는 분리되어 생성되어야 함
+
+StageLabel: "Stage: 1"
+TargetScoreLabel: "목표 점수: 300"
+CurrentScoreLabel: "현재 점수: 0"
+HandsLeftLabel: "남은 제출 횟수: 4"
+InvestsLeftLabel: "남은 투자 횟수: 5"
+
+게임 영역 (Container 노드):
+
+RollingArea: 화면 중앙에 위치하며, 주사위를 컵에서 굴리는 것을 보여준다.
+FieldArea: 화면 중앙 상단에 위치하며 '투자'한 주사위를 표시합니다.
+
+상호작용 UI (Button 노드):
+화면 중앙 하단에 위치한다.
+
+SubmitButton: "조합 제출" 버튼.
+InvestButton: "투자" 버튼.
+ResultLabel: 조합의 예상 점수를 표시할 Label. (예: "풀하우스: 50 x 4")
