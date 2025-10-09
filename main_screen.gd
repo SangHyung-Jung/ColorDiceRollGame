@@ -29,6 +29,9 @@ var invested_dice: Array[Node3D] = []
 const CupScene := preload("res://cup.tscn")
 const DiceFaceImageScene = preload("res://scripts/components/dice_face_image.tscn")
 const DiceBagPopupScene = preload("res://scripts/components/dice_bag_popup.tscn")
+const DiceFaceTextureCache = preload("res://scripts/utils/dice_face_texture_cache.gd")
+
+const MAX_INVESTED_DICE = 10
 
 var dice_bag_popup: Window
 
@@ -94,16 +97,16 @@ func _invest_initial_dice() -> void:
 		for key in ComboRules.BAG_COLOR_MAP:
 			if ComboRules.BAG_COLOR_MAP[key] == def.color:
 				color_key = key
-				break
-		
-		var atlas = TextureCache.get_atlas(color_key)
-		
-		var display = DiceFaceImageScene.instantiate()
-		display.name = "invested_dice_init_" + str(i)
-		invested_dice_container.add_child(display)
-		display.set_face(value, atlas)
-		display.value = value
-		display.dice_color = def.color
+				var atlas = TextureCache.get_atlas(color_key)
+				if atlas == null:
+					print("ERROR in _invest_initial_dice: Atlas not found for color_key: ", color_key)		
+				var display = DiceFaceImageScene.instantiate()
+				display.custom_minimum_size = Vector2(80, 80)
+				display.name = "invested_dice_init_" + str(i)
+				invested_dice_container.add_child(display)
+				display.set_face(value, atlas)
+				display.value = value
+				display.dice_color = def.color
 
 func _spawn_initial_dice() -> void:
 	if not game_manager.can_draw_dice(GameConstants.HAND_SIZE):
@@ -233,10 +236,16 @@ func _on_invest_pressed() -> void:
 		print("남은 투자 횟수가 없습니다.")
 		return
 
-	var nodes_to_invest = combo_select.pop_selected_nodes()
+	var nodes_to_invest = combo_select.get_selected_nodes()
 	if nodes_to_invest.is_empty():
 		print("투자할 주사위를 먼저 선택하세요.")
 		return
+
+	if invested_dice_container.get_child_count() + nodes_to_invest.size() > MAX_INVESTED_DICE:
+		print("최대 %d개까지만 투자할 수 있습니다." % MAX_INVESTED_DICE)
+		return
+
+	combo_select.pop_selected_nodes() # Clear selection after check
 
 	_invest_dice(nodes_to_invest)
 	combo_select.exit()
@@ -250,12 +259,19 @@ func _invest_dice(nodes: Array) -> void:
 		var value = roll_results[dice_node.name]
 		
 		var color_key = ""
-		if dice_node.has_meta("bag_key"):
-			color_key = dice_node.get_meta("bag_key")
+		var body_color = dice_node.dice_color
+		for key in ComboRules.BAG_COLOR_MAP:
+			if ComboRules.BAG_COLOR_MAP[key] == body_color:
+				color_key = key
+				break
 
 		var atlas = TextureCache.get_atlas(color_key)
+		if atlas == null:
+			print("ERROR in _invest_dice: Atlas not found for color_key: ", color_key)
+			continue
 		
 		var display = DiceFaceImageScene.instantiate()
+		display.custom_minimum_size = Vector2(80, 80)
 		display.name = "invested_dice_" + str(display.get_instance_id())
 		invested_dice_container.add_child(display)
 		display.set_face(value, atlas)
@@ -263,7 +279,6 @@ func _invest_dice(nodes: Array) -> void:
 		display.dice_color = dice_node.dice_color
 
 	_remove_combo_dice(nodes)
-
 func _on_turn_end_pressed() -> void:
 	combo_select.exit()
 	if Main.turns_left > 0:
