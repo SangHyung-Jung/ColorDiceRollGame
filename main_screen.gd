@@ -199,6 +199,7 @@ func _on_submit_pressed() -> void:
 
 func _remove_combo_dice(nodes: Array) -> void:
 	game_manager.remove_combo_dice(nodes)
+	dice_spawner.remove_dice(nodes)
 
 func _reset_roll() -> void:
 	cup.reset()
@@ -236,6 +237,7 @@ func _on_invest_pressed() -> void:
 		return
 
 	_invest_dice(nodes_to_invest)
+	combo_select.exit()
 	Main.invests_left -= 1
 	_update_ui_from_gamestate()
 
