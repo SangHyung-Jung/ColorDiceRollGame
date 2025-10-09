@@ -2,6 +2,9 @@
 class_name D6Dice
 extends Dice
 
+static func get_pips_texture() -> Texture2D:
+	return preload("res://addons/dice_roller/dice/d6_dice/dice_texture.png")
+
 static func icon() -> Texture2D:
 	return preload('./d6_dice.svg')
 

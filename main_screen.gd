@@ -68,7 +68,32 @@ func _setup_game() -> void:
 	game_manager.setup_cup(cup)
 	input_manager.initialize(combo_select, scene_manager.get_camera())
 	dice_spawner.initialize(cup)
+	_invest_initial_dice()
 	_spawn_initial_dice()
+
+func _invest_initial_dice() -> void:
+	if not game_manager.can_draw_dice(5):
+		push_error("Not enough dice in bag for initial investment")
+		return
+
+	var dice_defs = dice_spawner.create_dice_definitions(game_manager.bag, 5)
+	var pips_texture = D6Dice.get_pips_texture()
+
+	for def in dice_defs:
+		var value = randi_range(1, 6)
+		var body_color = def.color
+		var pips_color = Color.WHITE
+		if body_color.is_equal_approx(Color.WHITE):
+			pips_color = Color.BLACK
+		
+		var texture = Dice.generate_dice_texture(pips_texture, body_color, pips_color)
+		
+		var display = DiceFaceImageScene.instantiate()
+		display.name = "invested_dice_" + str(display.get_instance_id())
+		invested_dice_container.add_child(display)
+		display.set_face(value, texture)
+		display.value = value
+		display.dice_color = body_color
 
 func _spawn_initial_dice() -> void:
 	if not game_manager.can_draw_dice(GameConstants.HAND_SIZE):
@@ -136,13 +161,34 @@ func _on_dice_roll_finished(value: int, dice_name: String) -> void:
 		_on_roll_finished()
 
 func _on_submit_pressed() -> void:
-	var nodes_to_submit = combo_select.get_selected_nodes()
-	if nodes_to_submit.is_empty():
+	var all_selected_nodes = []
+	var roll_results_for_submission = {}
+
+	# Add 3D dice
+	var selected_3d_nodes = combo_select.get_selected_nodes()
+	all_selected_nodes.append_array(selected_3d_nodes)
+	var original_roll_results = game_manager.get_roll_results()
+	for node in selected_3d_nodes:
+		roll_results_for_submission[node.name] = original_roll_results[node.name]
+
+	# Add 2D invested dice
+	var selected_invested_nodes = []
+	for node in invested_dice_container.get_children():
+		if node.selected:
+			all_selected_nodes.append(node)
+			selected_invested_nodes.append(node)
+			roll_results_for_submission[node.name] = node.value
+
+	if all_selected_nodes.is_empty():
 		print("조합을 제출하려면 먼저 주사위를 선택하세요.")
 		return
 
-	if score_manager.evaluate_and_score_combo(nodes_to_submit, game_manager.get_roll_results()):
-		_remove_combo_dice(nodes_to_submit)
+	if score_manager.evaluate_and_score_combo(all_selected_nodes, roll_results_for_submission):
+		_remove_combo_dice(selected_3d_nodes)
+		
+		for node in selected_invested_nodes:
+			node.queue_free()
+		
 		combo_select.clear()
 		Main.current_score = score_manager.get_total_score()
 		Main.hands_left -= 1
@@ -203,14 +249,17 @@ func _invest_dice(nodes: Array) -> void:
 		var material = mesh_instance.material_override
 		var texture = material.albedo_texture
 
-		dice_to_invest.append({"value": value, "texture": texture})
+		dice_to_invest.append({"value": value, "texture": texture, "dice_color": dice_node.dice_color})
 
 	_remove_combo_dice(nodes)
 
 	for data in dice_to_invest:
 		var display = DiceFaceImageScene.instantiate()
+		display.name = "invested_dice_" + str(display.get_instance_id())
 		invested_dice_container.add_child(display)
 		display.set_face(data.value, data.texture)
+		display.value = data.value
+		display.dice_color = data.dice_color
 
 # --- Public API ---
 func update_stage(stage_num: int) -> void:

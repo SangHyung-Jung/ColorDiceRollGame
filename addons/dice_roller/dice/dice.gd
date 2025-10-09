@@ -99,7 +99,7 @@ func _update_visuals():
 	else:
 		pips_color = Color.WHITE
 
-	var new_texture = _generate_dice_texture(dice_color, pips_color)
+	var new_texture = Dice.generate_dice_texture(pips_texture_original, dice_color, pips_color)
 	if not new_texture:
 		printerr("Dice '", name, "': Failed to generate new texture.")
 		return
@@ -109,14 +109,14 @@ func _update_visuals():
 	
 	mesh.material_override = unique_material
 
-func _generate_dice_texture(body_color: Color, pips_color: Color) -> ImageTexture:
-	var source_image: Image = pips_texture_original.get_image()
+static func generate_dice_texture(pips_texture: Texture2D, body_color: Color, pips_color: Color) -> ImageTexture:
+	var source_image: Image = pips_texture.get_image()
 	if source_image == null or source_image.is_empty():
 		return null
 
 	if source_image.is_compressed():
 		if source_image.decompress() != OK:
-			printerr("Failed to decompress source image for dice '", name, "'")
+			printerr("Failed to decompress source image for dice")
 			return null
 
 	source_image.convert(Image.FORMAT_RGBA8)
