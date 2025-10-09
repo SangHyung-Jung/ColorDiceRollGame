@@ -1,20 +1,19 @@
 extends Control
 
 var dice_value: int = 1
-var dice_texture: Texture2D
+var texture_atlas: Texture2D
 var selected: bool = false
 var value: int
 var dice_color: Color
 
-# This is a guess based on common cube UV layouts for a 3x2 texture.
-# It might need to be adjusted.
+# This is the correct mapping determined through debugging
 const FACE_RECTS = {
-	1: Rect2(0, 200, 200, 200),
-	2: Rect2(400, 0, 200, 200),
-	3: Rect2(400, 200, 200, 200),
-	4: Rect2(200, 200, 200, 200),
-	5: Rect2(0, 0, 200, 200),
-	6: Rect2(200, 0, 200, 200),
+	1: Rect2(0, 200, 200, 200),    # R4
+	2: Rect2(400, 0, 200, 200),    # R3
+	3: Rect2(400, 200, 200, 200),  # R6
+	4: Rect2(200, 200, 200, 200),  # R5
+	5: Rect2(0, 0, 200, 200),      # R1
+	6: Rect2(200, 0, 200, 200),    # R2
 }
 
 func _gui_input(event: InputEvent) -> void:
@@ -22,19 +21,19 @@ func _gui_input(event: InputEvent) -> void:
 		selected = not selected
 		queue_redraw()
 
-func set_face(value: int, texture: Texture2D):
+func set_face(value: int, atlas: Texture2D):
 	self.dice_value = value
-	self.dice_texture = texture
+	self.texture_atlas = atlas
 	queue_redraw()
 
 func _draw():
-	if not dice_texture:
+	if not texture_atlas:
 		return
 	
 	var src_rect = FACE_RECTS.get(dice_value, Rect2(0, 0, 200, 200))
 	var dest_rect = Rect2(Vector2.ZERO, get_size())
 	
-	draw_texture_rect_region(dice_texture, dest_rect, src_rect)
+	draw_texture_rect_region(texture_atlas, dest_rect, src_rect)
 
 	if selected:
 		draw_rect(dest_rect, Color(1, 1, 0, 0.5)) # Yellow tint for selection

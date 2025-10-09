@@ -1,149 +1,68 @@
-# ColorComboDice2
+# Color Dice Roll Game
 
-A color-based dice combination game built with Godot 4, featuring physics-based dice rolling and strategic combo gameplay.
+## 1. Project Overview
 
-![Game Screenshot](screenshots/gameplay.png)
+This is a dice rolling game where the player aims to achieve a high score by forming combinations of dice. The game is similar to Yahtzee but features colored dice and a unique scoring system. The project is built using the Godot Engine.
 
-## 🎮 Game Overview
+## 2. Game Rules
 
-ColorComboDice2 is a strategic dice game where players roll colored dice to create specific combinations for points. The game features realistic physics simulation with a 3D dice cup and provides an engaging tactical experience.
+### Goal
+The primary objective is to reach a target score within a limited number of turns.
 
-### Key Features
+### Game Flow
+1.  **Initial State**: The game begins with 5 dice randomly drawn from a virtual bag and placed in the "invested" area. These dice are available for use in combinations from the start.
+2.  **Turn Start**: A turn begins when the player rolls their hand of dice (the default hand size is 5). This is done by clicking the mouse on the rolling area.
+3.  **Player Actions**: After the dice have been rolled and have settled, the player can perform the following actions within the same turn:
+    *   **Submit a Combination**: The player can select a set of dice from their hand (the 3D dice in the rolling area) and/or the invested area (the 2D dice images) to form a valid combination. Multiple combinations can be submitted in a single turn.
+    *   **Invest a Die**: The player can select a die from their hand and move it to the invested area. This action is limited by the number of investments remaining.
+4.  **Turn End**: The player ends their turn by clicking the "Turn End" button.
+5.  **Cleanup**: When a turn ends, any dice from the player's hand that were not used in a combination or invested are discarded from the game.
+6.  **New Turn**: The `turns_left` counter is decremented. The player can then start a new turn by rolling a fresh hand of dice drawn from the bag.
 
-- **Physics-based dice rolling** with realistic 3D simulation
-- **Color combination system** with 5 different dice colors (White, Black, Red, Green, Blue)
-- **Strategic gameplay** with dice selection and combo scoring
-- **Modular architecture** for easy maintenance and extension
+### Scoring
+*   The scoring system is defined by the combinations listed in `combo_definitions.csv`.
+*   The score for a combination is calculated using the formula: `(Base Score + Sum of Dice Values) * Multiplier`.
+*   Combinations have two types: "Multi-color" (`다색상`) and "Single-color" (`단일 색상`). Single-color combinations, which require all dice in the combo to be of the same color, yield significantly higher scores.
 
-## 🎯 Gameplay
-
-1. **Roll the dice** by clicking and holding the mouse to shake the cup
-2. **Release** to pour dice onto the playing field
-3. **Select combinations** using C key to toggle selection mode
-4. **Score points** by creating valid color combinations
-5. **Keep dice** for future rounds or use them immediately
-
-### Combination Types
-
-- **Rainbow Run**: Sequential values with different colors (e.g., 1-2-3-4-5, all different colors)
-- **Rainbow Set**: Same values with different colors (e.g., 3-3-3-3, all different colors)
-- **Single Color Run**: Sequential values with same color (e.g., 2-3-4-5, all red)
-- **Single Color Set**: Same values with same color (e.g., 5-5-5, all blue)
-- **Color Full House**: 3 of one color/value + 2 of another color/value
-
-## 🏗️ Architecture
-
-The project has been refactored from a monolithic 470-line main.gd into a clean, modular architecture:
-
-### Project Structure
+## 3. Project Structure
 
 ```
-scripts/
-├── main.gd                    # Main controller (171 lines)
-├── core/                      # Core game logic
-│   ├── game_manager.gd        # Game state management
-│   ├── dice_bag.gd           # Dice inventory system
-│   └── combo_rules.gd        # Combination rules & scoring
-├── components/               # Game components
-│   ├── cup.gd               # Physics-based cup
-│   ├── dice_spawner.gd      # Dice creation & management
-│   └── combo_select.gd      # Combination selection UI
-├── managers/                # System managers
-│   ├── input_manager.gd     # Input handling
-│   ├── score_manager.gd     # Score tracking
-│   └── scene_manager.gd     # Environment setup
-└── utils/                   # Utilities
-	├── constants.gd         # Game constants
-	└── dice_picker.gd       # Mouse interaction
+/
+|-- main_screen.tscn       # Main game scene, contains the UI and 3D viewport.
+|-- main_screen.gd         # Main script for the game, handles UI and game flow orchestration.
+|-- project.godot          # The Godot project file.
+|-- combo_definitions.csv  # CSV file defining the score, multiplier, and types for each combination.
+|-- scripts/
+|   |-- main.gd            # Global script (AutoLoad) for game state (turns, score, etc.).
+|   |-- core/
+|   |   |-- game_manager.gd  # Manages the core game state, roll tracking, and the dice bag.
+|   |   |-- combo_rules.gd   # Defines all combination logic and the scoring system.
+|   |   |-- dice_bag.gd      # Manages the pool of available dice to be drawn.
+|   |-- managers/
+|   |   |-- score_manager.gd # Evaluates selected dice against combo rules and updates the score.
+|   |   |-- input_manager.gd # Handles player input for starting a roll and selecting dice.
+|   |-- components/
+|   |   |-- dice_spawner.gd  # Spawns, manages, and removes the 3D dice nodes.
+|   |   |-- combo_select.gd  # Manages the selection of 3D dice in the rolling area.
+|   |   |-- dice_face_image.gd # A custom Control node to display a 2D image of a single die face.
+|-- addons/
+|   |-- dice_roller/       # An addon providing the basic 3D dice models and rolling physics.
 ```
 
-### Component Responsibilities
+## 4. Core Scripts Explanation
 
-- **GameManager**: Handles game state, dice tracking, and round management
-- **SceneManager**: Sets up 3D environment (camera, lighting, floor)
-- **InputManager**: Processes mouse/keyboard input with signal-based communication
-- **ScoreManager**: Evaluates combinations and tracks scoring
-- **DiceSpawner**: Manages dice creation, physics, and positioning
-- **Cup**: Provides realistic cup shaking and pouring animations
+*   **`main_screen.gd`**: This is the central script that connects all the different managers and components. It is responsible for updating the UI, handling button presses (`Submit`, `Invest`, `Turn End`), and driving the main game loop by calling the appropriate managers.
 
-## 🛠️ Technical Details
+*   **`scripts/main.gd`**: A global singleton (configured via AutoLoad in Godot) that holds the persistent state of the game, such as `turns_left`, `current_score`, and `invests_left`.
 
-### Architecture Benefits
+*   **`game_manager.gd`**: Manages the state of a single roll, tracks the results of each die, and interfaces with the `DiceBag` to draw new dice.
 
-- **Separation of Concerns**: Each component has a single, well-defined responsibility
-- **Modularity**: Components can be modified independently
-- **Signal-based Communication**: Loose coupling between systems
-- **Constants Management**: All game values centralized in `GameConstants`
-- **Type Safety**: Explicit type annotations throughout
+*   **`score_manager.gd`**: This manager is responsible for scoring. It takes a set of selected dice (both 3D nodes and 2D UI nodes), passes them to `combo_rules.gd` for evaluation, and if a valid combination is found, it updates the global score.
 
-### Key Systems
+*   **`combo_rules.gd`**: This is the heart of the game's scoring logic. It contains the `COMBO_DEFINITIONS` constant, which is a data structure holding all possible combinations, their conditions for validity (e.g., `is_full_house`, `is_straight`), base scores, and multipliers. The `eval_combo` function iterates through these definitions to find a matching combination for a given set of dice.
 
-- **Physics Simulation**: Realistic dice rolling with Godot's physics engine
-- **Color Bag System**: Finite dice pool with strategic resource management
-- **Combo Evaluation**: Rule-based scoring with extensible combination types
-- **Input Handling**: Responsive mouse/keyboard controls with state management
+*   **`dice_spawner.gd`**: This component handles the entire lifecycle of the 3D dice nodes. It instantiates the dice scenes, applies physics for rolling, and removes them from the game.
 
-## 🚀 Getting Started
+*   **`combo_select.gd`**: Manages the selection of the 3D dice in the rolling area. It uses raycasting to detect clicks on dice and provides visual feedback for selected dice.
 
-### Prerequisites
-
-- Godot 4.4 or later
-- Basic familiarity with Godot editor
-
-### Installation
-
-1. Clone the repository
-2. Open the project in Godot
-3. Run the main scene
-
-### Controls
-
-- **Left Click + Hold**: Shake the dice cup
-- **Release**: Pour dice
-- **C Key**: Toggle combination selection mode
-- **Left Click (in selection mode)**: Select/deselect dice
-- **Right Click (in selection mode)**: Confirm combination
-
-## 🎨 Customization
-
-The modular architecture makes customization straightforward:
-
-- **Add new combination types**: Extend `ComboRules.gd`
-- **Modify scoring**: Update `SCORE_TABLE` in `ComboRules.gd`
-- **Change game constants**: Edit values in `GameConstants.gd`
-- **Customize physics**: Modify parameters in cup and dice components
-
-## 📋 Development Notes
-
-### Recent Refactoring (2024)
-
-- **Reduced main.gd from 470 to 171 lines** (64% reduction)
-- **Extracted 7 specialized components** from monolithic structure
-- **Implemented signal-based architecture** for better decoupling
-- **Centralized constants** for easier tuning
-- **Added explicit type annotations** for better code reliability
-
-### Code Quality
-
-- Clean separation between game logic, presentation, and input
-- Comprehensive error handling and validation
-- Consistent naming conventions and documentation
-- Modular design supporting future extensions
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes following the established architecture
-4. Test thoroughly
-5. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- Built with [Godot Engine](https://godotengine.org/)
-- Uses the dice-roller addon for 3D dice rendering
-- Physics simulation powered by Godot's built-in physics engine
+*   **`dice_face_image.gd`**: This is a custom `Control` node that displays a specific face of a die from a texture atlas. It is used to show the dice in the "invested" area. It also handles player input to allow these 2D images to be selected for combinations.

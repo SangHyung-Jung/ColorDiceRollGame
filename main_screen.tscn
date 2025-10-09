@@ -59,6 +59,11 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "남은 투자 횟수: 5"
 
+[node name="ViewDiceBagButton" type="Button" parent="HSplitContainer/InfoPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "주사위 주머니 보기"
+
 [node name="GameArea" type="VBoxContainer" parent="HSplitContainer"]
 layout_mode = 2
 
