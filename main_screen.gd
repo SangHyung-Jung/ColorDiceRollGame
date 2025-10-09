@@ -6,10 +6,11 @@ class_name MainScreen
 @onready var stage_label: Label = $HSplitContainer/InfoPanel/MarginContainer/VBoxContainer/StageLabel
 @onready var target_score_label: Label = $HSplitContainer/InfoPanel/MarginContainer/VBoxContainer/TargetScoreLabel
 @onready var current_score_label: Label = $HSplitContainer/InfoPanel/MarginContainer/VBoxContainer/CurrentScoreLabel
-@onready var hands_left_label: Label = $HSplitContainer/InfoPanel/MarginContainer/VBoxContainer/HandsLeftLabel
+@onready var turns_left_label: Label = $HSplitContainer/InfoPanel/MarginContainer/VBoxContainer/TurnsLeftLabel
 @onready var invests_left_label: Label = $HSplitContainer/InfoPanel/MarginContainer/VBoxContainer/InvestsLeftLabel
 @onready var submit_button: Button = $HSplitContainer/GameArea/InteractionUI/HBoxContainer/SubmitButton
 @onready var invest_button: Button = $HSplitContainer/GameArea/InteractionUI/HBoxContainer/InvestButton
+@onready var turn_end_button: Button = $HSplitContainer/GameArea/InteractionUI/HBoxContainer/TurnEndButton
 @onready var result_label: Label = $HSplitContainer/GameArea/InteractionUI/HBoxContainer/ResultLabel
 @onready var sub_viewport: SubViewport = $HSplitContainer/GameArea/RollingArea/SubViewport
 @onready var rolling_area: SubViewportContainer = $HSplitContainer/GameArea/RollingArea
@@ -117,6 +118,7 @@ func _connect_signals() -> void:
 	# UI 버튼 연결
 	submit_button.pressed.connect(_on_submit_pressed)
 	invest_button.pressed.connect(_on_invest_pressed)
+	turn_end_button.pressed.connect(_on_turn_end_pressed)
 
 	# 3D 뷰포트 입력 연결
 	rolling_area.gui_input.connect(_on_rolling_area_gui_input)
@@ -125,7 +127,7 @@ func _update_ui_from_gamestate() -> void:
 	update_stage(Main.stage)
 	update_target_score(Main.target_score)
 	update_current_score(Main.current_score)
-	update_hands_left(Main.hands_left)
+	update_turns_left(Main.turns_left)
 	update_invests_left(Main.invests_left)
 
 func _on_rolling_area_gui_input(event: InputEvent) -> void:
@@ -191,7 +193,6 @@ func _on_submit_pressed() -> void:
 		
 		combo_select.clear()
 		Main.current_score = score_manager.get_total_score()
-		Main.hands_left -= 1
 		_update_ui_from_gamestate()
 	else:
 		print("유효하지 않은 조합입니다.")
@@ -261,6 +262,26 @@ func _invest_dice(nodes: Array) -> void:
 		display.value = data.value
 		display.dice_color = data.dice_color
 
+func _on_turn_end_pressed() -> void:
+	combo_select.exit()
+	if Main.turns_left > 0:
+		Main.turns_left -= 1
+		_update_ui_from_gamestate()
+
+		# Discard all dice remaining on the field
+		var remaining_dice = dice_spawner.get_dice_nodes()
+		for d in remaining_dice:
+			d.queue_free()
+		
+		# Clear the spawner's internal lists
+		dice_spawner.dice_nodes.clear()
+		dice_spawner.dice_set.clear()
+
+		# The player can now start a new roll.
+	else:
+		print("No more turns left.")
+
+
 # --- Public API ---
 func update_stage(stage_num: int) -> void:
 	stage_label.text = "Stage: %d" % stage_num
@@ -268,8 +289,8 @@ func update_target_score(score: int) -> void:
 	target_score_label.text = "목표 점수: %d" % score
 func update_current_score(score: int) -> void:
 	current_score_label.text = "현재 점수: %d" % score
-func update_hands_left(count: int) -> void:
-	hands_left_label.text = "남은 제출 횟수: %d" % count
+func update_turns_left(count: int) -> void:
+	turns_left_label.text = "남은 턴 수: %d" % count
 func update_invests_left(count: int) -> void:
 	invests_left_label.text = "남은 투자 횟수: %d" % count
 func update_result_label(text: String) -> void:

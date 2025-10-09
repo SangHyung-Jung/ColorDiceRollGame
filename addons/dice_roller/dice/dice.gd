@@ -211,13 +211,18 @@ func _on_sleeping_state_changed():
 
 func upper_side():
 	"Returns which dice side is up, or 0 when none is clear"
-	var highest_y := -INF
+	var highest_dot_product := -2.0 # Lower than any possible dot product
 	var highest_side := 0
+	
 	for side in sides:
-		var y = to_global(sides[side]).y
-		if y < highest_y: continue
-		highest_y = y
-		highest_side = side
+		# Transform the local face normal to world space
+		var world_normal = global_transform.basis * sides[side]
+		# Compare with world up vector
+		var dot_product = world_normal.dot(Vector3.UP)
+		
+		if dot_product > highest_dot_product:
+			highest_dot_product = dot_product
+			highest_side = side
 			
 	return highest_side
 

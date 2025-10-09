@@ -5,5 +5,5 @@ extends Node
 var stage: int = 1
 var target_score: int = 300
 var current_score: int = 0
-var hands_left: int = 4
+var turns_left: int = 4
 var invests_left: int = 5
