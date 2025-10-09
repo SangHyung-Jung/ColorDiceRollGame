@@ -2,14 +2,14 @@
 
 importer="csv_translation"
 type="Translation"
-uid="uid://bkmo6o1vkylkt"
+uid="uid://dts1o3h4kf88g"
 
 [deps]
 
-files=["res://점수 조합표.점수.translation", "res://점수 조합표.배수.translation"]
+files=["res://점수 조합표.����⺻ a���⺻ ���.translation"]
 
 source_file="res://점수 조합표.csv"
-dest_files=["res://점수 조합표.점수.translation", "res://점수 조합표.배수.translation"]
+dest_files=["res://점수 조합표.����⺻ a���⺻ ���.translation"]
 
 [params]
 

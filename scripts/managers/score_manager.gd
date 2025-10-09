@@ -41,20 +41,20 @@ func evaluate_and_score_combo(selected_nodes: Array, roll_results: Dictionary) -
 	print("[선택] ", picked_labels)
 
 	# 조합 평가 실행
-	var result := ComboRules.eval_combo(dice_data)
+	var combo_rules = ComboRules.new()
+	var result := combo_rules.eval_combo(dice_data)
 	if not result.ok:
 		print("조합이 없습니다.")
 		return false
 
 	# 성공: 점수 추가 및 결과 출력
-	var combo_name = ComboRules.combo_name(result.combo_type)
-	print("조합: %s | 크기: %d | +%d점" % [combo_name, result.size, result.points])
+	print("조합: %s | +%d점" % [result.combo_name, result.points])
 
 	total_score += result.points
 	print("누적 점수: %d" % total_score)
 
 	# 점수 완료 시그널 발생
-	combo_scored.emit(combo_name, result.points, total_score)
+	combo_scored.emit(result.combo_name, result.points, total_score)
 	return true
 
 ## 주사위 노드에서 색상 라벨을 추출합니다

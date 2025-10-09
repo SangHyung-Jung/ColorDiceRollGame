@@ -1,0 +1,17 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://jagw2mqfho7d"
+
+[deps]
+
+files=["res://combo_definitions.Type.translation", "res://combo_definitions.Base Score.translation", "res://combo_definitions.Multiplier.translation"]
+
+source_file="res://combo_definitions.csv"
+dest_files=["res://combo_definitions.Type.translation", "res://combo_definitions.Base Score.translation", "res://combo_definitions.Multiplier.translation"]
+
+[params]
+
+compress=true
+delimiter=0
