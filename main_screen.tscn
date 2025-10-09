@@ -63,12 +63,12 @@ text = "남은 투자 횟수: 5"
 layout_mode = 2
 
 [node name="FieldArea" type="PanelContainer" parent="HSplitContainer/GameArea"]
-self_modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 
-[node name="HSeparator" type="HSeparator" parent="HSplitContainer/GameArea/FieldArea"]
+[node name="InvestedDiceContainer" type="HBoxContainer" parent="HSplitContainer/GameArea/FieldArea"]
 layout_mode = 2
+alignment = 1
 
 [node name="RollingArea" type="SubViewportContainer" parent="HSplitContainer/GameArea"]
 layout_mode = 2

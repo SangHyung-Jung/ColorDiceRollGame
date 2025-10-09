@@ -26,6 +26,9 @@ var invested_dice: Array[Node3D] = []
 
 # === 리소스 로드 ===
 const CupScene := preload("res://cup.tscn")
+const DiceFaceImageScene = preload("res://scripts/components/dice_face_image.tscn")
+
+@onready var invested_dice_container: HBoxContainer = $HSplitContainer/GameArea/FieldArea/InvestedDiceContainer
 
 func _ready() -> void:
 	# 3D 월드 생성
@@ -190,23 +193,24 @@ func _on_invest_pressed() -> void:
 	_update_ui_from_gamestate()
 
 func _invest_dice(nodes: Array) -> void:
-	dice_spawner.remove_dice(nodes)
-	
-	for dice in nodes:
-		var idx = invested_dice.size()
-		var target_pos = GameConstants.FIELD_ANCHOR + Vector3(idx * GameConstants.FIELD_STEP_X, 0, 0)
+	var dice_to_invest = []
+	var roll_results = game_manager.get_roll_results()
+	for dice_node in nodes:
+		if not roll_results.has(dice_node.name): continue
+		var value = roll_results[dice_node.name]
 		
-		if "freeze" in dice:
-			dice.freeze = false # Tween을 위해 일시적으로 해제
-		
-		var tween: Tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-		tween.tween_property(dice, "global_position", target_pos, GameConstants.KEEP_MOVE_DURATION)
-		await tween.finished
-		
-		if "freeze" in dice:
-			dice.freeze = true
-		
-		invested_dice.append(dice)
+		var mesh_instance = dice_node.get_node("DiceMesh")
+		var material = mesh_instance.material_override
+		var texture = material.albedo_texture
+
+		dice_to_invest.append({"value": value, "texture": texture})
+
+	_remove_combo_dice(nodes)
+
+	for data in dice_to_invest:
+		var display = DiceFaceImageScene.instantiate()
+		invested_dice_container.add_child(display)
+		display.set_face(data.value, data.texture)
 
 # --- Public API ---
 func update_stage(stage_num: int) -> void:
