@@ -1,6 +1,16 @@
-[gd_scene load_steps=11 format=3 uid="uid://b5w7g2jko36l2"]
+[gd_scene load_steps=13 format=3 uid="uid://b5w7g2jko36l2"]
 
 [ext_resource type="Script" uid="uid://co1yc17ks56wm" path="res://scripts/components/cup.gd" id="1_f5eb6"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_ponjl"]
+noise_type = 2
+frequency = 0.001
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_ponjl"]
+generate_mipmaps = false
+seamless = true
+normalize = false
+noise = SubResource("FastNoiseLite_ponjl")
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_leather"]
 frequency = 0.2
@@ -13,14 +23,14 @@ bump_strength = 5.0
 noise = SubResource("FastNoiseLite_leather")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ponjl"]
-albedo_color = Color(0.05, 0.05, 0.05, 1)
+albedo_texture = SubResource("NoiseTexture2D_ponjl")
 metallic = 0.2
 roughness = 0.8
 normal_enabled = true
 normal_scale = 1.5
 normal_texture = SubResource("NoiseTexture2D_leather")
-uv1_scale = Vector3(0.2, 0.2, 0.2)
-uv1_triplanar = true
+uv1_scale = Vector3(0.01, 0.01, 0.01)
+texture_filter = 0
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_fabric"]
 noise_type = 2
