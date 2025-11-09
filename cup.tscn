@@ -1,63 +1,7 @@
-[gd_scene load_steps=13 format=3 uid="uid://b5w7g2jko36l2"]
+[gd_scene load_steps=6 format=3 uid="uid://b5w7g2jko36l2"]
 
 [ext_resource type="Script" uid="uid://co1yc17ks56wm" path="res://scripts/components/cup.gd" id="1_f5eb6"]
-
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_ponjl"]
-noise_type = 4
-seed = 42
-frequency = 1.0
-
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_ponjl"]
-width = 64
-height = 64
-generate_mipmaps = false
-seamless = true
-normalize = false
-noise = SubResource("FastNoiseLite_ponjl")
-
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_leather"]
-frequency = 0.2
-fractal_octaves = 1
-
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_leather"]
-seamless = true
-as_normal_map = true
-bump_strength = 5.0
-noise = SubResource("FastNoiseLite_leather")
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ponjl"]
-albedo_texture = SubResource("NoiseTexture2D_ponjl")
-metallic = 0.2
-roughness = 0.8
-normal_enabled = true
-normal_scale = 1.5
-normal_texture = SubResource("NoiseTexture2D_leather")
-uv1_scale = Vector3(0.1, 0.1, 0.1)
-uv2_scale = Vector3(0.1, 0.1, 0.1)
-texture_filter = 0
-
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_fabric"]
-noise_type = 2
-frequency = 2.0
-fractal_type = 3
-fractal_octaves = 3
-fractal_lacunarity = 2.5
-fractal_gain = 0.6
-fractal_ping_pong_strength = 0.8
-
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_fabric"]
-seamless = true
-as_normal_map = true
-bump_strength = 1.5
-noise = SubResource("FastNoiseLite_fabric")
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hxhe5"]
-albedo_color = Color(0.1, 0.4, 0.2, 1)
-normal_enabled = true
-normal_scale = 0.2
-normal_texture = SubResource("NoiseTexture2D_fabric")
-uv1_scale = Vector3(2, 2, 2)
-uv1_triplanar = true
+[ext_resource type="PackedScene" uid="uid://b6xvfjwv40ldh" path="res://assets/models/cup.gltf" id="2_hxhe5"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_ponjl"]
 height = 4.5
@@ -78,20 +22,8 @@ script = ExtResource("1_f5eb6")
 
 [node name="Visuals" type="CSGCombiner3D" parent="PhysicsBody"]
 
-[node name="Outer" type="CSGCylinder3D" parent="PhysicsBody/Visuals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3, 0)
-radius = 4.0
-height = 6.5
-sides = 32
-material = SubResource("StandardMaterial3D_ponjl")
-
-[node name="Inner" type="CSGCylinder3D" parent="PhysicsBody/Visuals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2, 0)
-operation = 2
-radius = 3.5
-height = 4.5
-sides = 32
-material = SubResource("StandardMaterial3D_hxhe5")
+[node name="cup" parent="PhysicsBody/Visuals" instance=ExtResource("2_hxhe5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4, 0)
 
 [node name="CollisionMesh" type="CSGCombiner3D" parent="PhysicsBody"]
 visible = false

@@ -13,8 +13,8 @@ The primary objective is to reach a target score within a limited number of turn
 1.  **Initial State**: The game begins with 5 dice randomly drawn from a virtual bag and placed in the "invested" area. These dice are available for use in combinations from the start.
 2.  **Turn Start**: A turn begins when the player rolls their hand of dice (the default hand size is 5). This is done by clicking the mouse on the rolling area.
 3.  **Player Actions**: After the dice have been rolled and have settled, the player can perform the following actions within the same turn:
-    *   **Submit a Combination**: The player can select a set of dice from their hand (the 3D dice in the rolling area) and/or the invested area (the 2D dice images) to form a valid combination. Multiple combinations can be submitted in a single turn.
-    *   **Invest a Die**: The player can select a die from their hand and move it to the invested area. This action is limited by the number of investments remaining.
+	*   **Submit a Combination**: The player can select a set of dice from their hand (the 3D dice in the rolling area) and/or the invested area (the 2D dice images) to form a valid combination. Multiple combinations can be submitted in a single turn.
+	*   **Invest a Die**: The player can select a die from their hand and move it to the invested area. This action is limited by the number of investments remaining.
 4.  **Turn End**: The player ends their turn by clicking the "Turn End" button.
 5.  **Cleanup**: When a turn ends, any dice from the player's hand that were not used in a combination or invested are discarded from the game.
 6.  **New Turn**: The `turns_left` counter is decremented. The player can then start a new turn by rolling a fresh hand of dice drawn from the bag.

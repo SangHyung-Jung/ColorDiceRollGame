@@ -12,15 +12,15 @@ extends RigidBody3D
 var sides = {}
 var highlight_orientation = {}
 
-const dice_size := 0.65
+const dice_size := 1.2
 const dice_density := 1.0
 const ANGULAR_VELOCITY_THRESHOLD := 1.
 const LINEAR_VELOCITY_THRESHOLD := 0.3 * dice_size
 const mounted_elevation = 0.8 * dice_size
 const face_angle := 90.0
 
-const MAX_VELOCITY := 50.0               # 최대 속도 제한
-const MAX_DISTANCE_FROM_ORIGIN := 30.0  # 원점에서 최대 거리
+const MAX_VELOCITY := 50.0
+const MAX_DISTANCE_FROM_ORIGIN := 30.0
 
 func max_tilt():
 	return cos(deg_to_rad(face_angle/float(sides.size())))
@@ -35,41 +35,57 @@ func _init() -> void:
 	contact_monitor = true
 	max_contacts_reported = 5
 	can_sleep = true
+	
+	# 1. 스폰 시 사용할 기본 중력 (약함)
 	gravity_scale = 10
+	
 	freeze_mode = RigidBody3D.FREEZE_MODE_STATIC
 	physics_material_override = PhysicsMaterial.new()
 	physics_material_override.absorbent = true
-	physics_material_override.bounce = 0.2
+	# 2. 기본 반발력 0
+	physics_material_override.bounce = 0.0
 	physics_material_override.friction = 1.5
 
 @onready var collider : CollisionShape3D = $Collider
-@onready var highlight_face : Node3D = $FaceHighligth
+@onready var highlight_face : MeshInstance3D = $FaceHighligth
 @onready var mesh = $DiceMesh
 
 func _adjust_to_size():
 	mass = dice_density * dice_size **3
-	# 충돌 마진 설정으로 더 정확한 충돌 감지
 	if collider and collider.shape:
-		collider.shape.margin = 0.04  # 기본값보다 약간 큼
+		collider.shape.margin = 0.04
 
-func apply_inside_cup_physics() -> void:
-	# 컵 안에서는 중력이 거의 없거나 약하게 만들어 떠다니는 느낌을 줌
-	gravity_scale = 40                    # 40 → 30으로 감소
-	# 공기 저항(감속)을 줄여 더 활발하게 움직이게 함
-	linear_damp = 0.5                     # 0.1 → 0.3으로 증가 (더 빨리 감속)
-	angular_damp = 0.1                    # 0.5 → 0.8로 증가
+# ★ 1. 스폰(리스폰)용 물리: 중력(10)은 약하게, 저항(5)은 강하게, 반발(0)은 없게
+func apply_spawning_physics() -> void:
+	print("🎲 ", name, " -> 스폰 물리 적용 (중력 10, 저항 5, 반발 0)")
+	gravity_scale = 10
+	linear_damp = 5.0
+	angular_damp = 5.0
 	
 	if physics_material_override:
-		physics_material_override.friction = 0.5   # 0.1 → 0.2
-		physics_material_override.bounce = 0.5     # 0.7 → 0.3으로 대폭 감소
+		physics_material_override.friction = 1.0
+		physics_material_override.bounce = 0.0
 
-func apply_outside_cup_physics() -> void:
+# ★ 2. 컵 '내부' 흔들기용 물리: 원본 GitHub 값으로 복원
+func apply_inside_cup_physics() -> void:
+	print("🎲 ", name, " -> 컵 내부 흔들기 물리 적용 (중력 40, 저항 0.5, 반발 0.5)")
 	gravity_scale = 40
-	linear_damp = 0.01 # -1은 프로젝트 기본값 사용
+	linear_damp = 0.5
+	angular_damp = 0.1
+	
+	if physics_material_override:
+		physics_material_override.friction = 0.5
+		physics_material_override.bounce = 0.5 # ★ 활발하게 튕기도록 복원
+
+# ★ 3. 컵 '외부' 테이블용 물리: 원본 GitHub 값으로 복원
+func apply_outside_cup_physics() -> void:
+	print("🎲 ", name, " -> 테이블 물리 적용 (중력 40, 저항 0.01)")
+	gravity_scale = 40
+	linear_damp = 0.01
 	angular_damp = 3.0
 	if physics_material_override:
-		physics_material_override.friction = 1.0   # 0.6 → 2.0 (높은 마찰력)
-		physics_material_override.bounce = 0.1     # 기본값 → 0.1 (거의 안 튕김)
+		physics_material_override.friction = 1.0
+		physics_material_override.bounce = 0.1
 
 func _ready():
 	original_position = position
@@ -80,60 +96,48 @@ func _ready():
 	
 	stop()
 	
-	mesh.scale = Vector3(dice_size, dice_size, dice_size)
 	self.angular_damp = 1.2
 	continuous_cd = true
-	apply_inside_cup_physics()
+	
+	# ★ 스폰 시에는 '스포닝' 물리만 적용
+	apply_spawning_physics()
+	
+	if highlight_face:
+		highlight_face.visible = false
 	
 	
 func _update_visuals():
-	if not pips_texture_original:
-		return
-	
-	var unique_material = StandardMaterial3D.new()
-	unique_material.resource_local_to_scene = true
-
-	var pips_color: Color
-	if dice_color.is_equal_approx(Color.WHITE):
-		pips_color = Color.BLACK
-	else:
-		pips_color = Color.WHITE
-
-	var new_texture = Dice.generate_dice_texture(pips_texture_original, dice_color, pips_color)
-	if not new_texture:
-		printerr("Dice '", name, "': Failed to generate new texture.")
-		return
-
-	unique_material.albedo_texture = new_texture
-	unique_material.albedo_color = Color.WHITE
-	
-	mesh.material_override = unique_material
+	# (Blender 모델 사용하므로 텍스처 생성 안 함)
+	return
 
 static func generate_dice_texture(pips_texture: Texture2D, body_color: Color, pips_color: Color) -> ImageTexture:
 	var source_image: Image = pips_texture.get_image()
 	if source_image == null or source_image.is_empty():
 		return null
-
 	if source_image.is_compressed():
 		if source_image.decompress() != OK:
 			printerr("Failed to decompress source image for dice")
 			return null
-
 	source_image.convert(Image.FORMAT_RGBA8)
-
 	var new_image: Image = Image.create(source_image.get_width(), source_image.get_height(), false, Image.FORMAT_RGBA8)
-
 	for y in range(source_image.get_height()):
 		for x in range(source_image.get_width()):
 			var original_pixel = source_image.get_pixel(x, y)
-			
 			if original_pixel.v < 0.5:
 				new_image.set_pixel(x, y, pips_color)
 			else:
 				new_image.set_pixel(x, y, body_color)
-	
 	return ImageTexture.create_from_image(new_image)
 
+func _find_mesh_instance(node: Node) -> MeshInstance3D:
+	if node is MeshInstance3D:
+		return node
+	
+	for child in node.get_children():
+		var result = _find_mesh_instance(child)
+		if result:
+			return result
+	return null
 
 func stop():
 	dehighlight()
@@ -144,7 +148,6 @@ func stop():
 	angular_velocity = Vector3.ZERO
 
 func roll():
-	"""Roll the dice"""
 	dehighlight()
 	linear_velocity = Vector3(-dice_size, 0, -dice_size)
 	angular_velocity = Vector3.ZERO
@@ -163,98 +166,94 @@ func roll():
 func _process(_delta):
 	if not rolling: return
 	roll_time += _delta
-
-	# ★ 속도 제한
 	if linear_velocity.length() > MAX_VELOCITY:
 		linear_velocity = linear_velocity.normalized() * MAX_VELOCITY
 		print("⚠️ ", name, " 속도 제한 적용: ", linear_velocity.length())
-	
-	# ★ 거리 제한 (원점에서 너무 멀리 가면 강제 정지)
 	if global_position.length() > MAX_DISTANCE_FROM_ORIGIN:
 		print("⚠️ ", name, " 경계 밖으로 나감 - 강제 정지")
 		_force_stop()
 		return
 
-
 func _force_stop():
-	"""주사위를 강제로 정지시킵니다"""
 	rolling = false
 	linear_velocity = Vector3.ZERO
 	angular_velocity = Vector3.ZERO
 	sleeping = true
-	
-	# 안전한 위치로 이동 (필요시)
 	if global_position.length() > MAX_DISTANCE_FROM_ORIGIN:
 		global_position = Vector3(
 			randf_range(-5, 5),
 			2,
 			randf_range(-5, 5)
 		)
-	
-	# 결과 결정 (랜덤하게)
 	var random_face = randi_range(1, 6)
 	print("🎲 ", name, " 강제 정지 결과: ", random_face)
 	roll_finished.emit(random_face)
 
-# ★★ 수정된 부분: 주사위가 멈추는 방식을 변경합니다. ★★
 func _on_sleeping_state_changed():
-	if not rolling or not self.sleeping:
-		return
-
-	var side = upper_side()
-
-	print("Dice %s solved by sleeping [%s] - %.02fs"%([name, side, roll_time]))
-	freeze = true
-
-	highlight()
-	roll_finished.emit(side)
-
-func upper_side():
-	"Returns which dice side is up, or 0 when none is clear"
-	var highest_dot_product := -2.0 # Lower than any possible dot product
-	var highest_side := 0
+	if not rolling: return
+	if not sleeping: return
 	
-	for side in sides:
-		# Transform the local face normal to world space
-		var world_normal = global_transform.basis * sides[side]
-		# Compare with world up vector
-		var dot_product = world_normal.dot(Vector3.UP)
+	var result = get_result()
+	if result > 0:
+		highlight(result)
+		roll_finished.emit(result)
+		rolling = false
+
+func get_result() -> int:
+	if sides.is_empty():
+		push_warning("Dice '", name, "' has no 'sides' defined yet.")
+		return -1
 		
-		if dot_product > highest_dot_product:
-			highest_dot_product = dot_product
-			highest_side = side
-			
-	return highest_side
+	for number in sides:
+		var side_vector: Vector3 = sides[number]
+		var world_up = Vector3.UP
+		var side_global = global_transform.basis * side_vector
+		
+		var dot = side_global.normalized().dot(world_up)
+		
+		if dot > max_tilt():
+			return number
+	
+	return 0
 
-func face_up_transform(value) -> Transform3D:
-	"""Returns the 3D tranform to put the given value up"""
-	var face_normal = (to_global(sides[value])-global_position).normalized()
-	var cross = face_normal.cross(Vector3.UP).normalized()
-	var angle = face_normal.angle_to(Vector3.UP)
-	var rotated := Transform3D(transform)
-	if cross.length_squared()<0.1:
-		cross = Vector3.FORWARD
-	rotated.basis = rotated.basis.rotated(cross.normalized(), angle)
-	return rotated
+func highlight(number: int):
+	if not highlight_face: return
+	highlight_face.visible = true
+	
+	if not number in highlight_orientation: return
+	
+	var orientation: Vector3 = highlight_orientation[number]
+	highlight_face.look_at(global_transform.basis * orientation + global_position, Vector3.UP)
 
-func show_face(value):
-	"""Shows a given face by rotating it up"""
-	assert(value in sides)
-	dehighlight()
-	rolling = true
-	const show_face_animation_time := .3
-	var rotated := face_up_transform(value)
-	var tween: Tweener = create_tween().tween_property(
-		self, "transform", rotated, show_face_animation_time
-	)
-	await tween.finished
-	rolling = false
-	highlight()
-	roll_finished.emit(value)
+func dehighlight():
+	if highlight_face:
+		highlight_face.visible = false
 
-func highlight():
-	# highlight_face.visible = true # 유저 요청으로 비활성화
-	pass
+func show_face(number: int):
+	"""주사위를 특정 면이 위로 오도록 회전시킵니다"""
+	if not number in sides:
+		return
+	
+	freeze = true
+	linear_velocity = Vector3.ZERO
+	angular_velocity = Vector3.ZERO
+	
+	var target_up_local: Vector3 = sides[number].normalized()
+	
+	var y_axis = target_up_local
+	var x_axis: Vector3
+	var z_axis: Vector3
+	
+	if abs(y_axis.dot(Vector3.UP)) > 0.999:
+		if y_axis.y > 0:
+			x_axis = Vector3.RIGHT
+			z_axis = Vector3.FORWARD
+		else:
+			x_axis = Vector3.RIGHT
+			z_axis = Vector3.BACK
+	else:
+		x_axis = y_axis.cross(Vector3.UP).normalized()
+		z_axis = x_axis.cross(y_axis).normalized()
 
-func dehighlight() -> void:
-	highlight_face.visible = false
+	var new_basis = Basis(x_axis, y_axis, z_axis)
+	global_transform.basis = new_basis
