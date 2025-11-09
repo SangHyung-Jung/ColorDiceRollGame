@@ -2,18 +2,18 @@ extends Control
 class_name MainScreen
 
 # === UI 노드 참조 ===
-@onready var stage_label: Label = $HSplitContainer/InfoPanel/MarginContainer/VBoxContainer/StageLabel
-@onready var target_score_label: Label = $HSplitContainer/InfoPanel/MarginContainer/VBoxContainer/TargetScoreLabel
-@onready var current_score_label: Label = $HSplitContainer/InfoPanel/MarginContainer/VBoxContainer/CurrentScoreLabel
-@onready var turns_left_label: Label = $HSplitContainer/InfoPanel/MarginContainer/VBoxContainer/TurnsLeftLabel
-@onready var invests_left_label: Label = $HSplitContainer/InfoPanel/MarginContainer/VBoxContainer/InvestsLeftLabel
-@onready var view_dice_bag_button: Button = $HSplitContainer/InfoPanel/MarginContainer/VBoxContainer/ViewDiceBagButton
-@onready var submit_button: Button = $HSplitContainer/GameArea/InteractionUI/HBoxContainer/SubmitButton
-@onready var invest_button: Button = $HSplitContainer/GameArea/InteractionUI/HBoxContainer/InvestButton
-@onready var turn_end_button: Button = $HSplitContainer/GameArea/InteractionUI/HBoxContainer/TurnEndButton
-@onready var result_label: Label = $HSplitContainer/GameArea/InteractionUI/HBoxContainer/ResultLabel
-@onready var sub_viewport: SubViewport = $HSplitContainer/GameArea/RollingArea/SubViewport
-@onready var rolling_area: SubViewportContainer = $HSplitContainer/GameArea/RollingArea
+@onready var stage_label: Label = $MainLayout/InfoPanel/VBoxContainer/StageLabel
+@onready var target_score_label: Label = $MainLayout/InfoPanel/VBoxContainer/TargetScoreLabel
+@onready var current_score_label: Label = $MainLayout/InfoPanel/VBoxContainer/CurrentScoreLabel
+@onready var turns_left_label: Label = $MainLayout/InfoPanel/VBoxContainer/TurnsLeftLabel
+@onready var invests_left_label: Label = $MainLayout/InfoPanel/VBoxContainer/InvestsLeftLabel
+@onready var view_dice_bag_button: Button = $MainLayout/InfoPanel/VBoxContainer/ViewDiceBagButton
+@onready var submit_button: Button = $MainLayout/GameArea/InteractionUI/HBoxContainer/SubmitButton
+@onready var invest_button: Button = $MainLayout/GameArea/InteractionUI/HBoxContainer/InvestButton
+@onready var turn_end_button: Button = $MainLayout/GameArea/InteractionUI/HBoxContainer/TurnEndButton
+@onready var result_label: Label = $MainLayout/GameArea/InteractionUI/HBoxContainer/ResultLabel
+@onready var sub_viewport: SubViewport = $MainLayout/GameArea/RollingArea/SubViewport
+@onready var rolling_area: SubViewportContainer = $MainLayout/GameArea/RollingArea
 # === 3D 씬 참조 ===
 var world_3d: Node3D
 var scene_manager: SceneManager
@@ -35,7 +35,7 @@ const MAX_INVESTED_DICE = 10
 
 var dice_bag_popup: Window
 
-@onready var invested_dice_container: HBoxContainer = $HSplitContainer/GameArea/FieldArea/InvestedDiceContainer
+@onready var invested_dice_container: HBoxContainer = $MainLayout/GameArea/FieldArea/InvestedDiceContainer
 
 func _ready() -> void:
 	# 3D 월드 생성
