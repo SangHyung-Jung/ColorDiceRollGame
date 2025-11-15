@@ -3,225 +3,130 @@ extends Node3D
 
 signal dice_roll_finished(value: int, dice_name: String)
 
-const DiceDef := preload("res://addons/dice_roller/dice_def.gd")
-const DiceShape := preload("res://addons/dice_roller/dice_shape.gd")
-const PIPS_TEXTURE = preload("res://addons/dice_roller/dice/d6_dice/dice_texture.png")
+const DICE_SIZE = 1.2
 
-const DICE_SCENES = {
-	"white": preload("res://assets/models/dice_white.gltf"),
-	"black": preload("res://assets/models/dice_black.gltf"),
-	"red": preload("res://assets/models/dice_red.gltf"),
-	"blue": preload("res://assets/models/dice_blue.gltf"),
-	"green": preload("res://assets/models/dice_green.gltf")
-}
-
-const BLENDER_DICE_SIZE = 2.0
-const GODOT_DICE_SIZE = 1.2
-
-var dice_set: Array[DiceDef] = []
-var dice_nodes: Array[Node] = []
+var dice_nodes: Array[ColoredDice] = []
 var cup_ref: Node3D
+var runtime_container: Node3D  # 동적 노드들을 넣을 컨테이너
 
-func initialize(cup: Node3D) -> void:
+func initialize(cup: Node3D, container: Node3D = null) -> void:
 	cup_ref = cup
+	runtime_container = container
 
-func _get_dice_scene_key(color: Color) -> String:
-	if color.is_equal_approx(Color.WHITE):
-		return "white"
-	elif color.is_equal_approx(Color.BLACK):
-		return "black"
-	elif color.is_equal_approx(Color.RED):
-		return "red"
-	elif color.is_equal_approx(Color.BLUE):
-		return "blue"
-	elif color.is_equal_approx(Color.GREEN):
-		return "green"
-	else:
-		return "white"
+func _get_dice_color_from_godot_color(color: Color) -> ColoredDice.DiceColor:
+	return ColoredDice.color_from_godot_color(color)
 
-func reset_and_spawn_all_dice(new_dice_defs: Array[DiceDef]) -> void:
-	print("=== 통합 주사위 리셋 시작 ===")
+func reset_and_spawn_all_dice(dice_colors: Array[Color]) -> void:
+	print("=== 새로운 주사위 리셋 시작 ===")
 	print("재활용 주사위: ", dice_nodes.size())
-	print("새 생성 주사위: ", new_dice_defs.size())
+	print("새 생성 주사위: ", dice_colors.size())
 
 	# 1단계: 기존 주사위들을 컵 위로 이동
 	for i in range(dice_nodes.size()):
-		var d = dice_nodes[i]
-		print("재활용 주사위 ", i, " (", d.name, ") 리셋")
+		var dice = dice_nodes[i]
+		print("재활용 주사위 ", i, " (", dice.name, ") 리셋")
 
-		if "freeze" in d:
-			d.freeze = false
-		d.sleeping = false
-		d.linear_velocity = Vector3.ZERO
-		d.angular_velocity = Vector3.ZERO
-		
-		# ★ 수정: 스폰 범위를 안전하게 (-0.5, 0.5) 사용
-		var spawn_pos = cup_ref.global_position + Vector3(
+		# 시그널 중복 연결 방지 - 재활용 주사위는 이미 연결되어 있음
+		# 따라서 여기서는 연결하지 않음
+
+		dice.reset_position(cup_ref.global_position + Vector3(
 			randf_range(-0.5, 0.5),
 			4.0,
 			randf_range(-0.5, 0.5)
-		)
-		d.global_position = spawn_pos
-		d.linear_velocity.y = 0.0
-		
-		# (회전력 제거됨)
-		
-		# ★★★★★
-		# ★ 핵심 수정: 순차 스폰 (물리 폭발 방지)
-		# ★ 1프레임 대기하여 이 주사위가 먼저 떨어지기 시작하도록 함
-		# ★★★★★
+		))
+
+		# 재활용 주사위도 스폰 물리 적용
+		dice.setup_physics_for_spawning()
+
 		await get_tree().process_frame
 
 	# 2단계: 새 주사위들 생성
-	dice_set.append_array(new_dice_defs)
-	for i in range(new_dice_defs.size()):
-		var d_def = new_dice_defs[i]
-		print("새 주사위 ", i, " 생성: ", d_def.name, " 색상: ", d_def.color)
-		
-		var scene_key = _get_dice_scene_key(d_def.color)
-		var dice_scene = DICE_SCENES.get(scene_key)
-		
-		if not dice_scene:
-			push_error("주사위 씬을 찾을 수 없음: ", scene_key)
-			continue
-		
-		var dice_instance = dice_scene.instantiate()
-		var dice: Dice = _create_dice_from_gltf(dice_instance, d_def)
-		
-		var main_node = get_tree().current_scene
-		if main_node == null:
-			main_node = get_parent()
-		main_node.add_child(dice)
-		
-		# ★ 수정: 스폰 범위를 안전하게 (-0.5, 0.5) 사용
+	for i in range(dice_colors.size()):
+		var color = dice_colors[i]
+		print("새 주사위 ", i, " 생성, 색상: ", color)
+
+		var dice_color = _get_dice_color_from_godot_color(color)
+		var dice = ColoredDice.new()
+
+		var target_parent = runtime_container
+		if target_parent == null:
+			target_parent = get_tree().current_scene
+			if target_parent == null:
+				target_parent = get_parent()
+		target_parent.add_child(dice)
+
+		# 동적 생성된 노드는 씬에 저장되지 않도록 설정
+		dice.owner = null
+		dice.set_meta("_editor_description_", "Runtime Generated Dice - Do Not Save")
+		dice.set_meta("_edit_lock_", true)
+		dice.add_to_group("runtime_dice", true)
+
+		# 추가 보호: 씬 트리에서 완전히 분리
+		dice.scene_file_path = ""
+
 		var spawn_pos = cup_ref.global_position + Vector3(
 			randf_range(-0.5, 0.5),
 			4.0,
 			randf_range(-0.5, 0.5)
 		)
-		dice.global_position = spawn_pos
-		
-		print("주사위 위치: ", dice.global_position)
-		print("컵 위치: ", cup_ref.global_position)
-		
-		dice.add_to_group('dice')
-		dice.freeze = false
-		dice.linear_velocity.y = 0.0
 
-		# (회전력 제거됨)
+		dice.setup_dice(dice_color, spawn_pos)
+		dice.setup_physics_for_spawning()
 
 		dice_nodes.append(dice)
-		dice.roll_finished.connect(_on_dice_roll_finished.bind(dice.name))
 
-		# ★★★★★
-		# ★ 핵심 수정: 순차 스폰 (물리 폭발 방지)
-		# ★ 1프레임 대기하여 이 주사위가 먼저 떨어지기 시작하도록 함
-		# ★★★★★
+		# 중복 연결 방지
+		if not dice.roll_finished.is_connected(_on_dice_roll_finished):
+			dice.roll_finished.connect(_on_dice_roll_finished)
+
 		await get_tree().process_frame
 
 	print("=== 모든 주사위 배치 완료 - 정착 대기 시작 ===")
-	
-	await wait_for_dice_settlement()
-	
-	print("=== 통합 주사위 리셋 완료 ===")
 
-func _create_dice_from_gltf(gltf_instance: Node, d_def: DiceDef) -> Dice:
-	var D6Dice = load("res://addons/dice_roller/dice/d6_dice/d6_dice.gd")
-	
-	var dice = D6Dice.new()
-	dice.name = d_def.name
-	dice.dice_color = d_def.color
-	dice.pips_texture_original = d_def.pips_texture
-	
-	var collider = CollisionShape3D.new()
-	collider.name = "Collider"
-	var box_shape = BoxShape3D.new()
-	box_shape.size = Vector3(GODOT_DICE_SIZE, GODOT_DICE_SIZE, GODOT_DICE_SIZE)
-	box_shape.margin = 0.04
-	collider.shape = box_shape
-	dice.add_child(collider)
-	
-	var highlight = MeshInstance3D.new()
-	highlight.name = "FaceHighligth"
-	
-	var quad_mesh = QuadMesh.new()
-	quad_mesh.size = Vector2(GODOT_DICE_SIZE * 1.1, GODOT_DICE_SIZE * 1.1)
-	quad_mesh.center_offset = Vector3(0, 0, -GODOT_DICE_SIZE * 0.4)
-	highlight.mesh = quad_mesh
-	highlight.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	
-	dice.add_child(highlight)
-	
-	gltf_instance.name = "DiceMesh"
-	var scale_factor = GODOT_DICE_SIZE / BLENDER_DICE_SIZE
-	gltf_instance.scale = Vector3(scale_factor, scale_factor, scale_factor)
-	dice.add_child(gltf_instance)
-	
-	return dice
+	await wait_for_dice_settlement()
+
+	print("=== 주사위 리셋 완료 ===")
+
 
 func _on_dice_roll_finished(value: int, dice_name: String) -> void:
 	dice_roll_finished.emit(value, dice_name)
 
-# ... (create_dice_definitions, create_new_dice_definitions 등 나머지 함수 동일) ...
-
-func create_dice_definitions(bag: DiceBag, count: int) -> Array[DiceDef]:
-	var defs: Array[DiceDef] = []
+func create_dice_colors_from_bag(bag: DiceBag, count: int) -> Array[Color]:
+	var colors: Array[Color] = []
 	if not bag.can_draw(count):
-		push_error("Bag empty, cannot create dice definitions")
-		return defs
+		push_error("Bag empty, cannot create dice colors")
+		return colors
 
-	var d6_shape = DiceShape.new("D6")
 	var keys = bag.draw_many(count)
 
-	for i in range(count):
-		var d_def = DiceDef.new()
-		d_def.name = "D6_" + str(i)
-		d_def.shape = d6_shape
-		d_def.color = GameConstants.BAG_COLOR_MAP.get(keys[i], Color.WHITE)
-		d_def.pips_texture = PIPS_TEXTURE
-		defs.append(d_def)
+	for key in keys:
+		var color = GameConstants.BAG_COLOR_MAP.get(key, Color.WHITE)
+		colors.append(color)
 
-	return defs
-
-func create_new_dice_definitions(bag: DiceBag, count: int) -> Array[DiceDef]:
-	var defs: Array[DiceDef] = []
-	if not bag.can_draw(count):
-		return defs
-
-	var d6_shape = DiceShape.new("D6")
-	var keys = bag.draw_many(count)
-
-	for i in range(count):
-		var d_def = DiceDef.new()
-		d_def.name = "D6_new_%s_%d" % [str(Time.get_ticks_msec()), i]
-		d_def.shape = d6_shape
-		d_def.color = GameConstants.BAG_COLOR_MAP.get(keys[i], Color.WHITE)
-		d_def.pips_texture = PIPS_TEXTURE
-		defs.append(d_def)
-
-	return defs
+	return colors
 
 func tag_spawned_nodes_with_keys(keys: Array) -> void:
 	var n: int = min(dice_nodes.size(), keys.size())
 	for i in range(n):
-		var d = dice_nodes[i]
-		d.set_meta("bag_key", keys[i])
+		var dice = dice_nodes[i]
+		dice.set_meta("bag_key", keys[i])
 
 func apply_dice_impulse() -> void:
 	for dice in dice_nodes:
-		dice.apply_central_impulse(Vector3(
+		var impulse = Vector3(
 			randf_range(GameConstants.DICE_IMPULSE_RANGE.x, GameConstants.DICE_IMPULSE_RANGE.y),
 			randf_range(GameConstants.DICE_IMPULSE_Y_RANGE.x, GameConstants.DICE_IMPULSE_Y_RANGE.y),
 			randf_range(GameConstants.DICE_IMPULSE_Z_RANGE.x, GameConstants.DICE_IMPULSE_Z_RANGE.y)
-		))
+		)
 
-		dice.apply_torque_impulse(Vector3(
+		var torque = Vector3(
 			randf_range(GameConstants.DICE_TORQUE_RANGE.x, GameConstants.DICE_TORQUE_RANGE.y),
 			randf_range(GameConstants.DICE_TORQUE_RANGE.x, GameConstants.DICE_TORQUE_RANGE.y),
 			randf_range(GameConstants.DICE_TORQUE_RANGE.x, GameConstants.DICE_TORQUE_RANGE.y)
-		))
+		)
 
-		dice.rolling = true
+		dice.apply_impulse_force(impulse, torque)
+		dice.start_rolling()
 
 func display_dice_results(roll_results: Dictionary) -> void:
 	var center_x = 0.0
@@ -230,20 +135,30 @@ func display_dice_results(roll_results: Dictionary) -> void:
 
 	for i in range(dice_nodes.size()):
 		var dice = dice_nodes[i]
-		var target_pos = Vector3(start_x + i * GameConstants.DICE_SPACING, GameConstants.DISPLAY_Y, 0.0)
 
+		# 결과값 먼저 확인
+		if not roll_results.has(dice.name):
+			printerr("No roll result found for dice: ", dice.name)
+			continue
+
+		var result_value = roll_results[dice.name]
+		print("Dice ", dice.name, " rolled: ", result_value)
+
+		# 주사위를 해당 면으로 회전 (물리 멈추기 전에 먼저 설정)
+		dice.show_face(result_value)
+
+		# 물리 정지
+		dice.freeze_mode = RigidBody3D.FREEZE_MODE_KINEMATIC
+		dice.linear_velocity = Vector3.ZERO
+		dice.angular_velocity = Vector3.ZERO
+
+		var target_pos = Vector3(start_x + i * GameConstants.DICE_SPACING, GameConstants.DISPLAY_Y, 0.0)
 		var tween: Tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
-		dice.freeze = true
-		
+		# 위치만 이동 (회전은 유지)
 		tween.parallel().tween_property(dice, "global_position", target_pos, move_duration)
 
 		await tween.finished
-		
-		if roll_results.has(dice.name):
-			dice.show_face(roll_results[dice.name])
-		else:
-			printerr("No roll result found for dice: ", dice.name)
 
 func remove_dice(dice_to_remove: Array) -> void:
 	print("=== remove_dice 시작 ===")
@@ -254,30 +169,23 @@ func remove_dice(dice_to_remove: Array) -> void:
 		if dice in dice_nodes:
 			dice_nodes.erase(dice)
 
-			for i in range(dice_set.size() - 1, -1, -1):
-				if dice_set[i].name == dice.name:
-					dice_set.remove_at(i)
-					break
-
 	print("제거 후 dice_nodes 크기: ", dice_nodes.size())
-	print("제거 후 dice_set 크기: ", dice_set.size())
 	print("=== remove_dice 완료 ===")
 
-func get_dice_nodes() -> Array[Node]:
+func get_dice_nodes() -> Array[ColoredDice]:
 	return dice_nodes
 
 func get_dice_count() -> int:
 	return dice_nodes.size()
 
-func clear_dice_set() -> void:
-	print("=== clear_dice_set 시작 ===")
-	print("초기화 전 dice_set 크기: ", dice_set.size())
+func clear_dice_nodes() -> void:
+	print("=== clear_dice_nodes 시작 ===")
 	print("초기화 전 dice_nodes 크기: ", dice_nodes.size())
 
-	dice_set.clear()
+	dice_nodes.clear()
 
-	print("초기화 후 dice_set 크기: ", dice_set.size())
-	print("=== clear_dice_set 완료 ===")
+	print("초기화 후 dice_nodes 크기: ", dice_nodes.size())
+	print("=== clear_dice_nodes 완료 ===")
 
 func wait_for_dice_settlement() -> void:
 	print("=== 주사위 정착 대기 시작 ===")

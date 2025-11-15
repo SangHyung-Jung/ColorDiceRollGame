@@ -26,7 +26,7 @@ movie_writer/movie_file="C:/e/dice/output.avi"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/dice_roller/plugin.cfg")
+enabled=PackedStringArray()
 
 [physics]
 

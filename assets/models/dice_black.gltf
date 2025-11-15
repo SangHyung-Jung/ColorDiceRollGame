@@ -15,12 +15,7 @@
 	"nodes":[
 		{
 			"mesh":0,
-			"name":"D6_Dice_Black",
-			"translation":[
-				24,
-				0,
-				0
-			]
+			"name":"D6_Dice_Black"
 		}
 	],
 	"materials":[

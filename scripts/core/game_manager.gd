@@ -29,7 +29,7 @@ func initialize() -> void:
 ## @param cup_node: 설정할 컵 노드
 func setup_cup(cup_node: Node3D) -> void:
 	cup = cup_node
-	cup_collision_mesh = cup.get_node("CollisionMesh")
+	cup_collision_mesh = cup.get_node("PhysicsBody/CollisionMesh")
 
 	# 컵 내부 영역의 시그널 연결 (주사위 진입/이탈 감지)
 	var cup_inside_area: Area3D = cup.get_node("PhysicsBody/InsideArea")
@@ -47,6 +47,10 @@ func on_dice_roll_finished(value: int, dice_name: String) -> void:
 	print(dice_name, " rolled a ", value)
 	_finished_dice_count += 1
 	_roll_results[dice_name] = value
+
+	# 현재 굴리기 중인 주사위 개수와 비교하여 완료 확인
+	if dice_in_cup_count > 0:
+		check_if_all_dice_finished(dice_in_cup_count)
 
 func check_if_all_dice_finished(total_dice_count: int) -> bool:
 	if _finished_dice_count == total_dice_count:
@@ -94,12 +98,19 @@ func end_challenge_due_to_empty_bag() -> void:
 
 # Cup area signal handlers
 func _on_dice_entered_cup(body: Node3D) -> void:
-	if body.has_method("apply_inside_cup_physics"):
+	if body.is_in_group("dice"):
 		dice_in_cup_count += 1
+		# 컵 안으로 들어오면 컵 내부 물리 적용
+		if body.has_method("apply_inside_cup_physics"):
+			body.apply_inside_cup_physics()
 
 func _on_dice_exited_cup(body: Node3D) -> void:
-	if body.has_method("apply_outside_cup_physics"):
+	# ★ 수정: 컵에서 나갈 때는 '테이블 물리'를 적용해주는 것이 맞습니다.
+	if body.is_in_group("dice"):
 		dice_in_cup_count -= 1
+		if body.has_method("apply_outside_cup_physics"):
+			body.apply_outside_cup_physics() # <- 이것은 유지
+			
 		if dice_in_cup_count <= 0:
 			if cup_collision_mesh:
 				cup_collision_mesh.use_collision = false

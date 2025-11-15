@@ -16,6 +16,7 @@ class_name MainScreen
 @onready var rolling_area: SubViewportContainer = $HSplitContainer/GameArea/RollingArea
 # === 3D 씬 참조 ===
 var world_3d: Node3D
+var runtime_container: Node3D  # 런타임 생성 노드들을 위한 컨테이너
 var scene_manager: SceneManager
 var game_manager: GameManager
 var input_manager: InputManager
@@ -40,7 +41,19 @@ var dice_bag_popup: Window
 func _ready() -> void:
 	# 3D 월드 생성
 	world_3d = Node3D.new()
+	world_3d.name = "World3D"
+	world_3d.owner = null
+	world_3d.scene_file_path = ""
 	sub_viewport.add_child(world_3d)
+
+	# 런타임 컨테이너 생성 (동적 노드들용)
+	runtime_container = Node3D.new()
+	runtime_container.name = "RuntimeContainer"
+	runtime_container.owner = null  # 씬에 저장되지 않음
+	runtime_container.scene_file_path = ""
+	runtime_container.set_meta("_edit_lock_", true)
+	runtime_container.set_meta("_editor_description_", "Runtime Container - Do Not Save")
+	world_3d.add_child(runtime_container)
 
 	# 팝업 초기화
 	dice_bag_popup = DiceBagPopupScene.instantiate()
@@ -78,7 +91,7 @@ func _setup_game() -> void:
 	game_manager.initialize()
 	game_manager.setup_cup(cup)
 	input_manager.initialize(combo_select, scene_manager.get_camera())
-	dice_spawner.initialize(cup)
+	dice_spawner.initialize(cup, runtime_container)
 	_invest_initial_dice()
 	_spawn_initial_dice()
 
@@ -87,37 +100,37 @@ func _invest_initial_dice() -> void:
 		push_error("Not enough dice in bag for initial investment")
 		return
 
-	var dice_defs = dice_spawner.create_dice_definitions(game_manager.bag, 5)
+	var dice_colors = dice_spawner.create_dice_colors_from_bag(game_manager.bag, 5)
 
-	for i in range(dice_defs.size()):
-		var def = dice_defs[i]
+	for i in range(dice_colors.size()):
+		var color = dice_colors[i]
 		var value = randi_range(1, 6)
-		
+
 		var color_key = ""
 		for key in ComboRules.BAG_COLOR_MAP:
-			if ComboRules.BAG_COLOR_MAP[key] == def.color:
+			if ComboRules.BAG_COLOR_MAP[key] == color:
 				color_key = key
 				var atlas = TextureCache.get_atlas(color_key)
 				if atlas == null:
-					print("ERROR in _invest_initial_dice: Atlas not found for color_key: ", color_key)		
+					print("ERROR in _invest_initial_dice: Atlas not found for color_key: ", color_key)
 				var display = DiceFaceImageScene.instantiate()
 				display.custom_minimum_size = Vector2(80, 80)
 				display.name = "invested_dice_init_" + str(i)
 				invested_dice_container.add_child(display)
 				display.set_face(value, atlas)
 				display.value = value
-				display.dice_color = def.color
+				display.dice_color = color
 
 func _spawn_initial_dice() -> void:
 	if not game_manager.can_draw_dice(GameConstants.HAND_SIZE):
 		push_error("Bag empty at init")
 		return
-	var dice_defs = dice_spawner.create_dice_definitions(game_manager.bag, GameConstants.HAND_SIZE)
-	dice_spawner.reset_and_spawn_all_dice(dice_defs)
+	var dice_colors = dice_spawner.create_dice_colors_from_bag(game_manager.bag, GameConstants.HAND_SIZE)
+	dice_spawner.reset_and_spawn_all_dice(dice_colors)
 	var keys = []
-	for def in dice_defs:
+	for color in dice_colors:
 		for color_key in GameConstants.BAG_COLOR_MAP:
-			if GameConstants.BAG_COLOR_MAP[color_key] == def.color:
+			if GameConstants.BAG_COLOR_MAP[color_key] == color:
 				keys.append(color_key)
 				break
 	dice_spawner.tag_spawned_nodes_with_keys(keys)
@@ -168,8 +181,10 @@ func _on_roll_finished() -> void:
 
 func _on_dice_roll_finished(value: int, dice_name: String) -> void:
 	game_manager.on_dice_roll_finished(value, dice_name)
-	if game_manager.check_if_all_dice_finished(dice_spawner.get_dice_count()):
-		_on_roll_finished()
+	# check_if_all_dice_finished에서 roll_finished 시그널을 emit하므로
+	# 여기서 직접 _on_roll_finished를 호출하면 중복 실행됨
+	# 따라서 시그널만 기다림
+	game_manager.check_if_all_dice_finished(dice_spawner.get_dice_count())
 
 func _on_submit_pressed() -> void:
 	var all_selected_nodes = []
@@ -215,9 +230,9 @@ func _reset_roll() -> void:
 		if not game_manager.can_draw_dice(need):
 			game_manager.end_challenge_due_to_empty_bag()
 			return
-		var new_dice_defs = dice_spawner.create_new_dice_definitions(game_manager.bag, need)
-		await dice_spawner.reset_and_spawn_all_dice(new_dice_defs)
-	
+		var new_dice_colors = dice_spawner.create_dice_colors_from_bag(game_manager.bag, need)
+		await dice_spawner.reset_and_spawn_all_dice(new_dice_colors)
+
 	game_manager.dice_in_cup_count = dice_spawner.get_dice_count()
 
 func _on_mouse_release() -> void:
@@ -289,10 +304,24 @@ func _on_turn_end_pressed() -> void:
 		for d in remaining_dice:
 			d.queue_free()
 		
-		dice_spawner.dice_nodes.clear()
-		dice_spawner.dice_set.clear()
+		dice_spawner.clear_dice_nodes()
 	else:
 		print("No more turns left.")
+
+func _cleanup_runtime_nodes() -> void:
+	# 런타임 컨테이너의 모든 자식 노드 정리
+	if runtime_container:
+		for child in runtime_container.get_children():
+			child.queue_free()
+
+# 에디터에서 씬이 닫힐 때 호출되는 함수 (추가 보호)
+func _notification(what):
+	if what == NOTIFICATION_PREDELETE:
+		_cleanup_runtime_nodes()
+
+# 게임 종료 시에도 정리
+func _exit_tree():
+	_cleanup_runtime_nodes()
 
 func _on_view_dice_bag_pressed() -> void:
 	dice_bag_popup.update_counts(game_manager.bag)
