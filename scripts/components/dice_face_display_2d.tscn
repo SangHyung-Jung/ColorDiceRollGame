@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b7gdufucg0i2c"]
+
+[ext_resource type="Script" path="res://scripts/components/dice_face_display_2d.gd" id="1_abcde"]
+
+[node name="DiceFaceDisplay2D" type="Control"]
+script = ExtResource("1_abcde")

@@ -1,6 +1,6 @@
 extends Window
 
-const DiceFaceImageScene = preload("res://scripts/components/dice_face_image.tscn")
+const DiceFaceDisplay2DScene = preload("res://scripts/components/dice_face_display_2d.tscn")
 
 const COLORS = [
 	{"key": "W", "name": "하얀색"},
@@ -21,7 +21,7 @@ func _ready():
 		var key = color_info["key"]
 		
 		# Create Dice Image
-		var image = DiceFaceImageScene.instantiate()
+		var image = DiceFaceDisplay2DScene.instantiate()
 		image.custom_minimum_size = Vector2(60, 60)
 		image.set_face(6, TextureCache.get_atlas(key))
 		grid.add_child(image)

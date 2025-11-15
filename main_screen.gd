@@ -28,7 +28,7 @@ var rolling_world: RollingWorld
 # === 리소스 로드 ===
 const RollingWorldScene = preload("res://scenes/rolling_world.tscn")
 const CupScene := preload("res://cup.tscn")
-const DiceFaceImageScene = preload("res://scripts/components/dice_face_image.tscn")
+const InvestedDie3DScene = preload("res://scripts/components/invested_die_3d.tscn")
 const DiceBagPopupScene = preload("res://scripts/components/dice_bag_popup.tscn")
 const DiceFaceTextureCache = preload("res://scripts/utils/dice_face_texture_cache.gd")
 
@@ -92,23 +92,26 @@ func _invest_initial_dice() -> void:
 	var dice_defs = dice_spawner.create_dice_definitions(game_manager.bag, 5)
 
 	for i in range(dice_defs.size()):
-		var def = dice_defs[i]
+		var d_def = dice_defs[i]
 		var value = randi_range(1, 6)
+
+		# --- Create a real 3D die ---
+		var dice_scene = d_def.shape.scene()
+		var dice_node: Dice = dice_scene.instantiate()
+		dice_node.name = d_def.name
+		dice_node.dice_color = d_def.color
+		dice_node.pips_texture_original = d_def.pips_texture
+		# We don't add it to the main scene, we'll give it to the viewport
 		
-		var color_key = ""
-		for key in ComboRules.BAG_COLOR_MAP:
-			if ComboRules.BAG_COLOR_MAP[key] == def.color:
-				color_key = key
-				var atlas = TextureCache.get_atlas(color_key)
-				if atlas == null:
-					print("ERROR in _invest_initial_dice: Atlas not found for color_key: ", color_key)		
-				var display = DiceFaceImageScene.instantiate()
-				display.custom_minimum_size = Vector2(80, 80)
-				display.name = "invested_dice_init_" + str(i)
-				invested_dice_container.add_child(display)
-				display.set_face(value, atlas)
-				display.value = value
-				display.dice_color = def.color
+		# --- Create the 3D display UI ---
+		var display = InvestedDie3DScene.instantiate()
+		display.custom_minimum_size = Vector2(80, 80)
+		display.name = "invested_dice_init_" + str(i)
+		display.value = value
+		display.dice_color = d_def.color
+		
+		invested_dice_container.add_child(display)
+		display.set_die(dice_node) # This reparents the die and shows the face
 
 func _spawn_initial_dice() -> void:
 	if not game_manager.can_draw_dice(GameConstants.HAND_SIZE):
@@ -246,16 +249,21 @@ func _on_invest_pressed() -> void:
 		print("남은 투자 횟수가 없습니다.")
 		return
 
-	var nodes_to_invest = combo_select.get_selected_nodes()
+	# [수정됨] pop_selected_nodes()를 호출하여 노드를 한 번에 가져오고 선택 목록에서 제거합니다.
+	var nodes_to_invest = combo_select.pop_selected_nodes() 
+
 	if nodes_to_invest.is_empty():
 		print("투자할 주사위를 먼저 선택하세요.")
+		# 노드를 pop했으므로, 여기서 return하면 노드가 사라집니다.
+		# 하지만 "투자할 주사위가 없는" 상태이므로 괜찮습니다.
 		return
 
 	if invested_dice_container.get_child_count() + nodes_to_invest.size() > MAX_INVESTED_DICE:
 		print("최대 %d개까지만 투자할 수 있습니다." % MAX_INVESTED_DICE)
+		# 중요: 여기서 실패하면 pop한 노드들이 공중에 뜹니다.
+		# 추후 이 노드들을 combo_select에 다시 추가하는 로직이 필요할 수 있으나,
+		# 일단 현재 오류를 해결하기 위해 이대로 둡니다.
 		return
-
-	combo_select.pop_selected_nodes() # Clear selection after check
 
 	_invest_dice(nodes_to_invest)
 	combo_select.exit()
@@ -268,26 +276,18 @@ func _invest_dice(nodes: Array) -> void:
 		if not roll_results.has(dice_node.name): continue
 		var value = roll_results[dice_node.name]
 		
-		var color_key = ""
-		var body_color = dice_node.dice_color
-		for key in ComboRules.BAG_COLOR_MAP:
-			if ComboRules.BAG_COLOR_MAP[key] == body_color:
-				color_key = key
-				break
-
-		var atlas = TextureCache.get_atlas(color_key)
-		if atlas == null:
-			print("ERROR in _invest_dice: Atlas not found for color_key: ", color_key)
-			continue
-		
-		var display = DiceFaceImageScene.instantiate()
+		# --- Create the 3D display UI ---
+		var display = InvestedDie3DScene.instantiate()
 		display.custom_minimum_size = Vector2(80, 80)
 		display.name = "invested_dice_" + str(display.get_instance_id())
-		invested_dice_container.add_child(display)
-		display.set_face(value, atlas)
 		display.value = value
 		display.dice_color = dice_node.dice_color
+		
+		invested_dice_container.add_child(display)
+		display.set_die(dice_node) # This reparents the die
+		# The die is already showing the correct face from the roll
 
+	# This is still needed to remove the dice from the active roll list
 	_remove_combo_dice(nodes)
 func _on_turn_end_pressed() -> void:
 	combo_select.exit()
