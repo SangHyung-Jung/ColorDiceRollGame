@@ -13,6 +13,8 @@ rim = 0.73
 rim_tint = 0.64
 
 [sub_resource type="Environment" id="Environment_uo4yi"]
+background_mode = 1
+background_color = Color(0, 0, 0, 0)
 
 [node name="RollerBox" type="StaticBody3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 0)

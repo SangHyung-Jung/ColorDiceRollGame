@@ -83,33 +83,45 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "주사위 주머니 보기"
 
-[node name="GameArea" type="VBoxContainer" parent="MainLayout"]
+[node name="GameArea" type="Control" parent="MainLayout"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 0
+
+[node name="RollingArea" type="SubViewportContainer" parent="MainLayout/GameArea"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SubViewport" type="SubViewport" parent="MainLayout/GameArea/RollingArea"]
+handle_input_locally = false
+size = Vector2i(752, 648)
+render_target_update_mode = 4
 
 [node name="FieldArea" type="MarginContainer" parent="MainLayout/GameArea"]
 custom_minimum_size = Vector2(0, 120)
-layout_mode = 2
-theme_override_constants/margin_top = 25
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 120.0
+grow_horizontal = 2
 
 [node name="InvestedDiceContainer" type="HBoxContainer" parent="MainLayout/GameArea/FieldArea"]
 layout_mode = 2
 alignment = 1
 
-[node name="RollingArea" type="SubViewportContainer" parent="MainLayout/GameArea"]
-layout_mode = 2
-size_flags_vertical = 3
-stretch = true
-
-[node name="SubViewport" type="SubViewport" parent="MainLayout/GameArea/RollingArea"]
-handle_input_locally = false
-size = Vector2i(752, 428)
-render_target_update_mode = 4
-
 [node name="InteractionUI" type="MarginContainer" parent="MainLayout/GameArea"]
 custom_minimum_size = Vector2(0, 100)
-layout_mode = 2
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -100.0
+grow_horizontal = 2
+grow_vertical = 0
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10

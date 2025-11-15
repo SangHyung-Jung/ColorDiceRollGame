@@ -39,10 +39,12 @@ const CAMERA_ROTATION := Vector3(-90, 0, 0)  # 탑뷰를 위한 카메라 회전
 
 # === 3D 환경 설정 ===
 const FLOOR_SIZE := Vector3(50, 0, 50)  # 바닥 크기 (가로, 높이, 세로)
-const FLOOR_COLOR := Color.DARK_SLATE_GRAY  # 바닥 색상
+#const FLOOR_COLOR := Color(0, 0, 0, 0)  # 바닥 색상 (투명)
+const FLOOR_COLOR := Color(0, 0, 0, 0)
+const FLOOR_TEXTURE_PATH := "res://background_dice.png"
 
 # === 주사위 컵 설정 ===
-const CUP_POSITION := Vector3(10, 10, 0)  # 컵 배치 위치
+const CUP_POSITION := Vector3(0, 10, 0)  # 컵 배치 위치
 const CUP_SPAWN_HEIGHT := 2.0  # 주사위 생성 높이
 const CUP_SPAWN_RADIUS := 2.0  # 컵 내부 주사위 생성 반경
 

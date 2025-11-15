@@ -6,6 +6,7 @@ extends Node3D
 
 # 게임용 카메라 (직교 투영, 탑뷰)
 var camera: Camera3D
+var floor_mesh: MeshInstance3D
 
 ## 전체 3D 환경을 설정합니다
 ## 카메라, 조명, 바닥을 순서대로 생성합니다
@@ -49,12 +50,13 @@ func _setup_floor(parent: Node3D) -> void:
 	floor.add_child(floor_shape)
 
 	# 시각적 메시 생성
-	var floor_mesh = MeshInstance3D.new()
+	floor_mesh = MeshInstance3D.new()
 	var plane_mesh = PlaneMesh.new()
 	plane_mesh.size = Vector2(GameConstants.FLOOR_SIZE.x, GameConstants.FLOOR_SIZE.z)  # X, Z 크기
 	# 바닥 재질 설정
 	var floor_mat = StandardMaterial3D.new()
-	floor_mat.albedo_color = GameConstants.FLOOR_COLOR
+	floor_mat.albedo_texture = load(GameConstants.FLOOR_TEXTURE_PATH)
+	floor_mat.uv1_scale = Vector3(1, 1, 1) # Use 1:1 UV scale for single image
 	plane_mesh.material = floor_mat
 	floor_mesh.mesh = plane_mesh
 	floor_mesh.position.y = 1.1  # 충돌 모양과 맞춤
@@ -68,3 +70,6 @@ func _setup_floor(parent: Node3D) -> void:
 ## 다른 시스템에서 레이캐스팅 등에 사용
 func get_camera() -> Camera3D:
 	return camera
+
+func get_floor_mesh() -> MeshInstance3D:
+	return floor_mesh

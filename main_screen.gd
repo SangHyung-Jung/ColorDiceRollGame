@@ -24,6 +24,7 @@ var dice_spawner: DiceSpawner
 var combo_select: ComboSelect
 var cup: Node3D
 var invested_dice: Array[Node3D] = []
+var floor_mesh: MeshInstance3D
 
 # === 리소스 로드 ===
 const CupScene := preload("res://cup.tscn")
@@ -53,6 +54,9 @@ func _ready() -> void:
 	_connect_signals()
 	_update_ui_from_gamestate()
 
+	# 뷰포트 크기 초기화
+	_on_rolling_area_resized()
+
 func _initialize_managers() -> void:
 	scene_manager = SceneManager.new()
 	game_manager = GameManager.new()
@@ -70,6 +74,7 @@ func _initialize_managers() -> void:
 
 func _setup_scene() -> void:
 	scene_manager.setup_environment(world_3d)
+	floor_mesh = scene_manager.get_floor_mesh()
 	cup = CupScene.instantiate()
 	cup.position = GameConstants.CUP_POSITION
 	world_3d.add_child(cup)
@@ -135,6 +140,7 @@ func _connect_signals() -> void:
 
 	# 3D 뷰포트 입력 연결
 	rolling_area.gui_input.connect(_on_rolling_area_gui_input)
+	rolling_area.resized.connect(_on_rolling_area_resized)
 
 func _update_ui_from_gamestate() -> void:
 	update_stage(Main.stage)
@@ -142,6 +148,23 @@ func _update_ui_from_gamestate() -> void:
 	update_current_score(Main.current_score)
 	update_turns_left(Main.turns_left)
 	update_invests_left(Main.invests_left)
+
+func _on_rolling_area_resized() -> void:
+	var viewport_size = rolling_area.size
+	sub_viewport.size = viewport_size
+
+	if viewport_size.y == 0:
+		return
+
+	var aspect_ratio = float(viewport_size.x) / float(viewport_size.y)
+	var camera = scene_manager.get_camera()
+
+	if camera:
+		var view_height = camera.size * 2.0
+		var view_width = view_height * aspect_ratio
+
+		if floor_mesh and floor_mesh.mesh is PlaneMesh:
+			floor_mesh.mesh.size = Vector2(view_width, view_height)
 
 func _on_rolling_area_gui_input(event: InputEvent) -> void:
 	if input_manager.handle_input(event):
