@@ -33,16 +33,16 @@ grow_vertical = 2
 theme_override_constants/separation = 0
 
 [node name="InfoPanel" type="MarginContainer" parent="MainLayout"]
-custom_minimum_size = Vector2(400, 0)
+custom_minimum_size = Vector2(660, 0)
 layout_mode = 2
-theme_override_constants/margin_left = 20
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 20
+theme_override_constants/margin_left = 50
+theme_override_constants/margin_top = 50
+theme_override_constants/margin_right = 50
 theme_override_constants/margin_bottom = 20
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MainLayout/InfoPanel"]
 layout_mode = 2
-theme_override_constants/separation = 25
+theme_override_constants/separation = 26
 
 [node name="VSeparator2" type="Control" parent="MainLayout/InfoPanel/VBoxContainer"]
 layout_mode = 2
@@ -50,37 +50,37 @@ layout_mode = 2
 [node name="StageLabel" type="Label" parent="MainLayout/InfoPanel/VBoxContainer"]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_7a4el")
-theme_override_font_sizes/font_size = 65
+theme_override_font_sizes/font_size = 96
 text = "STAGE 1-1"
 horizontal_alignment = 1
 
 [node name="VSeparator" type="Control" parent="MainLayout/InfoPanel/VBoxContainer"]
-custom_minimum_size = Vector2(0, 40)
+custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 
 [node name="TargetScoreLabel" type="Label" parent="MainLayout/InfoPanel/VBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 36
 text = "목표 점수: 300"
 
 [node name="CurrentScoreLabel" type="Label" parent="MainLayout/InfoPanel/VBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 36
 text = "현재 점수: 0"
 
 [node name="TurnsLeftLabel" type="Label" parent="MainLayout/InfoPanel/VBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 36
 text = "남은 제출 횟수: 4"
 
 [node name="InvestsLeftLabel" type="Label" parent="MainLayout/InfoPanel/VBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 36
 text = "남은 투자 횟수: 5"
 
 [node name="ViewDiceBagButton" type="Button" parent="MainLayout/InfoPanel/VBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 30
 text = "주사위 주머니 보기"
 
 [node name="GameArea" type="Control" parent="MainLayout"]
@@ -92,6 +92,7 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -3.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -101,11 +102,11 @@ size = Vector2i(752, 648)
 render_target_update_mode = 4
 
 [node name="FieldArea" type="MarginContainer" parent="MainLayout/GameArea"]
-custom_minimum_size = Vector2(0, 120)
+custom_minimum_size = Vector2(0, 180)
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-offset_bottom = 120.0
+offset_bottom = 180.0
 grow_horizontal = 2
 
 [node name="InvestedDiceContainer" type="HBoxContainer" parent="MainLayout/GameArea/FieldArea"]
@@ -113,13 +114,13 @@ layout_mode = 2
 alignment = 1
 
 [node name="InteractionUI" type="MarginContainer" parent="MainLayout/GameArea"]
-custom_minimum_size = Vector2(0, 100)
+custom_minimum_size = Vector2(0, 150)
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -100.0
+offset_top = -150.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_constants/margin_left = 10
@@ -134,22 +135,22 @@ alignment = 1
 
 [node name="SubmitButton" type="Button" parent="MainLayout/GameArea/InteractionUI/HBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 30
 text = "조합 제출"
 
 [node name="InvestButton" type="Button" parent="MainLayout/GameArea/InteractionUI/HBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 30
 text = "투자"
 
 [node name="TurnEndButton" type="Button" parent="MainLayout/GameArea/InteractionUI/HBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 30
 text = "턴 종료"
 
 [node name="ResultLabel" type="Label" parent="MainLayout/GameArea/InteractionUI/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 30
 text = "예상 점수: "
 vertical_alignment = 1

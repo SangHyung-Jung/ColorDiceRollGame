@@ -16,7 +16,6 @@ class_name MainScreen
 @onready var rolling_area: SubViewportContainer = $MainLayout/GameArea/RollingArea
 # === 3D 씬 참조 ===
 var world_3d: Node3D
-var scene_manager: SceneManager
 var game_manager: GameManager
 var input_manager: InputManager
 var score_manager: ScoreManager
@@ -24,9 +23,10 @@ var dice_spawner: DiceSpawner
 var combo_select: ComboSelect
 var cup: Node3D
 var invested_dice: Array[Node3D] = []
-var floor_mesh: MeshInstance3D
+var rolling_world: RollingWorld
 
 # === 리소스 로드 ===
+const RollingWorldScene = preload("res://scenes/rolling_world.tscn")
 const CupScene := preload("res://cup.tscn")
 const DiceFaceImageScene = preload("res://scripts/components/dice_face_image.tscn")
 const DiceBagPopupScene = preload("res://scripts/components/dice_bag_popup.tscn")
@@ -40,7 +40,8 @@ var dice_bag_popup: Window
 
 func _ready() -> void:
 	# 3D 월드 생성
-	world_3d = Node3D.new()
+	rolling_world = RollingWorldScene.instantiate()
+	world_3d = rolling_world
 	sub_viewport.add_child(world_3d)
 
 	# 팝업 초기화
@@ -58,14 +59,12 @@ func _ready() -> void:
 	_on_rolling_area_resized()
 
 func _initialize_managers() -> void:
-	scene_manager = SceneManager.new()
 	game_manager = GameManager.new()
 	input_manager = InputManager.new()
 	score_manager = ScoreManager.new()
 	dice_spawner = DiceSpawner.new()
 	combo_select = ComboSelect.new()
 
-	world_3d.add_child(scene_manager)
 	world_3d.add_child(game_manager)
 	world_3d.add_child(input_manager)
 	world_3d.add_child(score_manager)
@@ -73,8 +72,6 @@ func _initialize_managers() -> void:
 	world_3d.add_child(combo_select)
 
 func _setup_scene() -> void:
-	scene_manager.setup_environment(world_3d)
-	floor_mesh = scene_manager.get_floor_mesh()
 	cup = CupScene.instantiate()
 	cup.position = GameConstants.CUP_POSITION
 	world_3d.add_child(cup)
@@ -82,7 +79,7 @@ func _setup_scene() -> void:
 func _setup_game() -> void:
 	game_manager.initialize()
 	game_manager.setup_cup(cup)
-	input_manager.initialize(combo_select, scene_manager.get_camera())
+	input_manager.initialize(combo_select, rolling_world.camera)
 	dice_spawner.initialize(cup)
 	_invest_initial_dice()
 	_spawn_initial_dice()
@@ -153,18 +150,8 @@ func _on_rolling_area_resized() -> void:
 	var viewport_size = rolling_area.size
 	sub_viewport.size = viewport_size
 
-	if viewport_size.y == 0:
-		return
-
-	var aspect_ratio = float(viewport_size.x) / float(viewport_size.y)
-	var camera = scene_manager.get_camera()
-
-	if camera:
-		var view_height = camera.size * 2.0
-		var view_width = view_height * aspect_ratio
-
-		if floor_mesh and floor_mesh.mesh is PlaneMesh:
-			floor_mesh.mesh.size = Vector2(view_width, view_height)
+	if rolling_world:
+		rolling_world.update_size(viewport_size)
 
 func _on_rolling_area_gui_input(event: InputEvent) -> void:
 	if input_manager.handle_input(event):

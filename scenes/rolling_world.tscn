@@ -1,0 +1,44 @@
+[gd_scene load_steps=7 format=3 uid="uid://bciyvj2g1j1vj"]
+
+[ext_resource type="Script" uid="uid://l3bjc61rxk33" path="res://scenes/rolling_world.gd" id="1_zodac"]
+[ext_resource type="Texture2D" uid="uid://c0p67sp8d2pck" path="res://background_dice.png" id="2_v3p1h"]
+
+[sub_resource type="Environment" id="Environment_zodac"]
+background_mode = 1
+background_color = Color(0.25, 0.25, 0.25, 1)
+ambient_light_source = 3
+ambient_light_color = Color(0.5, 0.5, 0.5, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_zodac"]
+size = Vector3(50, 0.1, 50)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_zodac"]
+size = Vector2(48, 36)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_zodac"]
+albedo_texture = ExtResource("2_v3p1h")
+
+[node name="RollingWorld" type="Node3D"]
+script = ExtResource("1_zodac")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_zodac")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 30, 0)
+projection = 1
+size = 18.0
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.953717, 0.24321, -0.17101, 0, 0.707107, 0.707107, 0.30051, -0.66438, 0.686901, 0, 0, 0)
+shadow_enabled = true
+
+[node name="Floor" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor"]
+shape = SubResource("BoxShape3D_zodac")
+
+[node name="FloorMesh" type="MeshInstance3D" parent="Floor"]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0, 0)
+mesh = SubResource("PlaneMesh_zodac")
+surface_material_override/0 = SubResource("StandardMaterial3D_zodac")
