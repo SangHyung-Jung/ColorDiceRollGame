@@ -5,7 +5,7 @@
 [node name="DiceBagPopup" type="Window"]
 title = "주사위 주머니"
 initial_position = 1
-size = Vector2i(300, 400)
+size = Vector2i(300, 600)
 visible = false
 script = ExtResource("1")
 
