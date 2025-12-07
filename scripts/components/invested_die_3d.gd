@@ -4,44 +4,28 @@ extends SubViewportContainer
 @onready var camera: Camera3D = $SubViewport/Camera3D
 
 # --- Public Properties ---
-var value: int = 0
-var dice_color: Color = Color.WHITE
+var value: int = 1
+var dice_color_enum: ColoredDice.DiceColor = ColoredDice.DiceColor.WHITE
 var selected: bool = false
 # -------------------------
 
-# 주사위 노드를 임시로 저장할 변수
-var _die_node_to_set: Node3D = null
-
-# 이 함수는 main_screen.gd에서 호출됩니다.
-func set_die(die_node: Node3D):
-	if die_node == null:
-		print("ERROR: set_die was called with a null die_node!")
-		return
-	
-	# 주사위 노드를 임시 변수에 저장합니다.
-	_die_node_to_set = die_node
-
-
-# _ready()는 모든 @onready 변수가 준비된 후에 호출됩니다.
 func _ready():
-	# 컨테이너 크기가 변경될 때 SubViewport 크기를 조정하기 위해 신호에 연결합니다.
-	resized.connect(_on_resized)
-	# 초기 크기 설정
-	_on_resized()
-	print("InvestedDie3D _ready: initial size = ", size)
+	# 씬과의 간섭을 완전히 차단하기 위해 새로운 World3D 리소스를 코드로 생성합니다.
+	subviewport.world_3d = World3D.new()
+	
+	# 노드가 씬 트리에 완전히 추가된 후 다음 유휴 프레임에 렌더링을 실행합니다.
+	call_deferred("render_die")
 
-	# --- _ready()에서 주사위 설정 로직 실행 ---
-	if _die_node_to_set != null:
-		if _die_node_to_set.get_parent():
-			_die_node_to_set.get_parent().remove_child(_die_node_to_set)
-		
-		subviewport.add_child(_die_node_to_set)
-		
-		# _finish_setup을 바로 호출합니다.
-		_finish_setup(_die_node_to_set)
-	else:
-		print("WARNING: InvestedDie3D가 주사위 노드 없이 _ready() 상태가 되었습니다.")
-	# --- 주사위 설정 로직 끝 ---
+func render_die():
+	# 이 컴포넌트가 스스로 주사위를 생성하고 설정합니다.
+	var dice_node = ColoredDice.new()
+	
+	# setup_dice는 노드가 씬 트리에 있어야 하므로, 먼저 SubViewport에 추가합니다.
+	subviewport.add_child(dice_node)
+	dice_node.setup_dice(dice_color_enum)
+	
+	# 최종 설정을 실행합니다.
+	_finish_setup(dice_node)
 
 
 func _finish_setup(die_node: Node3D):
@@ -54,29 +38,9 @@ func _finish_setup(die_node: Node3D):
 	die_node.global_transform = Transform3D.IDENTITY
 	die_node.position = Vector3.ZERO
 	
-	# [중요] 불필요한 회전을 제거합니다. (이전 단계에서 수정됨)
-	# die_node.rotation_degrees = Vector3(35, 0, 45)
-	
-	print("--- _finish_setup (Applying Fix) ---")
-	print("Die node: ", die_node.name)
-	print("Die position before show_face: ", die_node.position)
-	print("Camera transform: ", camera.global_transform)
-	
-	# [순서 수정]
 	# 1. 먼저 주사위의 면(값)을 설정하여 올바르게 회전시킵니다.
-	if value > 0:
+	if value > 0 and die_node.has_method("show_face"):
 		die_node.show_face(value)
-		print("Called show_face(%d)" % value)
 
 	# 2. 모든 위치와 회전 설정이 끝난 후, 마지막에 물리 엔진을 정지시킵니다.
 	die_node.freeze = true
-	print("Die frozen in final state.")
-	print("---------------")
-
-
-func _on_resized():
-	# print("InvestedDie3D _on_resized: new size = ", size)
-	# SubViewport의 크기가 컨테이너의 크기와 일치하도록 보장합니다.
-	if subviewport:
-		subviewport.size = Vector2i(size)
-		# print("InvestedDie3D _on_resized: subviewport size set to ", subviewport.size)

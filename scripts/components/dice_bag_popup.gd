@@ -30,21 +30,13 @@ func _ready():
 	for color_info in COLORS:
 		var key = color_info["key"]
 		
-		# --- 3D 주사위 표시 UI 생성 ---
+		# --- 3D 주사위 표시 UI 생성 (새로운 방식) ---
 		var display_3d = InvestedDie3DScene.instantiate()
-		display_3d.custom_minimum_size = Vector2(60, 60)
+		display_3d.custom_minimum_size = Vector2(80, 80) # 크기를 조금 키움
 		
-		# --- 실제 3D 주사위 노드 생성 ---
-		var dice_node = ColoredDice.new()
-		# setup_dice를 호출하기 전에 임시로 씬에 추가해야 내부 노드들이 생성됨
-		add_child(dice_node)
-		dice_node.setup_dice(color_info["color_enum"])
-		# 실제 씬에는 추가하지 않을 것이므로 다시 제거
-		remove_child(dice_node)
-		
-		# 3D 주사위를 3D 디스플레이에 설정 (값은 6으로 고정하여 표시)
+		# 값을 6으로 고정하고, 색상 enum을 설정합니다.
 		display_3d.value = 6
-		display_3d.set_die(dice_node)
+		display_3d.dice_color_enum = color_info["color_enum"]
 		
 		grid.add_child(display_3d)
 		
