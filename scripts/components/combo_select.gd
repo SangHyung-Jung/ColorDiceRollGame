@@ -51,16 +51,16 @@ func _dice_root(n: Node) -> Node3D:
 	return null
 
 func _set_selected(d: Node3D, on: bool) -> void:
-	var mesh := d.get_node_or_null("DiceMesh") as MeshInstance3D
+	var mesh: MeshInstance3D = d.get_mesh()
 	if not mesh:
 		print("ERROR: Could not find DiceMesh on ", d.name)
 		return
 
 	if not d.has_meta("orig_scale"): d.set_meta("orig_scale", d.scale)
 
-	var mat := mesh.get_active_material(0) as StandardMaterial3D
-	if not mat:
-		print("ERROR: Could not find material on ", d.name)
+	var mat = mesh.get_active_material(0)
+	if not mat is StandardMaterial3D:
+		print("ERROR: Could not find a StandardMaterial3D on ", d.name)
 		# 재질이 없어도 스케일은 변경 시도
 		if on:
 			d.scale = (d.get_meta("orig_scale") as Vector3) * SELECT_SCALE
@@ -70,11 +70,20 @@ func _set_selected(d: Node3D, on: bool) -> void:
 
 	# 메시와 재질 모두 유효함
 	if on:
+		# 원래 색상을 메타데이터에 저장 (아직 저장되지 않은 경우)
+		if not d.has_meta("orig_color"):
+			d.set_meta("orig_color", mat.albedo_color)
+		
 		d.scale = (d.get_meta("orig_scale") as Vector3) * SELECT_SCALE
 		mat.albedo_color = SELECT_TINT
 	else:
 		d.scale = d.get_meta("orig_scale") as Vector3
-		mat.albedo_color = Color.WHITE
+		# 메타데이터에서 원래 색상 복원
+		if d.has_meta("orig_color"):
+			mat.albedo_color = d.get_meta("orig_color")
+		else:
+			# 비상시 기본값 (이런 일이 발생해서는 안 됨)
+			mat.albedo_color = Color.WHITE
 func _pick(ev: InputEventMouse) -> Node:
 	var cam: Camera3D = get_viewport().get_camera_3d()
 	if cam == null: return null

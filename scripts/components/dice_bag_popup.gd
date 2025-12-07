@@ -1,16 +1,5 @@
 extends Window
 
-# 3D 주사위 표시를 위해 InvestedDie3DScene을 로드합니다.
-const InvestedDie3DScene = preload("res://scripts/components/invested_die_3d.tscn")
-
-const COLORS = [
-	{"key": "W", "name": "하얀색", "color_enum": ColoredDice.DiceColor.WHITE},
-	{"key": "K", "name": "검은색", "color_enum": ColoredDice.DiceColor.BLACK},
-	{"key": "R", "name": "빨간색", "color_enum": ColoredDice.DiceColor.RED},
-	{"key": "G", "name": "초록색", "color_enum": ColoredDice.DiceColor.GREEN},
-	{"key": "B", "name": "파란색", "color_enum": ColoredDice.DiceColor.BLUE},
-]
-
 # 이제 각 색상 키에 대해 레이블 노드만 저장합니다.
 var ui_labels: Dictionary = {} # { "W": label_node, "K": label_node, ... }
 
@@ -26,19 +15,26 @@ func _ready():
 	for child in grid.get_children():
 		child.queue_free()
 
-	# 3D 주사위와 레이블을 생성하여 그리드에 추가합니다.
-	for color_info in COLORS:
-		var key = color_info["key"]
+	# GameConstants를 기반으로 2D UI를 동적으로 생성합니다.
+	for key in GameConstants.BAG_COLOR_MAP:
+		var color = GameConstants.BAG_COLOR_MAP[key]
 		
-		# --- 3D 주사위 표시 UI 생성 (새로운 방식) ---
-		var display_3d = InvestedDie3DScene.instantiate()
-		display_3d.custom_minimum_size = Vector2(80, 80) # 크기를 조금 키움
-		
-		# 값을 6으로 고정하고, 색상 enum을 설정합니다.
-		display_3d.value = 6
-		display_3d.dice_color_enum = color_info["color_enum"]
-		
-		grid.add_child(display_3d)
+		# --- 2D 색상 사각형 생성 ---
+		var color_rect = ColorRect.new()
+		color_rect.custom_minimum_size = Vector2(60, 60)
+		color_rect.color = color
+		# 검은색 사각형이 잘 보이도록 테두리를 추가합니다.
+		if color == Color.BLACK:
+			var style_box = StyleBoxFlat.new()
+			style_box.set_border_width_all(2)
+			style_box.border_color = Color.WHITE
+			style_box.bg_color = Color.BLACK
+			var panel = Panel.new()
+			panel.custom_minimum_size = Vector2(60, 60)
+			panel.add_theme_stylebox_override("panel", style_box)
+			grid.add_child(panel)
+		else:
+			grid.add_child(color_rect)
 		
 		# --- 개수 표시 레이블 생성 ---
 		var label = Label.new()

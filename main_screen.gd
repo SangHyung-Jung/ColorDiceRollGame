@@ -1,7 +1,7 @@
 extends Control
 class_name MainScreen
 
-# === UI 노드 참조 (UI 버전에 맞게 수정됨) ===
+# === UI 노드 참조 ===
 @onready var stage_label: Label = $MainLayout/InfoPanel/VBoxContainer/StageLabel
 @onready var target_score_label: Label = $MainLayout/InfoPanel/VBoxContainer/TargetScoreLabel
 @onready var current_score_label: Label = $MainLayout/InfoPanel/VBoxContainer/CurrentScoreLabel
@@ -14,7 +14,7 @@ class_name MainScreen
 @onready var result_label: Label = $MainLayout/GameArea/InteractionUI/HBoxContainer/ResultLabel
 @onready var sub_viewport: SubViewport = $MainLayout/GameArea/RollingArea/SubViewport
 @onready var rolling_area: SubViewportContainer = $MainLayout/GameArea/RollingArea
-@onready var invested_dice_container: HBoxContainer = $MainLayout/GameArea/FieldArea/InvestedDiceContainer
+@onready var socket_container: HBoxContainer = $MainLayout/GameArea/SocketContainer
 
 # === 3D 씬 참조 ===
 var world_3d: Node3D
@@ -24,21 +24,23 @@ var score_manager: ScoreManager
 var dice_spawner: DiceSpawner
 var combo_select: ComboSelect
 var cup: Node3D
-var rolling_world: Node3D # RollingWorld 씬의 인스턴스
+var rolling_world: Node3D
 
-# === 리소스 로드 (병합됨) ===
+# === 리소스 로드 ===
 const RollingWorldScene = preload("res://scenes/rolling_world.tscn")
 const CupScene := preload("res://cup.tscn")
-const InvestedDie3DScene = preload("res://scripts/components/invested_die_3d.tscn") # UI 버전의 3D 투자 주사위
 const DiceBagPopupScene = preload("res://scripts/components/dice_bag_popup.tscn")
+const SocketTexture = preload("res://dice_socket.png")
 
+# === 투자 시스템 변수 ===
 const MAX_INVESTED_DICE = 10
+var socket_positions: Array[Vector3] = []
+var invested_dice_nodes: Array[Node3D] = []
 
 var dice_bag_popup: Window
 
-
 func _ready() -> void:
-	# 3D 월드 생성 (UI 버전에 맞게 수정)
+	# 3D 월드 생성
 	rolling_world = RollingWorldScene.instantiate()
 	world_3d = rolling_world
 	sub_viewport.add_child(world_3d)
@@ -50,15 +52,53 @@ func _ready() -> void:
 	# 초기화
 	_initialize_managers()
 	_setup_scene()
+	await _setup_sockets()
 	_setup_game()
 	_connect_signals()
 	_update_ui_from_gamestate()
 	
-	# 뷰포트 크기 초기화 (UI 버전에 맞게 추가)
 	_on_rolling_area_resized()
+	
+
+func _setup_sockets():
+	# 1. 2D 소켓 UI 생성
+	for i in range(MAX_INVESTED_DICE):
+		var socket_ui = TextureRect.new()
+		socket_ui.texture = SocketTexture
+		socket_ui.custom_minimum_size = Vector2(80, 80)
+		socket_ui.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		socket_ui.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		socket_container.add_child(socket_ui)
+
+	# 2. UI가 안정화될 때까지 대기
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	# 3. 안정된 2D UI 위치를 기반으로 3D 좌표 계산
+	var camera = rolling_world.get_node("Camera3D")
+	if not camera:
+		push_error("Socket setup failed: Camera not found.")
+		return
+		
+	var plane_y = 0.5 # 주사위가 바닥에 살짝 떠 있도록 높이 설정
+	for socket_ui in socket_container.get_children():
+		var rect = socket_ui.get_global_rect()
+		var screen_pos = rect.get_center()
+		
+		var ray_origin = camera.project_ray_origin(screen_pos)
+		var ray_normal = camera.project_ray_normal(screen_pos)
+
+		if ray_normal.y < -0.001: # 0으로 나누기 방지
+			var t = (ray_origin.y - plane_y) / -ray_normal.y
+			var world_pos = ray_origin + ray_normal * t
+			socket_positions.append(world_pos)
+		else:
+			push_error("Failed to calculate socket 3D position for a socket.")
+			socket_positions.append(Vector3.ZERO)
+	
+	print("Calculated Socket 3D Positions: ", socket_positions)
 
 func _initialize_managers() -> void:
-	# 에셋 버전의 Manager들을 그대로 사용
 	game_manager = GameManager.new()
 	input_manager = InputManager.new()
 	score_manager = ScoreManager.new()
@@ -72,7 +112,6 @@ func _initialize_managers() -> void:
 	world_3d.add_child(combo_select)
 
 func _setup_scene() -> void:
-	# 에셋 버전의 컵 생성 로직 사용
 	cup = CupScene.instantiate()
 	cup.position = GameConstants.CUP_POSITION
 	world_3d.add_child(cup)
@@ -80,14 +119,11 @@ func _setup_scene() -> void:
 func _setup_game() -> void:
 	game_manager.initialize()
 	game_manager.setup_cup(cup)
-	# rolling_world에서 카메라를 가져오도록 수정
 	input_manager.initialize(combo_select, rolling_world.get_node("Camera3D")) 
-	# dice_spawner 초기화 시 runtime_container 대신 world_3d를 넘겨줌
 	dice_spawner.initialize(cup, world_3d)
 	_invest_initial_dice()
 	_spawn_initial_dice()
 
-# UI 버전의 3D 투자 주사위 표시 로직과 에셋 버전의 주사위 생성 로직을 병합
 func _invest_initial_dice() -> void:
 	if not game_manager.can_draw_dice(5):
 		push_error("Not enough dice in bag for initial investment")
@@ -98,20 +134,23 @@ func _invest_initial_dice() -> void:
 	for i in range(dice_colors.size()):
 		var color = dice_colors[i]
 		var value = randi_range(1, 6)
+		var dice_color_enum = ColoredDice.color_from_godot_color(color)
 		
-		# --- Create the 3D display UI (새로운 방식) ---
-		var display = InvestedDie3DScene.instantiate()
-		display.custom_minimum_size = Vector2(80, 80)
-		display.name = "invested_dice_init_" + str(i)
+		var dice_node = ColoredDice.new()
+		world_3d.add_child(dice_node)
+		dice_node.setup_dice(dice_color_enum)
+		dice_node.show_face(value)
+		dice_node.freeze = true
 		
-		# 값을 설정하고, 색상 enum을 설정합니다.
-		display.value = value
-		display.dice_color_enum = ColoredDice.color_from_godot_color(color)
-		
-		invested_dice_container.add_child(display)
+		if i < socket_positions.size():
+			dice_node.global_position = socket_positions[i]
+			invested_dice_nodes.append(dice_node)
+		else:
+			push_error("Not enough socket positions for initial investment.")
+			dice_node.queue_free()
+
 
 func _spawn_initial_dice() -> void:
-	# 에셋 버전 로직 그대로 사용
 	if not game_manager.can_draw_dice(GameConstants.HAND_SIZE):
 		push_error("Bag empty at init")
 		return
@@ -126,20 +165,14 @@ func _spawn_initial_dice() -> void:
 	dice_spawner.tag_spawned_nodes_with_keys(keys)
 
 func _connect_signals() -> void:
-	# 두 버전 공통 시그널 연결
 	input_manager.roll_started.connect(_on_roll_started)
 	game_manager.roll_finished.connect(_on_roll_finished)
 	dice_spawner.dice_roll_finished.connect(_on_dice_roll_finished)
-	
-	# UI 버튼 연결
 	submit_button.pressed.connect(_on_submit_pressed)
 	invest_button.pressed.connect(_on_invest_pressed)
 	turn_end_button.pressed.connect(_on_turn_end_pressed)
 	view_dice_bag_button.pressed.connect(_on_view_dice_bag_pressed)
-
-	# 3D 뷰포트 입력 연결
 	rolling_area.gui_input.connect(_on_rolling_area_gui_input)
-	# UI 버전에만 있던 resized 시그널 연결 추가
 	rolling_area.resized.connect(_on_rolling_area_resized)
 
 func _update_ui_from_gamestate() -> void:
@@ -149,11 +182,9 @@ func _update_ui_from_gamestate() -> void:
 	update_turns_left(Main.turns_left)
 	update_invests_left(Main.invests_left)
 
-# UI 버전에만 있던 함수 추가
 func _on_rolling_area_resized() -> void:
 	var viewport_size = rolling_area.size
 	sub_viewport.size = viewport_size
-
 	if rolling_world and rolling_world.has_method("update_size"):
 		rolling_world.update_size(viewport_size)
 
@@ -161,7 +192,6 @@ func _on_rolling_area_gui_input(event: InputEvent) -> void:
 	if input_manager.handle_input(event):
 		get_viewport().set_input_as_handled()
 		return
-
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if not event.pressed and game_manager.is_roll_in_progress():
 			_on_mouse_release()
@@ -194,23 +224,12 @@ func _on_submit_pressed() -> void:
 	for node in selected_3d_nodes:
 		roll_results_for_submission[node.name] = original_roll_results[node.name]
 
-	var selected_invested_nodes = []
-	for node in invested_dice_container.get_children():
-		if node.has_method("is_selected") and node.is_selected():
-			all_selected_nodes.append(node)
-			selected_invested_nodes.append(node)
-			roll_results_for_submission[node.name] = node.value
-
 	if all_selected_nodes.is_empty():
 		print("조합을 제출하려면 먼저 주사위를 선택하세요.")
 		return
 
 	if score_manager.evaluate_and_score_combo(all_selected_nodes, roll_results_for_submission):
 		_remove_combo_dice(selected_3d_nodes)
-		
-		for node in selected_invested_nodes:
-			node.queue_free()
-		
 		combo_select.clear()
 		Main.current_score = score_manager.get_total_score()
 		_update_ui_from_gamestate()
@@ -230,7 +249,6 @@ func _reset_roll() -> void:
 			return
 		var new_dice_colors = dice_spawner.create_dice_colors_from_bag(game_manager.bag, need)
 		await dice_spawner.reset_and_spawn_all_dice(new_dice_colors)
-	
 	game_manager.dice_in_cup_count = dice_spawner.get_dice_count()
 
 func _on_mouse_release() -> void:
@@ -240,61 +258,41 @@ func _on_mouse_release() -> void:
 	if cup.has_method("pour"):
 		await cup.pour()
 
-# UI 버전의 3D 투자 주사위 표시 로직과 에셋 버전의 주사위 생성 로직을 병합
-const AnimatedSpriteTexture = preload("res://icon.png") # 애니메이션용 임시 텍스처
-
-# ... (다른 코드들은 그대로) ...
-
 func _on_invest_pressed() -> void:
 	if not combo_select.active:
 		print("투자를 하려면 C키를 눌러 조합 선택 모드를 활성화하세요.")
 		return
-	
 	if Main.invests_left <= 0:
 		print("남은 투자 횟수가 없습니다.")
 		return
-
 	var nodes_to_invest = combo_select.pop_selected_nodes() 
-
 	if nodes_to_invest.is_empty():
 		print("투자할 주사위를 먼저 선택하세요.")
 		return
-
-	if invested_dice_container.get_child_count() + nodes_to_invest.size() > MAX_INVESTED_DICE:
+	if invested_dice_nodes.size() + nodes_to_invest.size() > MAX_INVESTED_DICE:
 		print("최대 %d개까지만 투자할 수 있습니다." % MAX_INVESTED_DICE)
-		# 롤백 로직이 필요하지만, 일단은 경고만 출력
 		return
 
-	# 단순화된 투자 함수를 직접 호출합니다.
 	_invest_dice(nodes_to_invest)
-	
 	combo_select.exit()
 	Main.invests_left -= 1
 	_update_ui_from_gamestate()
 
 func _invest_dice(nodes: Array):
-	var roll_results = game_manager.get_roll_results()
 	for dice_node in nodes:
-		if not roll_results.has(dice_node.name): continue
-		var value = roll_results[dice_node.name]
+		var next_socket_index = invested_dice_nodes.size()
+		if next_socket_index >= socket_positions.size():
+			push_error("No more available sockets.")
+			break
 		
-		# InvestedDie3D 인스턴스를 생성합니다.
-		var display = InvestedDie3DScene.instantiate()
-		display.custom_minimum_size = Vector2(80, 80)
-		display.name = "invested_dice_" + str(display.get_instance_id())
+		var target_pos = socket_positions[next_socket_index]
 		
-		# 값을 설정하고, 색상 enum을 설정합니다.
-		display.value = value
-		display.dice_color_enum = dice_node.current_dice_color
+		dice_node.freeze = true
+		var tween = create_tween()
+		tween.tween_property(dice_node, "global_position", target_pos, 0.4).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
 		
-		# 컨테이너에 추가하면 HBoxContainer가 자동으로 위치를 지정합니다.
-		invested_dice_container.add_child(display)
-	
-	# 투자된 3D 주사위는 게임 월드에서 제거합니다.
-	for node in nodes:
-		node.queue_free()
+		invested_dice_nodes.append(dice_node)
 
-	# 논리적으로도 주사위를 제거합니다.
 	_remove_combo_dice(nodes)
 
 func _on_turn_end_pressed() -> void:
@@ -302,11 +300,9 @@ func _on_turn_end_pressed() -> void:
 	if Main.turns_left > 0:
 		Main.turns_left -= 1
 		_update_ui_from_gamestate()
-
 		var remaining_dice = dice_spawner.get_dice_nodes()
 		for d in remaining_dice:
 			d.queue_free()
-		
 		dice_spawner.clear_dice_nodes()
 	else:
 		print("No more turns left.")
@@ -315,7 +311,7 @@ func _on_view_dice_bag_pressed() -> void:
 	dice_bag_popup.update_counts(game_manager.bag)
 	dice_bag_popup.show()
 
-# --- Public API (두 버전이 동일) ---
+# --- Public API ---
 func update_stage(stage_num: int) -> void:
 	stage_label.text = "Stage: %d" % stage_num
 func update_target_score(score: int) -> void:
