@@ -52,14 +52,64 @@ func _ready() -> void:
 	# 초기화
 	_initialize_managers()
 	_setup_scene()
-	await _setup_sockets()
+	# await _setup_sockets()
 	_setup_game()
 	_connect_signals()
-	_update_ui_from_gamestate()
 	
+	await get_tree().process_frame
+	_update_socket_positions()
+	
+	_update_ui_from_gamestate()
 	_on_rolling_area_resized()
 	
+func _update_socket_positions() -> void:
+	# 1. 2D 소켓 UI가 생성되었는지 확인
+	if socket_container.get_child_count() == 0:
+		# 소켓 UI가 없다면 생성 (기존 로직 유지)
+		for i in range(MAX_INVESTED_DICE):
+			var socket_ui = TextureRect.new()
+			socket_ui.texture = SocketTexture
+			socket_ui.custom_minimum_size = Vector2(80, 80)
+			socket_ui.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			socket_ui.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			socket_container.add_child(socket_ui)
+		await get_tree().process_frame 
 
+	var camera = rolling_world.get_node_or_null("Camera3D")
+	if not camera: return
+	
+	socket_positions.clear()
+	# 주사위 중심 높이 설정 (주사위 크기가 1.2이므로 반절인 0.6 정도가 적당함)
+	var plane_y = 0.6 
+	
+	# ★ 핵심 수정: 3D 뷰포트 컨테이너의 글로벌 위치 가져오기
+	var viewport_offset = rolling_area.global_position
+
+	for socket_ui in socket_container.get_children():
+		var rect = socket_ui.get_global_rect()
+		var screen_pos = rect.get_center()
+		
+		# ★ 좌표 보정: 전체 화면 좌표에서 뷰포트 시작 위치를 빼서 '뷰포트 내부 좌표'로 변환
+		var local_viewport_pos = screen_pos - viewport_offset
+		
+		# 변환된 좌표로 레이캐스팅 수행
+		var ray_origin = camera.project_ray_origin(local_viewport_pos)
+		var ray_normal = camera.project_ray_normal(local_viewport_pos)
+
+		if ray_normal.y < -0.001:
+			var t = (ray_origin.y - plane_y) / -ray_normal.y
+			var world_pos = ray_origin + ray_normal * t
+			socket_positions.append(world_pos)
+		else:
+			socket_positions.append(Vector3.ZERO)
+			
+	# 이미 투자된 주사위들의 위치도 즉시 동기화 (화면 크기 변경 대응)
+	for i in range(invested_dice_nodes.size()):
+		if i < socket_positions.size():
+			var dice = invested_dice_nodes[i]
+			if is_instance_valid(dice):
+				dice.global_position = socket_positions[i]
+				
 func _setup_sockets():
 	# 1. 2D 소켓 UI 생성
 	for i in range(MAX_INVESTED_DICE):
@@ -128,7 +178,10 @@ func _invest_initial_dice() -> void:
 	if not game_manager.can_draw_dice(5):
 		push_error("Not enough dice in bag for initial investment")
 		return
-
+# 소켓 위치가 아직 계산되지 않았을 수 있으므로 확인
+	if socket_positions.is_empty():
+		await _update_socket_positions()
+		
 	var dice_colors = dice_spawner.create_dice_colors_from_bag(game_manager.bag, 5)
 
 	for i in range(dice_colors.size()):
@@ -187,6 +240,7 @@ func _on_rolling_area_resized() -> void:
 	sub_viewport.size = viewport_size
 	if rolling_world and rolling_world.has_method("update_size"):
 		rolling_world.update_size(viewport_size)
+	call_deferred("_update_socket_positions")
 
 func _on_rolling_area_gui_input(event: InputEvent) -> void:
 	if input_manager.handle_input(event):
@@ -277,7 +331,6 @@ func _on_invest_pressed() -> void:
 	combo_select.exit()
 	Main.invests_left -= 1
 	_update_ui_from_gamestate()
-
 func _invest_dice(nodes: Array):
 	for dice_node in nodes:
 		var next_socket_index = invested_dice_nodes.size()
@@ -288,12 +341,21 @@ func _invest_dice(nodes: Array):
 		var target_pos = socket_positions[next_socket_index]
 		
 		dice_node.freeze = true
+		dice_node.linear_velocity = Vector3.ZERO
+		dice_node.angular_velocity = Vector3.ZERO
+		
 		var tween = create_tween()
-		tween.tween_property(dice_node, "global_position", target_pos, 0.4).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
+		tween.tween_property(dice_node, "global_position", target_pos, 0.4)\
+			.set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
 		
 		invested_dice_nodes.append(dice_node)
+		
+		# 게임 매니저 결과에서만 제거 (객체 삭제 X)
+		if game_manager.get_roll_results().has(dice_node.name):
+			game_manager.get_roll_results().erase(dice_node.name)
 
-	_remove_combo_dice(nodes)
+	# 스포너 관리 목록에서 제거
+	dice_spawner.remove_dice(nodes)
 
 func _on_turn_end_pressed() -> void:
 	combo_select.exit()
