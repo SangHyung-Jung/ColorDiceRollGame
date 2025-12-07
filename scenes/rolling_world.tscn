@@ -1,7 +1,7 @@
 [gd_scene load_steps=7 format=3 uid="uid://bciyvj2g1j1vj"]
 
 [ext_resource type="Script" uid="uid://l3bjc61rxk33" path="res://scenes/rolling_world.gd" id="1_zodac"]
-[ext_resource type="Texture2D" uid="uid://c0p67sp8d2pck" path="res://background_dice.png" id="2_v3p1h"]
+[ext_resource type="Texture2D" uid="uid://dtv5mtrg1vdg0" path="res://background_dice.png" id="2_v3p1h"]
 
 [sub_resource type="Environment" id="Environment_zodac"]
 background_mode = 1
@@ -30,7 +30,10 @@ projection = 1
 size = 18.0
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.953717, 0.24321, -0.17101, 0, 0.707107, 0.707107, 0.30051, -0.66438, 0.686901, 0, 0, 0)
+transform = Transform3D(0.999941, 0, 0, 0, 0.258891, 0.966446, 0, -0.966192, 0.258958, 0, 0, 0)
+light_energy = 0.75
+light_indirect_energy = 0.75
+light_volumetric_fog_energy = 0.75
 shadow_enabled = true
 
 [node name="Floor" type="StaticBody3D" parent="."]
