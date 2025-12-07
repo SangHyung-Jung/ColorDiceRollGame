@@ -63,6 +63,7 @@ func _ready() -> void:
 	_on_rolling_area_resized()
 	
 func _update_socket_positions() -> void:
+	socket_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	# 1. 2D 소켓 UI가 생성되었는지 확인
 	if socket_container.get_child_count() == 0:
 		# 소켓 UI가 없다면 생성 (기존 로직 유지)
@@ -72,6 +73,7 @@ func _update_socket_positions() -> void:
 			socket_ui.custom_minimum_size = Vector2(110, 110)
 			socket_ui.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			socket_ui.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			socket_ui.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			socket_container.add_child(socket_ui)
 		await get_tree().process_frame 
 
@@ -277,10 +279,18 @@ func _on_submit_pressed() -> void:
 
 	var selected_3d_nodes = combo_select.get_selected_nodes()
 	all_selected_nodes.append_array(selected_3d_nodes)
-	var original_roll_results = game_manager.get_roll_results()
+	var current_roll_results = game_manager.get_roll_results()
+	
 	for node in selected_3d_nodes:
-		roll_results_for_submission[node.name] = original_roll_results[node.name]
-
+		# 1. 현재 턴의 결과에서 찾기
+		if current_roll_results.has(node.name):
+			roll_results_for_submission[node.name] = current_roll_results[node.name]
+		# 2. 투자된 주사위라면 저장된 meta 데이터에서 찾기
+		elif node.has_meta("value"):
+			roll_results_for_submission[node.name] = node.get_meta("value")
+		else:
+			print("오류: 주사위 값을 찾을 수 없습니다 -> ", node.name)
+			return # 값을 모르면 계산 불가
 	if all_selected_nodes.is_empty():
 		print("조합을 제출하려면 먼저 주사위를 선택하세요.")
 		return
@@ -334,7 +344,11 @@ func _on_invest_pressed() -> void:
 	combo_select.exit()
 	Main.invests_left -= 1
 	_update_ui_from_gamestate()
+	
+	
 func _invest_dice(nodes: Array):
+	var current_results = game_manager.get_roll_results()
+	
 	for dice_node in nodes:
 		var next_socket_index = invested_dice_nodes.size()
 		if next_socket_index >= socket_positions.size():
@@ -342,7 +356,9 @@ func _invest_dice(nodes: Array):
 			break
 		
 		var target_pos = socket_positions[next_socket_index]
-		
+
+		if current_results.has(dice_node.name):
+			dice_node.set_meta("value", current_results[dice_node.name])
 		dice_node.freeze = true
 		dice_node.linear_velocity = Vector3.ZERO
 		dice_node.angular_velocity = Vector3.ZERO
