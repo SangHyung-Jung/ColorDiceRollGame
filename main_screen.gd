@@ -198,6 +198,8 @@ func _invest_initial_dice() -> void:
 		world_3d.add_child(dice_node)
 		dice_node.setup_dice(dice_color_enum)
 		dice_node.show_face(value)
+		dice_node.set_meta("value", value)
+		
 		dice_node.freeze = true
 		
 		if i < socket_positions.size():
