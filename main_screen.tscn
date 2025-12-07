@@ -92,26 +92,26 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 10.0
-offset_top = 191.0
 grow_horizontal = 2
 grow_vertical = 2
+stretch = true
 
 [node name="SubViewport" type="SubViewport" parent="MainLayout/GameArea/RollingArea"]
 handle_input_locally = false
-size = Vector2i(752, 648)
+size = Vector2i(1260, 1080)
 render_target_update_mode = 4
 
-[node name="FieldArea" type="MarginContainer" parent="MainLayout/GameArea"]
-custom_minimum_size = Vector2(0, 180)
+[node name="SocketContainer" type="HBoxContainer" parent="MainLayout/GameArea"]
 layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_bottom = 180.0
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -450.0
+offset_top = 20.0
+offset_right = 450.0
+offset_bottom = 100.0
 grow_horizontal = 2
-
-[node name="InvestedDiceContainer" type="HBoxContainer" parent="MainLayout/GameArea/FieldArea"]
-layout_mode = 2
+theme_override_constants/separation = 10
 alignment = 1
 
 [node name="InteractionUI" type="MarginContainer" parent="MainLayout/GameArea"]

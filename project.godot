@@ -24,6 +24,7 @@ TextureCache="*res://scripts/utils/dice_face_texture_cache.gd"
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
+window/size/mode=3
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
@@ -34,6 +35,10 @@ movie_writer/movie_file="C:/e/dice/output.avi"
 [editor_plugins]
 
 enabled=PackedStringArray()
+
+[filesystem]
+
+import/blender/enabled=false
 
 [physics]
 
