@@ -72,7 +72,7 @@ func setup_dice(color: DiceColor, position_override: Vector3 = Vector3.ZERO) -> 
 	dice_model.set_meta("_edit_lock_", true)
 
 	# 크기 조정 (더 잘 보이도록 크게 설정)
-	dice_model.scale = Vector3(0.6, 0.6, 0.6)
+	dice_model.scale = Vector3(0.85, 0.85, 0.85)
 
 	# 모델의 로컬 위치를 0으로 설정하여 부모(주사위)의 위치와 일치시킴
 	dice_model.position = Vector3.ZERO

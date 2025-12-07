@@ -75,6 +75,7 @@ func _setup_scene() -> void:
 	# 에셋 버전의 컵 생성 로직 사용
 	cup = CupScene.instantiate()
 	cup.position = GameConstants.CUP_POSITION
+	cup.scale = Vector3(1.3, 1.3, 1.3)
 	world_3d.add_child(cup)
 
 func _setup_game() -> void:
