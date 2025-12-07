@@ -77,7 +77,7 @@ func setup_dice(color: DiceColor, position_override: Vector3 = Vector3.ZERO) -> 
 	dice_model.set_meta("_edit_lock_", true)
 
 	# 크기 조정 (더 잘 보이도록 크게 설정)
-	dice_model.scale = Vector3(0.85, 0.85, 0.85)
+	dice_model.scale = Vector3(0.8, 0.8, 0.8)
 
 	dice_model.position = Vector3.ZERO
 	dice_model.rotation_degrees = Vector3.ZERO

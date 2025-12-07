@@ -69,7 +69,7 @@ func _update_socket_positions() -> void:
 		for i in range(MAX_INVESTED_DICE):
 			var socket_ui = TextureRect.new()
 			socket_ui.texture = SocketTexture
-			socket_ui.custom_minimum_size = Vector2(80, 80)
+			socket_ui.custom_minimum_size = Vector2(110, 110)
 			socket_ui.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			socket_ui.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			socket_container.add_child(socket_ui)
