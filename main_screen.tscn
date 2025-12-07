@@ -1,6 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://c81qr2c7cgegt"]
+[gd_scene load_steps=4 format=3 uid="uid://c81qr2c7cgegt"]
 
 [ext_resource type="Script" uid="uid://tfyw8iy6l28q" path="res://main_screen.gd" id="1_ssyjo"]
+[ext_resource type="Texture2D" uid="uid://8oa8tkgqa6kq" path="res://background.png" id="2_m5k1w"]
+[ext_resource type="FontFile" uid="uid://ulruyehktvyh" path="res://font/boldpixels/BoldPixels.otf" id="3_7a4el"]
 
 [node name="MainScreen" type="Control"]
 layout_mode = 3
@@ -11,106 +13,145 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ssyjo")
 
-[node name="HSplitContainer" type="HSplitContainer" parent="."]
+[node name="Background" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-split_offset = 300
+texture = ExtResource("2_m5k1w")
+expand_mode = 1
 
-[node name="InfoPanel" type="PanelContainer" parent="HSplitContainer"]
+[node name="MainLayout" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+
+[node name="InfoPanel" type="MarginContainer" parent="MainLayout"]
+custom_minimum_size = Vector2(660, 0)
+layout_mode = 2
+theme_override_constants/margin_left = 50
+theme_override_constants/margin_top = 50
+theme_override_constants/margin_right = 50
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MainLayout/InfoPanel"]
+layout_mode = 2
+theme_override_constants/separation = 26
+
+[node name="VSeparator2" type="Control" parent="MainLayout/InfoPanel/VBoxContainer"]
 layout_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="HSplitContainer/InfoPanel"]
+[node name="StageLabel" type="Label" parent="MainLayout/InfoPanel/VBoxContainer"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7a4el")
+theme_override_font_sizes/font_size = 96
+text = "STAGE 1-1"
+horizontal_alignment = 1
+
+[node name="VSeparator" type="Control" parent="MainLayout/InfoPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+
+[node name="TargetScoreLabel" type="Label" parent="MainLayout/InfoPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "목표 점수: 300"
+
+[node name="CurrentScoreLabel" type="Label" parent="MainLayout/InfoPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "현재 점수: 0"
+
+[node name="TurnsLeftLabel" type="Label" parent="MainLayout/InfoPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "남은 제출 횟수: 4"
+
+[node name="InvestsLeftLabel" type="Label" parent="MainLayout/InfoPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "남은 투자 횟수: 5"
+
+[node name="ViewDiceBagButton" type="Button" parent="MainLayout/InfoPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "주사위 주머니 보기"
+
+[node name="GameArea" type="Control" parent="MainLayout"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RollingArea" type="SubViewportContainer" parent="MainLayout/GameArea"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 191.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SubViewport" type="SubViewport" parent="MainLayout/GameArea/RollingArea"]
+handle_input_locally = false
+size = Vector2i(752, 648)
+render_target_update_mode = 4
+
+[node name="FieldArea" type="MarginContainer" parent="MainLayout/GameArea"]
+custom_minimum_size = Vector2(0, 180)
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 180.0
+grow_horizontal = 2
+
+[node name="InvestedDiceContainer" type="HBoxContainer" parent="MainLayout/GameArea/FieldArea"]
+layout_mode = 2
+alignment = 1
+
+[node name="InteractionUI" type="MarginContainer" parent="MainLayout/GameArea"]
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -150.0
+grow_horizontal = 2
+grow_vertical = 0
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 10
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer/InfoPanel/MarginContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="MainLayout/GameArea/InteractionUI"]
 layout_mode = 2
 theme_override_constants/separation = 15
-
-[node name="StageLabel" type="Label" parent="HSplitContainer/InfoPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "Stage: 1"
-
-[node name="TargetScoreLabel" type="Label" parent="HSplitContainer/InfoPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "목표 점수: 300"
-
-[node name="CurrentScoreLabel" type="Label" parent="HSplitContainer/InfoPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "현재 점수: 0"
-
-[node name="TurnsLeftLabel" type="Label" parent="HSplitContainer/InfoPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "남은 제출 횟수: 4"
-
-[node name="InvestsLeftLabel" type="Label" parent="HSplitContainer/InfoPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "남은 투자 횟수: 5"
-
-[node name="ViewDiceBagButton" type="Button" parent="HSplitContainer/InfoPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "주사위 주머니 보기"
-
-[node name="GameArea" type="VBoxContainer" parent="HSplitContainer"]
-layout_mode = 2
-
-[node name="FieldArea" type="PanelContainer" parent="HSplitContainer/GameArea"]
-custom_minimum_size = Vector2(0, 100)
-layout_mode = 2
-
-[node name="InvestedDiceContainer" type="HBoxContainer" parent="HSplitContainer/GameArea/FieldArea"]
-layout_mode = 2
 alignment = 1
 
-[node name="RollingArea" type="SubViewportContainer" parent="HSplitContainer/GameArea"]
+[node name="SubmitButton" type="Button" parent="MainLayout/GameArea/InteractionUI/HBoxContainer"]
 layout_mode = 2
-size_flags_vertical = 3
-stretch = true
-
-[node name="SubViewport" type="SubViewport" parent="HSplitContainer/GameArea/RollingArea"]
-handle_input_locally = false
-size = Vector2i(840, 460)
-render_target_update_mode = 4
-
-[node name="InteractionUI" type="PanelContainer" parent="HSplitContainer/GameArea"]
-custom_minimum_size = Vector2(0, 80)
-layout_mode = 2
-
-[node name="HBoxContainer" type="HBoxContainer" parent="HSplitContainer/GameArea/InteractionUI"]
-layout_mode = 2
-alignment = 1
-
-[node name="SubmitButton" type="Button" parent="HSplitContainer/GameArea/InteractionUI/HBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 30
 text = "조합 제출"
 
-[node name="InvestButton" type="Button" parent="HSplitContainer/GameArea/InteractionUI/HBoxContainer"]
+[node name="InvestButton" type="Button" parent="MainLayout/GameArea/InteractionUI/HBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 30
 text = "투자"
 
-[node name="TurnEndButton" type="Button" parent="HSplitContainer/GameArea/InteractionUI/HBoxContainer"]
+[node name="TurnEndButton" type="Button" parent="MainLayout/GameArea/InteractionUI/HBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 30
 text = "턴 종료"
 
-[node name="ResultLabel" type="Label" parent="HSplitContainer/GameArea/InteractionUI/HBoxContainer"]
+[node name="ResultLabel" type="Label" parent="MainLayout/GameArea/InteractionUI/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 30
 text = "예상 점수: "
 vertical_alignment = 1

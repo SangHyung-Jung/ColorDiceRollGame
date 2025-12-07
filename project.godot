@@ -20,6 +20,13 @@ config/icon="res://icon.svg"
 Main="*res://scripts/main.gd"
 TextureCache="*res://scripts/utils/dice_face_texture_cache.gd"
 
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
 [editor]
 
 movie_writer/movie_file="C:/e/dice/output.avi"
@@ -32,3 +39,8 @@ enabled=PackedStringArray()
 
 common/physics_ticks_per_second=240
 common/max_physics_steps_per_frame=16
+
+[rendering]
+
+textures/canvas_textures/default_texture_filter=0
+environment/defaults/default_clear_color=Color(0, 0, 0, 0)
