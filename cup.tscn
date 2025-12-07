@@ -23,7 +23,7 @@ script = ExtResource("1_f5eb6")
 [node name="Visuals" type="CSGCombiner3D" parent="PhysicsBody"]
 
 [node name="cup" parent="PhysicsBody/Visuals" instance=ExtResource("2_hxhe5")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -6, 0)
 
 [node name="CollisionMesh" type="CSGCombiner3D" parent="PhysicsBody"]
 visible = false
