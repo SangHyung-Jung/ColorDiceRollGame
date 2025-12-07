@@ -265,101 +265,36 @@ func _on_invest_pressed() -> void:
 		# 롤백 로직이 필요하지만, 일단은 경고만 출력
 		return
 
-	# _invest_dice를 직접 호출하는 대신 애니메이션 함수를 호출합니다.
-	_animate_investment(nodes_to_invest)
+	# 단순화된 투자 함수를 직접 호출합니다.
+	_invest_dice(nodes_to_invest)
 	
 	combo_select.exit()
 	Main.invests_left -= 1
 	_update_ui_from_gamestate()
 
-func _animate_investment(nodes: Array):
-	var camera = rolling_world.get_node("Camera3D")
-	if not camera:
-		push_error("Animation failed: Camera not found.")
-		# 애니메이션 없이 즉시 투자 실행
-		_invest_dice_fallback(nodes)
-		return
-
-	var roll_results = game_manager.get_roll_results()
-	
-	# 투자 슬롯의 다음 빈 위치를 찾습니다.
-	var start_slot_index = invested_dice_container.get_child_count()
-
-	for i in range(nodes.size()):
-		var dice_node = nodes[i]
-		if not roll_results.has(dice_node.name): continue
-		
-		# 1. 애니메이션 시작/끝 위치 계산
-		var start_pos_3d = dice_node.global_position
-		var start_pos_2d = camera.unproject_position(start_pos_3d)
-		
-		# 임시 투자 슬롯을 만들어 목표 위치를 계산합니다.
-		var temp_slot = Control.new()
-		temp_slot.custom_minimum_size = Vector2(80, 80)
-		invested_dice_container.add_child(temp_slot)
-		await get_tree().process_frame # 컨테이너가 크기를 계산할 시간을 줍니다.
-		var end_pos_2d = temp_slot.get_global_position()
-		temp_slot.queue_free() # 위치 계산 후 임시 슬롯 제거
-
-		# 2. 애니메이션용 2D 스프라이트 생성
-		var anim_sprite = TextureRect.new()
-		anim_sprite.texture = AnimatedSpriteTexture
-		anim_sprite.custom_minimum_size = Vector2(50, 50)
-		anim_sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		anim_sprite.position = start_pos_2d - anim_sprite.custom_minimum_size / 2
-		add_child(anim_sprite) # 메인 캔버스에 추가
-
-		# 3. 원래 3D 주사위 숨기기
-		dice_node.visible = false
-
-		# 4. Tween으로 애니메이션 실행
-		var tween = create_tween()
-		tween.set_parallel(true)
-		tween.tween_property(anim_sprite, "position", end_pos_2d, 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-		tween.tween_property(anim_sprite, "scale", Vector2.ZERO, 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
-		
-		# 5. 애니메이션 완료 후 콜백 연결
-		tween.finished.connect(
-			_on_investment_animation_finished.bind(anim_sprite, dice_node, roll_results[dice_node.name])
-		)
-
-	# 투자된 주사위는 더 이상 굴릴 수 없으므로 spawner와 game_manager에서 제거
-	_remove_combo_dice(nodes)
-
-
-func _on_investment_animation_finished(sprite: TextureRect, original_dice_node: Node3D, value: int):
-	# 애니메이션 스프라이트 제거
-	sprite.queue_free()
-	
-	# 이제 진짜 InvestedDie3D 인스턴스를 생성하고 배치합니다.
-	var display = InvestedDie3DScene.instantiate()
-	display.custom_minimum_size = Vector2(80, 80)
-	display.name = "invested_dice_" + str(display.get_instance_id())
-	
-	display.value = value
-	display.dice_color_enum = original_dice_node.current_dice_color
-	
-	invested_dice_container.add_child(display)
-	
-	# 숨겼던 원래 3D 주사위 노드를 완전히 제거합니다.
-	original_dice_node.queue_free()
-
-# 애니메이션을 실행할 수 없을 때를 위한 대체 함수
-func _invest_dice_fallback(nodes: Array):
+func _invest_dice(nodes: Array):
 	var roll_results = game_manager.get_roll_results()
 	for dice_node in nodes:
 		if not roll_results.has(dice_node.name): continue
 		var value = roll_results[dice_node.name]
 		
+		# InvestedDie3D 인스턴스를 생성합니다.
 		var display = InvestedDie3DScene.instantiate()
 		display.custom_minimum_size = Vector2(80, 80)
 		display.name = "invested_dice_" + str(display.get_instance_id())
 		
+		# 값을 설정하고, 색상 enum을 설정합니다.
 		display.value = value
 		display.dice_color_enum = dice_node.current_dice_color
 		
+		# 컨테이너에 추가하면 HBoxContainer가 자동으로 위치를 지정합니다.
 		invested_dice_container.add_child(display)
+	
+	# 투자된 3D 주사위는 게임 월드에서 제거합니다.
+	for node in nodes:
+		node.queue_free()
 
+	# 논리적으로도 주사위를 제거합니다.
 	_remove_combo_dice(nodes)
 
 func _on_turn_end_pressed() -> void:
