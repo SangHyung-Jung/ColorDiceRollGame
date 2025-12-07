@@ -85,7 +85,9 @@ func _setup_game() -> void:
 	# dice_spawner 초기화 시 runtime_container 대신 world_3d를 넘겨줌
 	dice_spawner.initialize(cup, world_3d)
 	_invest_initial_dice()
-	_spawn_initial_dice()
+	cup._set_ceiling_collision(false)
+	await _spawn_initial_dice()
+	cup._set_ceiling_collision(true)
 
 # UI 버전의 3D 투자 주사위 표시 로직과 에셋 버전의 주사위 생성 로직을 병합
 func _invest_initial_dice() -> void:
@@ -125,7 +127,7 @@ func _spawn_initial_dice() -> void:
 		push_error("Bag empty at init")
 		return
 	var dice_colors = dice_spawner.create_dice_colors_from_bag(game_manager.bag, GameConstants.HAND_SIZE)
-	dice_spawner.reset_and_spawn_all_dice(dice_colors)
+	await dice_spawner.reset_and_spawn_all_dice(dice_colors)
 	var keys = []
 	for color in dice_colors:
 		for color_key in GameConstants.BAG_COLOR_MAP:

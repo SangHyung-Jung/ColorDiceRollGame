@@ -51,10 +51,6 @@ func _set_ceiling_collision(enabled: bool) -> void:
 		collision_shape.disabled = not enabled
 		print("컵 천장 충돌: ", "활성화" if enabled else "비활성화")
 
-## 주사위 생성이 시작될 때 천장 활성화
-func enable_ceiling_for_spawn() -> void:
-	_set_ceiling_collision(true)
-
 ## 매 프레임마다 흔들기 애니메이션 처리
 func _process(delta: float) -> void:
 	if is_shaking:
