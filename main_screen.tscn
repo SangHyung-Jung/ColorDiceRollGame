@@ -118,7 +118,7 @@ stretch = true
 
 [node name="SubViewport" type="SubViewport" parent="MainLayout/GameArea/RollingArea"]
 handle_input_locally = false
-size = Vector2i(2, 2)
+size = Vector2i(1470, 1080)
 render_target_update_mode = 4
 
 [node name="SocketArea" type="VBoxContainer" parent="MainLayout/GameArea"]

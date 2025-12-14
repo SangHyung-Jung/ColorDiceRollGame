@@ -398,7 +398,6 @@ func _on_invest_pressed() -> void:
 		return
 
 	_invest_dice(nodes_to_actually_invest) # Pass only the new dice
-	combo_select.exit()
 	Main.invests_left -= 1
 	_update_ui_from_gamestate()
 	
