@@ -105,6 +105,7 @@ text = "Dice Bag"
 [node name="GameArea" type="Control" parent="MainLayout"]
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_filter = 2
 
 [node name="RollingArea" type="SubViewportContainer" parent="MainLayout/GameArea"]
 layout_mode = 1

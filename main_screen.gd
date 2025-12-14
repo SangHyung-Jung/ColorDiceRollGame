@@ -1,6 +1,15 @@
 extends Control
 class_name MainScreen
 
+# === 게임 상태 ===
+enum GameState {
+	AWAITING_ROLL_INPUT, # 롤 입력을 기다리는 상태
+	ROLL_IN_PROGRESS,    # 컵을 흔들고 있는 상태
+	DICE_SETTLING,       # 주사위가 굴러가고 멈추길 기다리는 상태
+	TURN_INTERACTION     # 턴 상호작용 (조합 선택 등) 상태
+}
+var current_state: GameState
+
 # === UI 노드 참조 ===
 @onready var stage_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/StageLabel
 @onready var target_score_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/TargetScoreLabel
@@ -64,6 +73,7 @@ func _ready() -> void:
 	_update_ui_from_gamestate()
 	_on_rolling_area_resized()
 	
+	_set_state(GameState.AWAITING_ROLL_INPUT)
 func _update_socket_positions() -> void:
 	socket_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	# 1. 2D 소켓 UI가 생성되었는지 확인
@@ -228,7 +238,6 @@ func _spawn_initial_dice() -> void:
 	dice_spawner.tag_spawned_nodes_with_keys(keys)
 
 func _connect_signals() -> void:
-	input_manager.roll_started.connect(_on_roll_started)
 	game_manager.roll_finished.connect(_on_roll_finished)
 	dice_spawner.dice_roll_finished.connect(_on_dice_roll_finished)
 	submit_button.pressed.connect(_on_submit_pressed)
@@ -255,26 +264,44 @@ func _on_rolling_area_resized() -> void:
 	call_deferred("_update_socket_positions")
 
 func _on_rolling_area_gui_input(event: InputEvent) -> void:
-	if input_manager.handle_input(event):
-		get_viewport().set_input_as_handled()
-		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		if not event.pressed and game_manager.is_roll_in_progress():
-			_on_mouse_release()
+		match current_state:
+			GameState.AWAITING_ROLL_INPUT:
+				if event.pressed:
+					_on_roll_started()
+					_set_state(GameState.ROLL_IN_PROGRESS)
+					get_viewport().set_input_as_handled()
+			
+			GameState.ROLL_IN_PROGRESS:
+				if not event.pressed:
+					_on_mouse_release()
+					_set_state(GameState.DICE_SETTLING)
+					get_viewport().set_input_as_handled()
+	
+	if current_state == GameState.TURN_INTERACTION:
+		if input_manager.handle_input(event):
 			get_viewport().set_input_as_handled()
 
 func _on_roll_started() -> void:
+	cup.show()
 	combo_select.exit()
 	await _reset_roll()
 	game_manager.start_roll()
-	input_manager.set_roll_in_progress(true)
 	if cup.has_method("start_shaking"):
 		cup.start_shaking()
 
 func _on_roll_finished() -> void:
-	input_manager.set_roll_in_progress(false)
+	_set_state(GameState.TURN_INTERACTION)
 	combo_select.enter()
 	dice_spawner.display_dice_results(game_manager.get_roll_results())
+
+func _on_mouse_release() -> void:
+	if cup.has_method("stop_shaking"):
+		await cup.stop_shaking()
+	dice_spawner.apply_dice_impulse()
+	if cup.has_method("pour"):
+		await cup.pour()
+		cup.hide()
 
 func _on_dice_roll_finished(value: int, dice_name: String) -> void:
 	game_manager.on_dice_roll_finished(value, dice_name)
@@ -325,12 +352,6 @@ func _reset_roll() -> void:
 		await dice_spawner.reset_and_spawn_all_dice(new_dice_colors)
 	game_manager.dice_in_cup_count = dice_spawner.get_dice_count()
 
-func _on_mouse_release() -> void:
-	if cup.has_method("stop_shaking"):
-		await cup.stop_shaking()
-	dice_spawner.apply_dice_impulse()
-	if cup.has_method("pour"):
-		await cup.pour()
 
 func _on_invest_pressed() -> void:
 	if not combo_select.active:
@@ -392,6 +413,8 @@ func _on_turn_end_pressed() -> void:
 		for d in remaining_dice:
 			d.queue_free()
 		dice_spawner.clear_dice_nodes()
+		# Reset the state to allow for a new roll
+		_set_state(GameState.AWAITING_ROLL_INPUT)
 	else:
 		print("No more turns left.")
 
@@ -428,6 +451,53 @@ func _reposition_invested_dice() -> void:
 		var tween = create_tween()
 		tween.tween_property(dice_node, "global_position", target_pos, 0.3)\
 			.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+
+# ============================================================================
+# 상태 관리
+# ============================================================================
+
+func _set_state(new_state: GameState) -> void:
+	if current_state == new_state:
+		return
+	
+	current_state = new_state
+	_update_ui_for_state()
+
+func _update_ui_for_state() -> void:
+	match current_state:
+		GameState.AWAITING_ROLL_INPUT:
+			submit_button.disabled = true
+			invest_button.disabled = true
+			turn_end_button.disabled = true
+			
+			view_dice_bag_button.disabled = false
+			sort_by_color_button.disabled = false
+			sort_by_number_button.disabled = false
+			
+		GameState.ROLL_IN_PROGRESS:
+			submit_button.disabled = true
+			invest_button.disabled = true
+			turn_end_button.disabled = true
+			view_dice_bag_button.disabled = true
+			sort_by_color_button.disabled = true
+			sort_by_number_button.disabled = true
+
+		GameState.DICE_SETTLING:
+			submit_button.disabled = true
+			invest_button.disabled = true
+			turn_end_button.disabled = true
+			
+			view_dice_bag_button.disabled = false
+			sort_by_color_button.disabled = false
+			sort_by_number_button.disabled = false
+
+		GameState.TURN_INTERACTION:
+			submit_button.disabled = false
+			invest_button.disabled = false
+			turn_end_button.disabled = false
+			view_dice_bag_button.disabled = false
+			sort_by_color_button.disabled = false
+			sort_by_number_button.disabled = false
 
 # --- Public API ---
 func update_stage(stage_num: int) -> void:
