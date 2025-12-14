@@ -131,6 +131,7 @@ offset_top = 20.0
 offset_right = 450.0
 offset_bottom = 120.0
 grow_horizontal = 2
+mouse_filter = 2
 
 [node name="SocketContainer" type="HBoxContainer" parent="MainLayout/GameArea/SocketArea"]
 layout_mode = 2
