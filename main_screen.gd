@@ -287,7 +287,7 @@ func _on_rolling_area_gui_input(event: InputEvent) -> void:
 func _on_roll_started() -> void:
 	#cup.show()
 	combo_select.exit()
-	#await _reset_roll()
+	await _reset_roll()
 	game_manager.start_roll()
 	if cup.has_method("start_shaking"):
 		cup.start_shaking()
@@ -358,7 +358,7 @@ func _remove_combo_dice(nodes: Array) -> void:
 		call_deferred("_reposition_invested_dice")
 
 func _reset_roll() -> void:
-	cup.reset()
+	#cup.reset()
 	var need = GameConstants.HAND_SIZE - dice_spawner.get_dice_count()
 	if need > 0:
 		if not game_manager.can_draw_dice(need):

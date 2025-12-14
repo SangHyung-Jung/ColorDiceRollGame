@@ -118,7 +118,7 @@ func start_shaking() -> void:
 	is_shaking = true
 	shake_time = 0.0  # 시간 초기화
 	_set_ceiling_collision(true)
-	#_set_wall_collision(true)  # ★ 외벽 충돌도 활성화
+	_set_wall_collision(true)  # ★ 외벽 충돌도 활성화
 	
 ## 흔들기 중지 및 원위치 복귀 (비동기)
 ## 부드러운 트위닝으로 원래 위치로 돌아갑니다
