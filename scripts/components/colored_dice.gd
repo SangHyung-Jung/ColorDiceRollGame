@@ -76,9 +76,9 @@ func setup_dice(color: DiceColor, position_override: Vector3 = Vector3.ZERO) -> 
 	dice_model.scene_file_path = ""
 	dice_model.set_meta("_edit_lock_", true)
 
-	# 크기 조정 (더 잘 보이도록 크게 설정)
-	dice_model.scale = Vector3(0.8, 0.8, 0.8)
-
+	# ★ 모델 스케일 (Blender 원본 2.0 → 게임 내 1.6)
+	var model_scale = 0.8
+	dice_model.scale = Vector3(model_scale, model_scale, model_scale)
 	dice_model.position = Vector3.ZERO
 	dice_model.rotation_degrees = Vector3.ZERO
 
@@ -89,10 +89,26 @@ func setup_dice(color: DiceColor, position_override: Vector3 = Vector3.ZERO) -> 
 	collider.owner = self # 이 노드가 소유하도록 설정
 	
 	var box_shape = BoxShape3D.new()
-	box_shape.size = Vector3(DICE_SIZE, DICE_SIZE, DICE_SIZE)
+	
+	# Blender 원본 크기
+	var blender_dice_size = 2.0
+	
+	# 게임 내 실제 시각적 크기
+	var actual_visual_size = blender_dice_size * model_scale  # 2.0 * 0.8 = 1.6
+	
+	# 충돌 박스: 시각적 크기의 95% (5% 마진)
+	var collision_margin = 0.95
+	var collision_box_size = actual_visual_size * collision_margin  # 1.6 * 0.95 = 1.52
+	
+	box_shape.size = Vector3(
+		collision_box_size,
+		collision_box_size,
+		collision_box_size
+	)
 	collider.shape = box_shape
 
 	# 이름 설정
+	
 	dice_name = COLOR_NAMES[color] + "_dice_" + str(randi())
 	name = dice_name
 

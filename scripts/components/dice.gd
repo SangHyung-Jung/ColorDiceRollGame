@@ -36,6 +36,8 @@ func _init() -> void:
 	max_contacts_reported = 5
 	can_sleep = false  # 주사위가 자동으로 sleep되지 않도록
 	gravity_scale = 10
+	
+	mass = 2
 
 	# 물리 중심을 약간 랜덤하게 설정하여 주사위가 항상 다르게 굴러가도록
 	center_of_mass_mode = RigidBody3D.CENTER_OF_MASS_MODE_CUSTOM
