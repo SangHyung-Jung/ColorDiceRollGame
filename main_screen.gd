@@ -25,7 +25,6 @@ var _has_invested_in_turn: bool = false
 @onready var result_label: Label = $MainLayout/GameArea/InteractionUI/HBoxContainer/ResultLabel
 @onready var sub_viewport: SubViewport = $MainLayout/GameArea/RollingArea/SubViewport
 @onready var rolling_area: SubViewportContainer = $MainLayout/GameArea/RollingArea
-@onready var socket_container: HBoxContainer = $MainLayout/GameArea/SocketArea/SocketContainer
 @onready var sort_by_color_button: Button = $MainLayout/GameArea/SocketArea/SortButtonsContainer/TextureRect/SortByColorButton
 @onready var sort_by_number_button: Button = $MainLayout/GameArea/SocketArea/SortButtonsContainer/TextureRect2/SortByNumberButton
 
@@ -77,10 +76,12 @@ func _ready() -> void:
 	
 	_set_state(GameState.AWAITING_ROLL_INPUT)
 func _update_socket_positions() -> void:
-	socket_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	# 1. 2D 소켓 UI가 생성되었는지 확인
-	if socket_container.get_child_count() == 0:
-		# 소켓 UI가 없다면 생성 (기존 로직 유지)
+	var current_socket_container = get_node("MainLayout/GameArea/SocketArea/SocketContainer")
+	if current_socket_container == null:
+		push_error("SocketContainer not found at path: MainLayout/GameArea/SocketArea/SocketContainer")
+		return
+
+	if current_socket_container.get_child_count() == 0:
 		for i in range(MAX_INVESTED_DICE):
 			var socket_ui = TextureRect.new()
 			socket_ui.texture = SocketTexture
@@ -89,27 +90,22 @@ func _update_socket_positions() -> void:
 			socket_ui.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			socket_ui.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			socket_ui.modulate = Color(255, 255, 255, 200)
-			socket_container.add_child(socket_ui)
+			current_socket_container.add_child(socket_ui)
 		await get_tree().process_frame 
 
 	var camera = rolling_world.get_node_or_null("Camera3D")
 	if not camera: return
 	
 	socket_positions.clear()
-	# 주사위 중심 높이 설정 (주사위 크기가 1.2이므로 반절인 0.6 정도가 적당함)
 	var plane_y = 0.6 
-	
-	# ★ 핵심 수정: 3D 뷰포트 컨테이너의 글로벌 위치 가져오기
 	var viewport_offset = rolling_area.global_position
 
-	for socket_ui in socket_container.get_children():
+	for socket_ui in current_socket_container.get_children():
 		var rect = socket_ui.get_global_rect()
 		var screen_pos = rect.get_center()
 		
-		# ★ 좌표 보정: 전체 화면 좌표에서 뷰포트 시작 위치를 빼서 '뷰포트 내부 좌표'로 변환
 		var local_viewport_pos = screen_pos - viewport_offset
 		
-		# 변환된 좌표로 레이캐스팅 수행
 		var ray_origin = camera.project_ray_origin(local_viewport_pos)
 		var ray_normal = camera.project_ray_normal(local_viewport_pos)
 
@@ -120,7 +116,6 @@ func _update_socket_positions() -> void:
 		else:
 			socket_positions.append(Vector3.ZERO)
 			
-	# 이미 투자된 주사위들의 위치도 즉시 동기화 (화면 크기 변경 대응)
 	for i in range(invested_dice_nodes.size()):
 		if i < socket_positions.size():
 			var dice = invested_dice_nodes[i]
@@ -128,6 +123,11 @@ func _update_socket_positions() -> void:
 				dice.global_position = socket_positions[i]
 				
 func _setup_sockets():
+	var sc = get_node("MainLayout/GameArea/SocketArea/SocketContainer")
+	if sc == null:
+		push_error("SocketContainer not found in _setup_sockets")
+		return
+
 	# 1. 2D 소켓 UI 생성
 	for i in range(MAX_INVESTED_DICE):
 		var socket_ui = TextureRect.new()
@@ -135,7 +135,7 @@ func _setup_sockets():
 		socket_ui.custom_minimum_size = Vector2(80, 80)
 		socket_ui.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		socket_ui.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		socket_container.add_child(socket_ui)
+		sc.add_child(socket_ui)
 
 	# 2. UI가 안정화될 때까지 대기
 	await get_tree().process_frame
@@ -148,7 +148,7 @@ func _setup_sockets():
 		return
 		
 	var plane_y = 0.5 # 주사위가 바닥에 살짝 떠 있도록 높이 설정
-	for socket_ui in socket_container.get_children():
+	for socket_ui in sc.get_children():
 		var rect = socket_ui.get_global_rect()
 		var screen_pos = rect.get_center()
 		
@@ -287,7 +287,7 @@ func _on_rolling_area_gui_input(event: InputEvent) -> void:
 func _on_roll_started() -> void:
 	#cup.show()
 	combo_select.exit()
-	await _reset_roll()
+	#await _reset_roll()
 	game_manager.start_roll()
 	if cup.has_method("start_shaking"):
 		cup.start_shaking()
@@ -358,7 +358,7 @@ func _remove_combo_dice(nodes: Array) -> void:
 		call_deferred("_reposition_invested_dice")
 
 func _reset_roll() -> void:
-	#cup.reset()
+	cup.reset()
 	var need = GameConstants.HAND_SIZE - dice_spawner.get_dice_count()
 	if need > 0:
 		if not game_manager.can_draw_dice(need):
@@ -398,6 +398,7 @@ func _on_invest_pressed() -> void:
 		return
 
 	_invest_dice(nodes_to_actually_invest) # Pass only the new dice
+	combo_select.exit()
 	Main.invests_left -= 1
 	_update_ui_from_gamestate()
 	
