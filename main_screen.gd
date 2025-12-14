@@ -285,9 +285,9 @@ func _on_rolling_area_gui_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 
 func _on_roll_started() -> void:
-	cup.show()
+	#cup.show()
 	combo_select.exit()
-	await _reset_roll()
+	#await _reset_roll()
 	game_manager.start_roll()
 	if cup.has_method("start_shaking"):
 		cup.start_shaking()
@@ -430,6 +430,10 @@ func _on_turn_end_pressed() -> void:
 		for d in remaining_dice:
 			d.queue_free()
 		dice_spawner.clear_dice_nodes()
+		# ★ 다음 롤을 미리 준비
+		cup.reset()
+		cup.show()
+		await _reset_roll()
 		# Reset the state to allow for a new roll
 		_set_state(GameState.AWAITING_ROLL_INPUT)
 	else:
