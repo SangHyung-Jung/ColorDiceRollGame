@@ -32,13 +32,14 @@ use_collision = true
 [node name="CupOuterWall" type="CSGCylinder3D" parent="PhysicsBody/CollisionMesh"]
 radius = 5.2
 height = 9.0
-sides = 16
+sides = 64
 
 [node name="CupInnerSpace" type="CSGCylinder3D" parent="PhysicsBody/CollisionMesh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
 operation = 2
 radius = 3.3
 height = 7.0
-sides = 16
+sides = 64
 
 [node name="InsideArea" type="Area3D" parent="PhysicsBody"]
 visible = false

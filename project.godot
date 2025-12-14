@@ -46,6 +46,7 @@ common/physics_ticks_per_second=240
 common/max_physics_steps_per_frame=16
 3d/solver/contact_recycle_radius=0.08
 3d/solver/contact_max_separation=0.005
+3d/physics_ticks_per_second=1000
 
 [rendering]
 
