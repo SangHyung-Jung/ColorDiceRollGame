@@ -43,6 +43,15 @@ func _ready() -> void:
 	var physics_body = $PhysicsBody
 	if physics_body is AnimatableBody3D:
 		physics_body.sync_to_physics = true  # 물리 동기화 활성화
+
+	# ★ 물리 재질 생성 및 적용
+	var cup_material = PhysicsMaterial.new()
+	cup_material.friction = 0.6        # 마찰력 (주사위가 벽을 타고 올라가지 못하게)
+	cup_material.bounce = 0.4          # 반발력 (너무 높으면 튕겨나감)
+	cup_material.absorbent = false     # 에너지 흡수 비활성화
+	
+	physics_body.physics_material_override = cup_material
+
 	# 주사위가 컵 안팎으로 이동할 때의 이벤트 연결
 	inside_area.body_entered.connect(_on_body_entered_cup)
 	inside_area.body_exited.connect(_on_body_exited_cup)
