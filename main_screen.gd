@@ -167,7 +167,7 @@ func _initialize_managers() -> void:
 func _setup_scene() -> void:
 	cup = CupScene.instantiate()
 	cup.position = GameConstants.CUP_POSITION
-	cup.scale = Vector3(1.3, 1.3, 1.3)
+	cup.scale = Vector3(1.1, 1.1, 1.1)
 	world_3d.add_child(cup)
 
 func _setup_game() -> void:

@@ -27,7 +27,7 @@ var shake_time := 0.0          # 흔들기 애니메이션 누적 시간
 const SHAKE_SPEED := 12.0      # 흔들기 속도 (더 빠르게)
 const TILT_AMOUNT := 15.0      # 기울기 정도 (더 크게)
 const SHAKE_RADIUS := 1.0      # 원형 흔들기 반지름 (더 크게)
-const VERTICAL_SHAKE := 0.8    # 수직 흔들기 강도 (Y축 움직임)
+const VERTICAL_SHAKE := 1.5    # 수직 흔들기 강도 (Y축 움직임)
 const DICE_SHAKE_FORCE := 1.0  # 흔들기 중 주사위에 가할 힘
 
 # 대각선 흔들기를 위한 이동 벡터
@@ -39,7 +39,10 @@ func _ready() -> void:
 	# 원래 위치와 회전각 저장 (애니메이션 후 복귀용)
 	initial_position = global_position
 	initial_rotation = rotation_degrees
-
+	# 컵의 물리 바디에 CCD 적용
+	var physics_body = $PhysicsBody
+	if physics_body is AnimatableBody3D:
+		physics_body.sync_to_physics = true  # 물리 동기화 활성화
 	# 주사위가 컵 안팎으로 이동할 때의 이벤트 연결
 	inside_area.body_entered.connect(_on_body_entered_cup)
 	inside_area.body_exited.connect(_on_body_exited_cup)
