@@ -8,9 +8,9 @@ class_name MainScreen
 @onready var turns_left_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/TurnsLeftLabel
 @onready var invests_left_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/InvestsLeftLabel
 @onready var view_dice_bag_button: Button = $MainLayout/InfoPanel/Panel/VBoxContainer/ViewDiceBagButton
-@onready var submit_button: Button = $MainLayout/GameArea/InteractionUI/HBoxContainer/SubmitButton
-@onready var invest_button: Button = $MainLayout/GameArea/InteractionUI/HBoxContainer/InvestButton
-@onready var turn_end_button: Button = $MainLayout/GameArea/InteractionUI/HBoxContainer/TurnEndButton
+@onready var submit_button: Button = $MainLayout/GameArea/InteractionUI/HBoxContainer/TextureRect/SubmitButton
+@onready var invest_button: Button = $MainLayout/GameArea/InteractionUI/HBoxContainer/TextureRect2/InvestButton
+@onready var turn_end_button: Button = $MainLayout/GameArea/InteractionUI/HBoxContainer/TextureRect3/TurnEndButton
 @onready var result_label: Label = $MainLayout/GameArea/InteractionUI/HBoxContainer/ResultLabel
 @onready var sub_viewport: SubViewport = $MainLayout/GameArea/RollingArea/SubViewport
 @onready var rolling_area: SubViewportContainer = $MainLayout/GameArea/RollingArea
@@ -74,6 +74,7 @@ func _update_socket_positions() -> void:
 			socket_ui.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			socket_ui.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			socket_ui.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			socket_ui.modulate = Color(255, 255, 255, 200)
 			socket_container.add_child(socket_ui)
 		await get_tree().process_frame 
 
@@ -398,12 +399,12 @@ func _on_view_dice_bag_pressed() -> void:
 func update_stage(stage_num: int) -> void:
 	stage_label.text = "Stage: %d" % stage_num
 func update_target_score(score: int) -> void:
-	target_score_label.text = "목표 점수: %d" % score
+	target_score_label.text = "Target Score: %d" % score
 func update_current_score(score: int) -> void:
-	current_score_label.text = "현재 점수: %d" % score
+	current_score_label.text = "Current Score: %d" % score
 func update_turns_left(count: int) -> void:
-	turns_left_label.text = "남은 턴 수: %d" % count
+	turns_left_label.text = "Left Turns: %d" % count
 func update_invests_left(count: int) -> void:
-	invests_left_label.text = "남은 투자 횟수: %d" % count
+	invests_left_label.text = "Left Invests: %d" % count
 func update_result_label(text: String) -> void:
 	result_label.text = "예상 점수: " + text

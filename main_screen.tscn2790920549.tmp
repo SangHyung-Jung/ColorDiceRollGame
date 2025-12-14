@@ -1,14 +1,11 @@
-[gd_scene load_steps=7 format=3 uid="uid://c81qr2c7cgegt"]
+[gd_scene load_steps=5 format=3 uid="uid://c81qr2c7cgegt"]
 
 [ext_resource type="Script" uid="uid://tfyw8iy6l28q" path="res://main_screen.gd" id="1_ssyjo"]
 [ext_resource type="Texture2D" uid="uid://b6ra7i5qkug47" path="res://score_panel.png" id="2_stk2i"]
 [ext_resource type="FontFile" uid="uid://ulruyehktvyh" path="res://font/boldpixels/BoldPixels.otf" id="3_7a4el"]
-[ext_resource type="Texture2D" uid="uid://b73pj7813d7vi" path="res://dice_socket2.png" id="4_kwhh3"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_fplum"]
 texture = ExtResource("2_stk2i")
-
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_transparent"]
 
 [node name="MainScreen" type="Control"]
 layout_mode = 3
@@ -67,40 +64,31 @@ layout_mode = 2
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_7a4el")
 theme_override_font_sizes/font_size = 40
-text = "Target Score: 300"
+text = "목표 점수: 300"
 
 [node name="CurrentScoreLabel" type="Label" parent="MainLayout/InfoPanel/Panel/VBoxContainer"]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_7a4el")
 theme_override_font_sizes/font_size = 40
-text = "Current Score: 0"
+text = "현재 점수: 0"
 
 [node name="TurnsLeftLabel" type="Label" parent="MainLayout/InfoPanel/Panel/VBoxContainer"]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_7a4el")
 theme_override_font_sizes/font_size = 40
-text = "# Combinations: 4"
+text = "남은 제출 횟수: 4"
 
 [node name="InvestsLeftLabel" type="Label" parent="MainLayout/InfoPanel/Panel/VBoxContainer"]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_7a4el")
 theme_override_font_sizes/font_size = 40
-text = "# Investments: 5"
-
-[node name="VSeparator3" type="Control" parent="MainLayout/InfoPanel/Panel/VBoxContainer"]
-custom_minimum_size = Vector2(0, 50)
-layout_mode = 2
+text = "남은 투자 횟수: 5"
 
 [node name="ViewDiceBagButton" type="Button" parent="MainLayout/InfoPanel/Panel/VBoxContainer"]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_7a4el")
-theme_override_font_sizes/font_size = 60
-theme_override_styles/focus = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/disabled = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/pressed = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/normal = SubResource("StyleBoxEmpty_transparent")
-text = "Dice Bag"
+theme_override_font_sizes/font_size = 40
+text = "주사위 주머니 보기"
 
 [node name="GameArea" type="Control" parent="MainLayout"]
 layout_mode = 2
@@ -153,88 +141,24 @@ layout_mode = 2
 theme_override_constants/separation = 15
 alignment = 1
 
-[node name="VSeparator3" type="Control" parent="MainLayout/GameArea/InteractionUI/HBoxContainer"]
-custom_minimum_size = Vector2(300, 30)
+[node name="SubmitButton" type="Button" parent="MainLayout/GameArea/InteractionUI/HBoxContainer"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "조합 제출"
 
-[node name="TextureRect" type="TextureRect" parent="MainLayout/GameArea/InteractionUI/HBoxContainer"]
-modulate = Color(1, 1, 1, 0.784314)
-custom_minimum_size = Vector2(0, 100)
+[node name="InvestButton" type="Button" parent="MainLayout/GameArea/InteractionUI/HBoxContainer"]
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 4
-size_flags_stretch_ratio = 0.15
-texture = ExtResource("4_kwhh3")
-expand_mode = 3
+theme_override_font_sizes/font_size = 30
+text = "투자"
 
-[node name="SubmitButton" type="Button" parent="MainLayout/GameArea/InteractionUI/HBoxContainer/TextureRect"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_fonts/font = ExtResource("3_7a4el")
-theme_override_font_sizes/font_size = 40
-theme_override_styles/focus = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/disabled = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/pressed = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/normal = SubResource("StyleBoxEmpty_transparent")
-text = "Combination"
+[node name="TurnEndButton" type="Button" parent="MainLayout/GameArea/InteractionUI/HBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "턴 종료"
 
-[node name="TextureRect2" type="TextureRect" parent="MainLayout/GameArea/InteractionUI/HBoxContainer"]
-modulate = Color(1, 1, 1, 0.784314)
-custom_minimum_size = Vector2(0, 100)
+[node name="ResultLabel" type="Label" parent="MainLayout/GameArea/InteractionUI/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 4
-size_flags_stretch_ratio = 0.15
-texture = ExtResource("4_kwhh3")
-expand_mode = 3
-
-[node name="InvestButton" type="Button" parent="MainLayout/GameArea/InteractionUI/HBoxContainer/TextureRect2"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_fonts/font = ExtResource("3_7a4el")
-theme_override_font_sizes/font_size = 40
-theme_override_styles/focus = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/disabled = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/pressed = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/normal = SubResource("StyleBoxEmpty_transparent")
-text = "Invest"
-
-[node name="TextureRect3" type="TextureRect" parent="MainLayout/GameArea/InteractionUI/HBoxContainer"]
-modulate = Color(1, 1, 1, 0.784314)
-custom_minimum_size = Vector2(0, 100)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 4
-size_flags_stretch_ratio = 0.15
-texture = ExtResource("4_kwhh3")
-expand_mode = 3
-
-[node name="TurnEndButton" type="Button" parent="MainLayout/GameArea/InteractionUI/HBoxContainer/TextureRect3"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_fonts/font = ExtResource("3_7a4el")
-theme_override_font_sizes/font_size = 40
-theme_override_styles/focus = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/disabled = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/pressed = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/normal = SubResource("StyleBoxEmpty_transparent")
-text = "End"
-
-[node name="VSeparator2" type="Control" parent="MainLayout/GameArea/InteractionUI/HBoxContainer"]
-custom_minimum_size = Vector2(300, 30)
-layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "예상 점수: "
+vertical_alignment = 1
