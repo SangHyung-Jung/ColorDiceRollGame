@@ -14,7 +14,9 @@ class_name MainScreen
 @onready var result_label: Label = $MainLayout/GameArea/InteractionUI/HBoxContainer/ResultLabel
 @onready var sub_viewport: SubViewport = $MainLayout/GameArea/RollingArea/SubViewport
 @onready var rolling_area: SubViewportContainer = $MainLayout/GameArea/RollingArea
-@onready var socket_container: HBoxContainer = $MainLayout/GameArea/SocketContainer
+@onready var socket_container: HBoxContainer = $MainLayout/GameArea/SocketArea/SocketContainer
+@onready var sort_by_color_button: Button = $MainLayout/GameArea/SocketArea/SortButtonsContainer/TextureRect/SortByColorButton
+@onready var sort_by_number_button: Button = $MainLayout/GameArea/SocketArea/SortButtonsContainer/TextureRect2/SortByNumberButton
 
 # === 3D 씬 참조 ===
 var world_3d: Node3D
@@ -233,6 +235,8 @@ func _connect_signals() -> void:
 	invest_button.pressed.connect(_on_invest_pressed)
 	turn_end_button.pressed.connect(_on_turn_end_pressed)
 	view_dice_bag_button.pressed.connect(_on_view_dice_bag_pressed)
+	sort_by_color_button.pressed.connect(_on_sort_by_color_pressed)
+	sort_by_number_button.pressed.connect(_on_sort_by_number_pressed)
 	rolling_area.gui_input.connect(_on_rolling_area_gui_input)
 	rolling_area.resized.connect(_on_rolling_area_resized)
 
@@ -394,6 +398,12 @@ func _on_turn_end_pressed() -> void:
 func _on_view_dice_bag_pressed() -> void:
 	dice_bag_popup.update_counts(game_manager.bag)
 	dice_bag_popup.show()
+
+func _on_sort_by_color_pressed() -> void:
+	pass # Will be implemented later
+
+func _on_sort_by_number_pressed() -> void:
+	pass # Will be implemented later
 
 # --- Public API ---
 func update_stage(stage_num: int) -> void:
