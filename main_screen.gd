@@ -400,10 +400,34 @@ func _on_view_dice_bag_pressed() -> void:
 	dice_bag_popup.show()
 
 func _on_sort_by_color_pressed() -> void:
-	pass # Will be implemented later
+	if invested_dice_nodes.is_empty():
+		return
+	
+	# Sort by the integer value of the DiceColor enum
+	invested_dice_nodes.sort_custom(func(a, b): return a.current_dice_color < b.current_dice_color)
+	_reposition_invested_dice()
 
 func _on_sort_by_number_pressed() -> void:
-	pass # Will be implemented later
+	if invested_dice_nodes.is_empty():
+		return
+
+	# Sort by the 'value' meta-data
+	invested_dice_nodes.sort_custom(func(a, b): return a.get_meta("value") < b.get_meta("value"))
+	_reposition_invested_dice()
+
+func _reposition_invested_dice() -> void:
+	# Reposition the dice in the UI according to the sorted array order
+	for i in range(invested_dice_nodes.size()):
+		var dice_node = invested_dice_nodes[i]
+		if not is_instance_valid(dice_node):
+			continue
+			
+		var target_pos = socket_positions[i]
+		
+		# Use a tween for smooth movement
+		var tween = create_tween()
+		tween.tween_property(dice_node, "global_position", target_pos, 0.3)\
+			.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 # --- Public API ---
 func update_stage(stage_num: int) -> void:
