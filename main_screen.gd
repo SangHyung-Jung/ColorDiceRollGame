@@ -341,6 +341,16 @@ func _remove_combo_dice(nodes: Array) -> void:
 	game_manager.remove_combo_dice(nodes)
 	dice_spawner.remove_dice(nodes)
 
+	var reposition_needed = false
+	for node in nodes:
+		if invested_dice_nodes.has(node):
+			invested_dice_nodes.erase(node)
+			reposition_needed = true
+	
+	if reposition_needed:
+		# Use call_deferred to ensure dice are repositioned after the current physics frame
+		call_deferred("_reposition_invested_dice")
+
 func _reset_roll() -> void:
 	cup.reset()
 	var need = GameConstants.HAND_SIZE - dice_spawner.get_dice_count()
