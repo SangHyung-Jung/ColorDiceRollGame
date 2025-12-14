@@ -22,6 +22,7 @@ var shake_time := 0.0          # 흔들기 애니메이션 누적 시간
 # === 충돌 메시 참조들 추가 ===
 @onready var cup_ceiling_collision: Node3D = $PhysicsBody/CupCeiling  # 천장 충돌체
 @onready var inside_area: Area3D = $PhysicsBody/InsideArea
+@onready var collision_mesh: CSGCombiner3D = $PhysicsBody/CollisionMesh  # ★ 외벽 충돌 메시
 
 # === 흔들기 애니메이션 파라미터 ===
 const SHAKE_SPEED := 12.0      # 흔들기 속도 (더 빠르게)
@@ -62,6 +63,12 @@ func _set_ceiling_collision(enabled: bool) -> void:
 		var collision_shape = cup_ceiling_collision.get_node("CollisionShape3D")
 		collision_shape.disabled = not enabled
 		print("컵 천장 충돌: ", "활성화" if enabled else "비활성화")
+
+## ★ 외벽 충돌 활성화/비활성화
+func _set_wall_collision(enabled: bool) -> void:
+	if collision_mesh:
+		collision_mesh.use_collision = enabled
+		print("컵 외벽 충돌: ", "활성화" if enabled else "비활성화")
 
 ## 매 프레임마다 흔들기 애니메이션 처리
 func _process(delta: float) -> void:
@@ -111,6 +118,8 @@ func start_shaking() -> void:
 	is_shaking = true
 	shake_time = 0.0  # 시간 초기화
 	_set_ceiling_collision(true)
+	#_set_wall_collision(true)  # ★ 외벽 충돌도 활성화
+	
 ## 흔들기 중지 및 원위치 복귀 (비동기)
 ## 부드러운 트위닝으로 원래 위치로 돌아갑니다
 func stop_shaking() -> void:
@@ -142,7 +151,7 @@ func _on_body_exited_cup(body: Node3D) -> void:
 ## 컵 쏟기 애니메이션 (비동기)
 ## 컵을 기울여서 주사위들을 밖으로 쏟는 동작
 func pour() -> void:
-	# 천장 충돌 비활성화 - 주사위가 나갈 수 있도록
+	# ★ 천장과 외벽 충돌 모두 비활성화 - 주사위가 자유롭게 나갈 수 있도록
 	_set_ceiling_collision(false)
 
 	# 1단계: 컵 기울이기 및 좌측 이동
@@ -154,17 +163,26 @@ func pour() -> void:
 	tween.parallel().tween_property(self, "global_position:x", initial_position.x - 5, snap_x_duration)  # 좌측으로 이동
 	await tween.finished
 
+	_set_wall_collision(false)
+
 	# 2단계: 원위치 복귀
 	var return_tween: Tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	var return_duration = 1
 	return_tween.parallel().tween_property(self, "global_position:x", initial_position.x + 10, return_duration)  # 우측으로 복귀
 	return_tween.parallel().tween_property(self, "rotation_degrees", initial_rotation, return_duration)  # 회전 복귀
+	await return_tween.finished
+	
+	# ★ 복귀 완료 후 외벽 충돌 다시 활성화 (다음 라운드를 위해)
+	_set_wall_collision(true)
 
 ## 컵을 원래 상태로 즉시 리셋
 ## 새 라운드 시작 시 호출됩니다
 func reset() -> void:
 	global_position = initial_position
 	rotation_degrees = initial_rotation
+	# ★ 리셋 시 충돌 상태도 초기화
+	_set_ceiling_collision(false)
+	_set_wall_collision(true)
 
 ## 흔들기 중에 컵 내부 주사위들에 힘을 가해 더 활발하게 움직이게 함
 func _apply_shake_forces_to_dice() -> void:
