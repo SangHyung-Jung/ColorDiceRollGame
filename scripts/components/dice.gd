@@ -15,12 +15,12 @@ const FACE_ANGLE := 90.0
 const MAX_ROLL_TIME := 10.0  # 최대 10초 후 강제 정지
 
 var sides = {
-	1: Vector3.LEFT,
-	2: Vector3.FORWARD,
-	3: Vector3.DOWN,
-	4: Vector3.UP,
-	5: Vector3.BACK,
-	6: Vector3.RIGHT,
+	1: Vector3.UP,        # 1번 면: 위쪽 (Z+)
+	6: Vector3.DOWN,      # 6번 면: 아래쪽 (Z-)
+	5: Vector3.RIGHT,     # 2번 면: 오른쪽 (X+)
+	2: Vector3.LEFT,      # 5번 면: 왼쪽 (X-)
+	3: Vector3.FORWARD,   # 3번 면: 앞쪽 (Y+)
+	4: Vector3.BACK,      # 4번 면: 뒤쪽 (Y-)
 }
 
 var rolling := false
@@ -210,12 +210,12 @@ func show_face(face_value: int) -> void:
 func _get_rotation_for_face(face_value: int) -> Vector3:
 	# 각 면에 대응하는 회전값 계산
 	match face_value:
-		1: return Vector3(0, 0, -90)  # LEFT가 위로
-		2: return Vector3(-90, 0, 0)  # FORWARD가 위로
-		3: return Vector3(0, 0, 180)  # DOWN이 위로
-		4: return Vector3(0, 0, 0)    # UP이 위로 (기본)
-		5: return Vector3(90, 0, 0)   # BACK이 위로
-		6: return Vector3(0, 0, 90)   # RIGHT가 위로
+		1: return Vector3(0, 0, 0)        # UP이 위로 (기본)
+		6: return Vector3(180, 0, 0)      # DOWN이 위로
+		5: return Vector3(0, 0, -90)      # RIGHT가 위로
+		2: return Vector3(0, 0, 90)       # LEFT가 위로
+		3: return Vector3(90, 0, 0)       # FORWARD가 위로
+		4: return Vector3(-90, 0, 0)      # BACK이 위로
 		_: return Vector3.ZERO
 
 func _apply_velocity_limits() -> void:

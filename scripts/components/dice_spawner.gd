@@ -132,6 +132,8 @@ func display_dice_results(roll_results: Dictionary) -> void:
 	var center_x = 0.0
 	var start_x = center_x - (dice_nodes.size() - 1) * 1.5
 	var move_duration = GameConstants.MOVE_DURATION
+	
+	var tweens: Array[Tween] = []  # 모든 tween을 저장
 
 	for i in range(dice_nodes.size()):
 		var dice = dice_nodes[i]
@@ -151,14 +153,31 @@ func display_dice_results(roll_results: Dictionary) -> void:
 		dice.freeze_mode = RigidBody3D.FREEZE_MODE_KINEMATIC
 		dice.linear_velocity = Vector3.ZERO
 		dice.angular_velocity = Vector3.ZERO
+		
+		# ★ 핵심: 충돌 비활성화 (이동 중 다른 주사위와 충돌 방지)
+		dice.collision_layer = 0
+		dice.collision_mask = 0
 
 		var target_pos = Vector3(start_x + i * GameConstants.DICE_SPACING, GameConstants.DISPLAY_Y, 0.0)
 		var tween: Tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 		# 위치만 이동 (회전은 유지)
 		tween.parallel().tween_property(dice, "global_position", target_pos, move_duration)
+		
+		tweens.append(tween)  # tween 저장
 
+	# ★ 모든 tween이 완료될 때까지 대기
+	for tween in tweens:
 		await tween.finished
+	
+	# ★ 모든 이동이 완료된 후 충돌 복원
+	print("=== 주사위 정렬 완료, 충돌 복원 시작 ===")
+	for dice in dice_nodes:
+		if is_instance_valid(dice):
+			dice.collision_layer = 1
+			dice.collision_mask = 1
+			print("  ", dice.name, " 충돌 복원 완료")
+	print("=== 충돌 복원 완료 ===")
 
 func remove_dice(dice_to_remove: Array) -> void:
 	print("=== remove_dice 시작 ===")
