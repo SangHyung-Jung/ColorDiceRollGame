@@ -376,15 +376,28 @@ func _on_invest_pressed() -> void:
 	if Main.invests_left <= 0:
 		print("남은 투자 횟수가 없습니다.")
 		return
-	var nodes_to_invest = combo_select.pop_selected_nodes() 
-	if nodes_to_invest.is_empty():
+
+	var selected_nodes = combo_select.pop_selected_nodes() # Get all selected nodes
+	if selected_nodes.is_empty():
 		print("투자할 주사위를 먼저 선택하세요.")
 		return
-	if invested_dice_nodes.size() + nodes_to_invest.size() > MAX_INVESTED_DICE:
+
+	var nodes_to_actually_invest: Array = []
+	for node in selected_nodes:
+		if not invested_dice_nodes.has(node): # Check if NOT already invested
+			nodes_to_actually_invest.append(node)
+		else:
+			print("경고: 이미 투자된 주사위는 다시 투자할 수 없습니다: ", node.name)
+
+	if nodes_to_actually_invest.is_empty():
+		print("유효한 투자 대상 주사위가 없습니다.")
+		return
+
+	if invested_dice_nodes.size() + nodes_to_actually_invest.size() > MAX_INVESTED_DICE:
 		print("최대 %d개까지만 투자할 수 있습니다." % MAX_INVESTED_DICE)
 		return
 
-	_invest_dice(nodes_to_invest)
+	_invest_dice(nodes_to_actually_invest) # Pass only the new dice
 	combo_select.exit()
 	Main.invests_left -= 1
 	_update_ui_from_gamestate()
