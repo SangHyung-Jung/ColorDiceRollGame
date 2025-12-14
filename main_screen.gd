@@ -2,12 +2,12 @@ extends Control
 class_name MainScreen
 
 # === UI 노드 참조 ===
-@onready var stage_label: Label = $MainLayout/InfoPanel/VBoxContainer/StageLabel
-@onready var target_score_label: Label = $MainLayout/InfoPanel/VBoxContainer/TargetScoreLabel
-@onready var current_score_label: Label = $MainLayout/InfoPanel/VBoxContainer/CurrentScoreLabel
-@onready var turns_left_label: Label = $MainLayout/InfoPanel/VBoxContainer/TurnsLeftLabel
-@onready var invests_left_label: Label = $MainLayout/InfoPanel/VBoxContainer/InvestsLeftLabel
-@onready var view_dice_bag_button: Button = $MainLayout/InfoPanel/VBoxContainer/ViewDiceBagButton
+@onready var stage_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/StageLabel
+@onready var target_score_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/TargetScoreLabel
+@onready var current_score_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/CurrentScoreLabel
+@onready var turns_left_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/TurnsLeftLabel
+@onready var invests_left_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/InvestsLeftLabel
+@onready var view_dice_bag_button: Button = $MainLayout/InfoPanel/Panel/VBoxContainer/ViewDiceBagButton
 @onready var submit_button: Button = $MainLayout/GameArea/InteractionUI/HBoxContainer/SubmitButton
 @onready var invest_button: Button = $MainLayout/GameArea/InteractionUI/HBoxContainer/InvestButton
 @onready var turn_end_button: Button = $MainLayout/GameArea/InteractionUI/HBoxContainer/TurnEndButton

@@ -14,14 +14,7 @@ const MAX_DISTANCE_FROM_ORIGIN := 30.0
 const FACE_ANGLE := 90.0
 const MAX_ROLL_TIME := 10.0  # 최대 10초 후 강제 정지
 
-var sides = {
-	1: Vector3.LEFT,
-	2: Vector3.FORWARD,
-	3: Vector3.DOWN,
-	4: Vector3.UP,
-	5: Vector3.BACK,
-	6: Vector3.RIGHT,
-}
+var face_markers: Array[Node3D] = []
 
 var rolling := false
 var roll_time := 0.0
@@ -34,10 +27,9 @@ func _init() -> void:
 	continuous_cd = true
 	contact_monitor = true
 	max_contacts_reported = 5
-	can_sleep = false  # 주사위가 자동으로 sleep되지 않도록
+	can_sleep = false
 	gravity_scale = 10
 
-	# 물리 중심을 약간 랜덤하게 설정하여 주사위가 항상 다르게 굴러가도록
 	center_of_mass_mode = RigidBody3D.CENTER_OF_MASS_MODE_CUSTOM
 	center_of_mass = Vector3(
 		randf_range(-0.05, 0.05),
@@ -45,7 +37,6 @@ func _init() -> void:
 		randf_range(-0.05, 0.05)
 	)
 
-	# freeze_mode 설정하지 않음 - 동적 물리 시뮬레이션 허용
 	physics_material_override = PhysicsMaterial.new()
 	physics_material_override.absorbent = false
 	physics_material_override.bounce = 0.3
@@ -55,9 +46,20 @@ func _ready() -> void:
 	if original_position == Vector3.ZERO:
 		original_position = position
 	add_to_group("dice")
+	
+	# 자식 노드를 순회하여 'Face_X' 마커를 찾습니다.
+	for child in get_children():
+		if child.name.begins_with("Face_"):
+			face_markers.append(child)
+	
+	if face_markers.size() != 6:
+		push_error("Dice '%s' must have exactly 6 child nodes named 'Face_1' through 'Face_6'." % name)
+
 
 func max_tilt() -> float:
-	return cos(deg_to_rad(FACE_ANGLE / float(sides.size())))
+	# This function might need adjustment if it was dependent on the old 'sides' dictionary
+	# For now, returning a sensible default.
+	return cos(deg_to_rad(FACE_ANGLE / 6.0))
 
 # ★ 1. 스폰(리스폰)용 물리: 빠르게 떨어지고 컵 안으로 들어가도록
 func setup_physics_for_spawning() -> void:
@@ -111,32 +113,22 @@ func _physics_process(delta: float) -> void:
 
 	roll_time += delta
 
-	# 속도 제한 적용
 	_apply_velocity_limits()
-
-	# 경계 체크 (카메라 시야에서 너무 멀어지면 강제 정지)
 	_check_bounds()
 
-	# _check_bounds에서 강제 정지되었으면 여기서 종료
 	if not rolling:
 		return
 
-	# 시간 제한 체크 (최대 시간 초과 시 강제 정지)
 	if roll_time > MAX_ROLL_TIME:
 		print("Dice ", name, " exceeded max roll time, forcing stop")
 		_force_stop()
 		return
 
-	# 0.5초 전에는 체크하지 않음 (굴러가는 시간 확보)
 	if roll_time < 0.5:
 		return
 
 	var angular_vel = angular_velocity.length()
 	var linear_vel = linear_velocity.length()
-
-	# 디버그: 속도 출력 (주석 처리)
-	# if int(roll_time * 10) % 10 == 0:  # 0.1초마다
-	# 	print("🎲 ", name, " - 시간: ", roll_time, "s, 선속도: ", linear_vel, ", 각속도: ", angular_vel)
 
 	if angular_vel < ANGULAR_VELOCITY_THRESHOLD and linear_vel < LINEAR_VELOCITY_THRESHOLD:
 		_finish_roll()
@@ -150,44 +142,35 @@ func _finish_roll() -> void:
 	roll_finished.emit(result, name)
 
 func _calculate_face_value() -> int:
-	# 월드 UP 벡터 (항상 위를 향함)
-	var world_up = Vector3.UP
+	if face_markers.is_empty():
+		push_error("Cannot calculate face value: No face markers found.")
+		return 1
+
 	var best_dot = -2.0
 	var result = 1
+	
+	print("🎲 ", name, " - 계산 중 (Marker3D 방식)")
 
-	print("🎲 ", name, " - 계산 중")
-
-	for value in sides:
-		# 주사위 로컬 면 노멀을 월드 좌표로 변환
-		var face_normal_world = global_transform.basis * sides[value]
-		# 월드 UP과 내적하여 어떤 면이 위를 향하는지 확인
-		var dot = world_up.dot(face_normal_world)
-		print("  면 ", value, " (", sides[value], "): dot = ", dot, ", world normal: ", face_normal_world)
+	for marker in face_markers:
+		# 마커의 Z축(앞쪽)이 바깥을 향한다고 가정하고 월드 좌표로 변환합니다.
+		# Godot에서 노드의 Z축은 '앞'을 의미하며, 보통 -Z가 정면 방향입니다.
+		# 마커를 모델에 배치할 때 파란색 화살표(-Z)가 면의 바깥쪽을 향하게 해야 합니다.
+		var marker_forward_world = -marker.global_transform.basis.z
+		var dot = Vector3.UP.dot(marker_forward_world)
+		
+		# print("  마커 ", marker.name, ": dot = ", dot)
 		if dot > best_dot:
 			best_dot = dot
-			result = value
+			result = int(marker.name.split("_")[1])
 
 	print("  👉 최종 결과: ", result, " (best_dot: ", best_dot, ")")
 	return result
 
 func reset_position(new_position: Vector3) -> void:
 	global_position = new_position
-
-	# 랜덤 초기 회전 설정
-	rotation_degrees = Vector3(
-		randf_range(0, 360),
-		randf_range(0, 360),
-		randf_range(0, 360)
-	)
-
-	# 초기 각속도도 랜덤하게 설정하여 떨어지면서 회전하도록
+	rotation_degrees = Vector3(randf_range(0, 360), randf_range(0, 360), randf_range(0, 360))
 	linear_velocity = Vector3.ZERO
-	angular_velocity = Vector3(
-		randf_range(-5, 5),
-		randf_range(-5, 5),
-		randf_range(-5, 5)
-	)
-
+	angular_velocity = Vector3(randf_range(-5, 5), randf_range(-5, 5), randf_range(-5, 5))
 	rolling = false
 	original_position = new_position
 	print("🔄 ", name, " reset - pos: ", new_position, ", angular_vel: ", angular_velocity)
@@ -197,62 +180,38 @@ func apply_impulse_force(impulse: Vector3, torque: Vector3) -> void:
 	apply_torque_impulse(torque)
 
 func show_face(face_value: int) -> void:
-	# 주사위를 지정된 면이 위로 오도록 회전
-	if face_value in sides:
-		var target_rotation = _get_rotation_for_face(face_value)
-		print("🎲 ", name, " show_face(", face_value, ") - 설정 전 rotation: ", rotation_degrees, " → 설정 후: ", target_rotation)
-		rotation_degrees = target_rotation
-
-		# 다음 프레임까지 기다려서 transform 업데이트 확인
-		await get_tree().process_frame
-		print("    실제 적용된 rotation: ", rotation_degrees)
-
-func _get_rotation_for_face(face_value: int) -> Vector3:
-	# 각 면에 대응하는 회전값 계산
-	match face_value:
-		1: return Vector3(0, 0, -90)  # LEFT가 위로
-		2: return Vector3(-90, 0, 0)  # FORWARD가 위로
-		3: return Vector3(0, 0, 180)  # DOWN이 위로
-		4: return Vector3(0, 0, 0)    # UP이 위로 (기본)
-		5: return Vector3(90, 0, 0)   # BACK이 위로
-		6: return Vector3(0, 0, 90)   # RIGHT가 위로
-		_: return Vector3.ZERO
+	# TODO: 이 기능은 Marker3D 접근법으로 재구현해야 합니다.
+	# 현재는 주사위 값 계산이 더 중요하므로, 이 기능은 일시적으로 비활성화됩니다.
+	# print("🎲 ", name, " show_face(", face_value, ") - 기능이 일시적으로 비활성화되었습니다.")
+	pass
 
 func _apply_velocity_limits() -> void:
-	# 최대 속도 제한
 	if linear_velocity.length() > MAX_VELOCITY:
 		linear_velocity = linear_velocity.normalized() * MAX_VELOCITY
-
 	if angular_velocity.length() > MAX_VELOCITY:
 		angular_velocity = angular_velocity.normalized() * MAX_VELOCITY
 
 func _check_bounds() -> void:
-	# 원점에서 너무 멀어지면 강제로 정지
 	var distance_from_origin = global_position.length()
 	if distance_from_origin > MAX_DISTANCE_FROM_ORIGIN:
 		print("Dice ", name, " too far from origin, forcing stop")
 		_force_stop()
-		return  # 강제 정지 후 즉시 반환하여 중복 처리 방지
+		return
 
 func _force_stop() -> void:
-	# 중복 호출 방지
 	if not rolling:
 		return
 
-	# 강제 정지
 	linear_velocity = Vector3.ZERO
 	angular_velocity = Vector3.ZERO
 	rolling = false
 
-	# 원점 또는 안전한 위치로 이동
 	if original_position != Vector3.ZERO:
 		global_position = original_position + Vector3(randf_range(-2, 2), 2, randf_range(-2, 2))
 	else:
-		# 원점 근처로 이동
 		global_position = Vector3(randf_range(-10, 10), 2, randf_range(-10, 10))
 
 	print("Dice ", name, " forced to position: ", global_position)
 
-	# 롤 완료 시그널 발송
 	var result = _calculate_face_value()
 	roll_finished.emit(result, name)
