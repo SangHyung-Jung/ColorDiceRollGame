@@ -9,6 +9,8 @@ enum GameState {
 	TURN_INTERACTION     # 턴 상호작용 (조합 선택 등) 상태
 }
 var current_state: GameState
+var _has_submitted_in_turn: bool = false
+var _has_invested_in_turn: bool = false
 
 # === UI 노드 참조 ===
 @onready var stage_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/StageLabel
@@ -291,9 +293,12 @@ func _on_roll_started() -> void:
 		cup.start_shaking()
 
 func _on_roll_finished() -> void:
+	_has_submitted_in_turn = false
+	_has_invested_in_turn = false
 	_set_state(GameState.TURN_INTERACTION)
 	combo_select.enter()
 	dice_spawner.display_dice_results(game_manager.get_roll_results())
+	cup.hide()
 
 func _on_mouse_release() -> void:
 	if cup.has_method("stop_shaking"):
@@ -316,15 +321,13 @@ func _on_submit_pressed() -> void:
 	var current_roll_results = game_manager.get_roll_results()
 	
 	for node in selected_3d_nodes:
-		# 1. 현재 턴의 결과에서 찾기
 		if current_roll_results.has(node.name):
 			roll_results_for_submission[node.name] = current_roll_results[node.name]
-		# 2. 투자된 주사위라면 저장된 meta 데이터에서 찾기
 		elif node.has_meta("value"):
 			roll_results_for_submission[node.name] = node.get_meta("value")
 		else:
 			print("오류: 주사위 값을 찾을 수 없습니다 -> ", node.name)
-			return # 값을 모르면 계산 불가
+			return
 	if all_selected_nodes.is_empty():
 		print("조합을 제출하려면 먼저 주사위를 선택하세요.")
 		return
@@ -334,6 +337,9 @@ func _on_submit_pressed() -> void:
 		combo_select.clear()
 		Main.current_score = score_manager.get_total_score()
 		_update_ui_from_gamestate()
+
+		_has_submitted_in_turn = true
+		_update_ui_for_state()
 	else:
 		print("유효하지 않은 조합입니다.")
 
@@ -383,7 +389,8 @@ func _on_invest_pressed() -> void:
 	Main.invests_left -= 1
 	_update_ui_from_gamestate()
 	
-	
+	_has_invested_in_turn = true
+	_update_ui_for_state()
 func _invest_dice(nodes: Array):
 	var current_results = game_manager.get_roll_results()
 	
@@ -475,7 +482,7 @@ func _set_state(new_state: GameState) -> void:
 
 func _update_ui_for_state() -> void:
 	match current_state:
-		GameState.AWAITING_ROLL_INPUT:
+		GameState.AWAITING_ROLL_INPUT, GameState.DICE_SETTLING:
 			submit_button.disabled = true
 			invest_button.disabled = true
 			turn_end_button.disabled = true
@@ -492,19 +499,15 @@ func _update_ui_for_state() -> void:
 			sort_by_color_button.disabled = true
 			sort_by_number_button.disabled = true
 
-		GameState.DICE_SETTLING:
-			submit_button.disabled = true
-			invest_button.disabled = true
-			turn_end_button.disabled = true
-			
-			view_dice_bag_button.disabled = false
-			sort_by_color_button.disabled = false
-			sort_by_number_button.disabled = false
-
 		GameState.TURN_INTERACTION:
-			submit_button.disabled = false
-			invest_button.disabled = false
-			turn_end_button.disabled = false
+			# Mutual exclusion logic
+			submit_button.disabled = _has_invested_in_turn
+			invest_button.disabled = _has_submitted_in_turn
+			
+			# End button activation logic
+			turn_end_button.disabled = not (_has_submitted_in_turn or _has_invested_in_turn)
+
+			# Other buttons are always enabled in this state
 			view_dice_bag_button.disabled = false
 			sort_by_color_button.disabled = false
 			sort_by_number_button.disabled = false
