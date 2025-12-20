@@ -1,5 +1,6 @@
 extends Control
 class_name MainScreen
+const SCORE_ANIM_SPEED = 2
 
 # === 게임 상태 ===
 enum GameState {
@@ -387,28 +388,36 @@ func _play_score_animation(result: ComboRules.ComboResult, nodes: Array) -> void
 	for die_node in nodes:
 		if not is_instance_valid(die_node): continue
 
+		var mesh: MeshInstance3D = die_node.get_mesh()
+		if not mesh: continue
+
 		var die_value = 0
 		if current_roll_results.has(die_node.name):
 			die_value = int(current_roll_results[die_node.name])
 		elif die_node.has_meta("value"):
 			die_value = die_node.get_meta("value")
-		
-		var original_pos = die_node.global_position
-		var bounce_height = original_pos + Vector3(0, 1.5, 0)
-		
-		# Bounce Up
-		tween.tween_property(die_node, "global_position", bounce_height, 0.2).set_ease(Tween.EASE_OUT)
-		
+
+		var bounce_height = Vector3(0, 1.5, 0)
+		var original_pos = mesh.position 
+
+		# Bounce Up (Mesh local position)
+		tween.tween_property(mesh, "position", bounce_height, 0.2 / SCORE_ANIM_SPEED).set_ease(Tween.EASE_OUT)
+
 		# 점수 업데이트 (bind 사용) 및 '띵' 효과
 		tween.tween_callback(_update_animation_score.bind(die_value))
-		tween.tween_interval(0.01) # 텍스트 렌더링 딜레이
-		tween.tween_property(score_label, "scale", Vector2(1.4, 1.4), 0.1).set_trans(Tween.TRANS_SINE)
-		tween.tween_property(score_label, "scale", Vector2(1.0, 1.0), 0.1).set_trans(Tween.TRANS_SINE)
+		tween.tween_interval(0.01)
+		tween.tween_property(score_label, "scale", Vector2(1.4, 1.4), 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
+		tween.tween_property(score_label, "scale", Vector2(1.0, 1.0), 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
 
-		# Bounce Down
-		tween.tween_property(die_node, "global_position", original_pos, 0.2).set_ease(Tween.EASE_IN)
-		tween.tween_interval(0.05)
+		# Bounce Down (Mesh local position)
+		tween.tween_property(mesh, "position", original_pos, 0.2 / SCORE_ANIM_SPEED).set_ease(Tween.EASE_IN)
 
+		# 떨림(Shake) 효과
+		tween.tween_property(mesh, "rotation_degrees:z", 15.0, 0.05 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
+		tween.tween_property(mesh, "rotation_degrees:z", -15.0, 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
+		tween.tween_property(mesh, "rotation_degrees:z", original_pos.z, 0.05 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
+
+	tween.tween_interval(0.05 / SCORE_ANIM_SPEED)
 	# 4. 최종 계산 및 결과 표시
 	tween.tween_callback(func():
 		turn_score_label.text = "= %d" % result.points
@@ -418,7 +427,7 @@ func _play_score_animation(result: ComboRules.ComboResult, nodes: Array) -> void
 	)
 	
 	# 5. 게임 상태 업데이트 전 딜레이
-	tween.tween_interval(1.5)
+	tween.tween_interval(0.5)
 	
 	# 6. 게임 상태 업데이트 및 정리
 	tween.tween_callback(func():
