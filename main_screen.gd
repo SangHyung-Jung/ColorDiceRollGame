@@ -248,7 +248,7 @@ func _connect_signals() -> void:
 	view_dice_bag_button.pressed.connect(_on_view_dice_bag_pressed)
 	sort_by_color_button.pressed.connect(_on_sort_by_color_pressed)
 	sort_by_number_button.pressed.connect(_on_sort_by_number_pressed)
-	rolling_area.gui_input.connect(_on_rolling_area_gui_input)
+	#rolling_area.gui_input.connect(_on_rolling_area_gui_input)
 	rolling_area.resized.connect(_on_rolling_area_resized)
 
 func _update_ui_from_gamestate() -> void:
@@ -265,7 +265,7 @@ func _on_rolling_area_resized() -> void:
 		rolling_world.update_size(viewport_size)
 	call_deferred("_update_socket_positions")
 
-func _on_rolling_area_gui_input(event: InputEvent) -> void:
+func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		match current_state:
 			GameState.AWAITING_ROLL_INPUT:
@@ -281,7 +281,8 @@ func _on_rolling_area_gui_input(event: InputEvent) -> void:
 					get_viewport().set_input_as_handled()
 	
 	if current_state == GameState.TURN_INTERACTION:
-		if input_manager.handle_input(event):
+		var local_event = rolling_area.make_input_local(event)
+		if input_manager.handle_input(local_event):
 			get_viewport().set_input_as_handled()
 
 func _on_roll_started() -> void:
