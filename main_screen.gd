@@ -34,7 +34,6 @@ var _has_invested_in_turn: bool = false
 @onready var combo_name_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/ScoreCalcBox/ComboNameLabel
 @onready var score_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/ScoreCalcBox/CalculationBoxes/ScoreBox/ScoreLabel
 @onready var multiplier_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/ScoreCalcBox/CalculationBoxes/MultiplierBox/MultiplierLabel
-@onready var turn_score_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/ScoreCalcBox/TurnScoreLabel
 
 var _animation_running_score: int = 0
 
@@ -360,7 +359,6 @@ func _initialize_score_calc_ui() -> void:
 	combo_name_label.text = " "
 	score_label.text = "0"
 	multiplier_label.text = "0"
-	turn_score_label.text = " "
 
 
 func _update_animation_score(die_value: int) -> void:
@@ -379,7 +377,6 @@ func _play_score_animation(result: ComboRules.ComboResult, nodes: Array) -> void
 	combo_name_label.text = result.combo_name
 	score_label.text = str(_animation_running_score)
 	multiplier_label.text = str(result.multiplier)
-	turn_score_label.text = " "
 	
 	var tween = create_tween().set_parallel(false)
 	var current_roll_results = game_manager.get_roll_results()
@@ -418,16 +415,12 @@ func _play_score_animation(result: ComboRules.ComboResult, nodes: Array) -> void
 		tween.tween_property(mesh, "rotation_degrees:z", original_pos.z, 0.05 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
 
 	tween.tween_interval(0.05 / SCORE_ANIM_SPEED)
-	# 4. 최종 계산 및 결과 표시
-	tween.tween_callback(func():
-		turn_score_label.text = "= %d" % result.points
-		turn_score_label.scale = Vector2(1.5, 1.5)
-		var inner_tween = create_tween()
-		inner_tween.tween_property(turn_score_label, "scale", Vector2(1, 1), 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BOUNCE)
-	)
-	
+	# 4. 최종 계산 및 결과 표시 (사용자 요청으로 제거)
+	# (여기에 원래 점수 표시 로직이 있었으나 제거됨)
+	tween.tween_interval(0.01) # 잠시 딜레이
+
 	# 5. 게임 상태 업데이트 전 딜레이
-	tween.tween_interval(0.5)
+	tween.tween_interval(1.5 / SCORE_ANIM_SPEED)
 	
 	# 6. 게임 상태 업데이트 및 정리
 	tween.tween_callback(func():
