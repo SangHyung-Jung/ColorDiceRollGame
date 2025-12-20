@@ -1,6 +1,6 @@
-[gd_scene load_steps=8 format=3 uid="uid://c81qr2c7cgegt"]
+[gd_scene load_steps=8 format=3 uid="uid://msbgv4hxrhe6"]
 
-[ext_resource type="Script" uid="uid://tfyw8iy6l28q" path="res://main_screen.gd" id="1_ssyjo"]
+[ext_resource type="Script" uid="uid://botynvyj8y4lc" path="res://shop_screen.gd" id="1_ssyjo"]
 [ext_resource type="Texture2D" uid="uid://b6ra7i5qkug47" path="res://score_panel.png" id="2_stk2i"]
 [ext_resource type="FontFile" uid="uid://ulruyehktvyh" path="res://font/boldpixels/BoldPixels.otf" id="3_7a4el"]
 [ext_resource type="Texture2D" uid="uid://b73pj7813d7vi" path="res://dice_socket2.png" id="4_kwhh3"]
@@ -69,7 +69,7 @@ layout_mode = 2
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_7a4el")
 theme_override_font_sizes/font_size = 70
-text = "STAGE 1-1"
+text = "LOUNGE"
 horizontal_alignment = 1
 
 [node name="VSeparator" type="Control" parent="MainLayout/InfoPanel/Panel/VBoxContainer"]
@@ -114,17 +114,6 @@ theme_override_styles/hover = SubResource("StyleBoxEmpty_transparent")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_transparent")
 theme_override_styles/normal = SubResource("StyleBoxEmpty_transparent")
 text = "Dice Bag"
-
-[node name="ShopButton" type="Button" parent="MainLayout/InfoPanel/Panel/VBoxContainer"]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7a4el")
-theme_override_font_sizes/font_size = 60
-theme_override_styles/focus = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/disabled = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/pressed = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/normal = SubResource("StyleBoxEmpty_transparent")
-text = "Shop"
 
 [node name="GameArea" type="Control" parent="MainLayout"]
 layout_mode = 2

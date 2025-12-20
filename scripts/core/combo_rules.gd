@@ -36,6 +36,9 @@ class ComboResult:
 	var combo_name: String = ""
 	var points: int = 0
 	var reason: String = ""
+	var base_score: int = 0
+	var dice_sum: int = 0
+	var multiplier: int = 0
 
 # --- 조합 정의 ---
 const COMBO_DEFINITIONS = [
@@ -85,7 +88,12 @@ func eval_combo(dice: Array) -> ComboResult:
 			for d in dice:
 				sum_of_values += d.value
 				
+			res.base_score = base_score
+			res.dice_sum = sum_of_values
+			res.multiplier = multiplier
 			res.points = (base_score + sum_of_values) * multiplier
+			
+			res.ok = true # 순서 중요: 데이터 다 채우고 true 설정
 			return res
 
 	res.ok = false

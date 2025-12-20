@@ -1,5 +1,5 @@
 extends Control
-class_name MainScreen
+class_name ShopScreen
 
 # === 게임 상태 ===
 enum GameState {
@@ -19,7 +19,6 @@ var _has_invested_in_turn: bool = false
 @onready var turns_left_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/TurnsLeftLabel
 @onready var invests_left_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/InvestsLeftLabel
 @onready var view_dice_bag_button: Button = $MainLayout/InfoPanel/Panel/VBoxContainer/ViewDiceBagButton
-@onready var shop_button: Button = $MainLayout/InfoPanel/Panel/VBoxContainer/ShopButton
 @onready var submit_button: Button = $MainLayout/GameArea/InteractionUI/HBoxContainer/TextureRect/SubmitButton
 @onready var invest_button: Button = $MainLayout/GameArea/InteractionUI/HBoxContainer/TextureRect2/InvestButton
 @onready var turn_end_button: Button = $MainLayout/GameArea/InteractionUI/HBoxContainer/TextureRect3/TurnEndButton
@@ -240,7 +239,6 @@ func _spawn_initial_dice() -> void:
 				break
 	dice_spawner.tag_spawned_nodes_with_keys(keys)
 
-
 func _connect_signals() -> void:
 	game_manager.roll_finished.connect(_on_roll_finished)
 	dice_spawner.dice_roll_finished.connect(_on_dice_roll_finished)
@@ -248,7 +246,6 @@ func _connect_signals() -> void:
 	invest_button.pressed.connect(_on_invest_pressed)
 	turn_end_button.pressed.connect(_on_turn_end_pressed)
 	view_dice_bag_button.pressed.connect(_on_view_dice_bag_pressed)
-	shop_button.pressed.connect(_on_shop_button_pressed)
 	sort_by_color_button.pressed.connect(_on_sort_by_color_pressed)
 	sort_by_number_button.pressed.connect(_on_sort_by_number_pressed)
 	#rolling_area.gui_input.connect(_on_rolling_area_gui_input)
@@ -459,9 +456,6 @@ func _on_turn_end_pressed() -> void:
 func _on_view_dice_bag_pressed() -> void:
 	dice_bag_popup.update_counts(game_manager.bag)
 	dice_bag_popup.show()
-
-func _on_shop_button_pressed() -> void:
-	get_tree().change_scene_to_file("res://shop_screen.tscn")
 
 func _on_sort_by_color_pressed() -> void:
 	if invested_dice_nodes.is_empty():
