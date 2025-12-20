@@ -29,6 +29,15 @@ var _has_invested_in_turn: bool = false
 @onready var sort_by_color_button: Button = $MainLayout/GameArea/SocketArea/SortButtonsContainer/TextureRect/SortByColorButton
 @onready var sort_by_number_button: Button = $MainLayout/GameArea/SocketArea/SortButtonsContainer/TextureRect2/SortByNumberButton
 
+# === 스코어 애니메이션 UI 노드 ===
+@onready var combo_name_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/ScoreCalcBox/ComboNameLabel
+@onready var score_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/ScoreCalcBox/CalculationBoxes/ScoreBox/ScoreLabel
+@onready var multiplier_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/ScoreCalcBox/CalculationBoxes/MultiplierBox/MultiplierLabel
+@onready var turn_score_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/ScoreCalcBox/TurnScoreLabel
+
+var _animation_running_score: int = 0
+
+
 # === 3D 씬 참조 ===
 var world_3d: Node3D
 var game_manager: GameManager
@@ -64,6 +73,7 @@ func _ready() -> void:
 
 	# 초기화
 	_initialize_managers()
+	_initialize_score_calc_ui()
 	_setup_scene()
 	# await _setup_sockets()
 	_setup_game()
@@ -242,6 +252,7 @@ func _spawn_initial_dice() -> void:
 
 
 func _connect_signals() -> void:
+	score_manager.combo_scored_detailed.connect(_on_combo_scored_detailed)
 	game_manager.roll_finished.connect(_on_roll_finished)
 	dice_spawner.dice_roll_finished.connect(_on_dice_roll_finished)
 	submit_button.pressed.connect(_on_submit_pressed)
@@ -336,16 +347,93 @@ func _on_submit_pressed() -> void:
 		print("조합을 제출하려면 먼저 주사위를 선택하세요.")
 		return
 
-	if score_manager.evaluate_and_score_combo(all_selected_nodes, roll_results_for_submission):
-		_remove_combo_dice(selected_3d_nodes)
+	if not score_manager.evaluate_and_score_combo(all_selected_nodes, roll_results_for_submission):
+		print("유효하지 않은 조합입니다.")
+
+
+func _on_combo_scored_detailed(result: ComboRules.ComboResult, nodes: Array) -> void:
+	_play_score_animation(result, nodes)
+
+
+func _initialize_score_calc_ui() -> void:
+	combo_name_label.text = " "
+	score_label.text = "0"
+	multiplier_label.text = "0"
+	turn_score_label.text = " "
+
+
+func _update_animation_score(die_value: int) -> void:
+	_animation_running_score += die_value
+	score_label.text = str(_animation_running_score)
+
+
+func _play_score_animation(result: ComboRules.ComboResult, nodes: Array) -> void:
+	# 1. 입력 비활성화
+	submit_button.disabled = true
+	invest_button.disabled = true
+	turn_end_button.disabled = true
+
+	# 2. UI 및 애니메이션 변수 초기 상태 설정
+	_animation_running_score = result.base_score
+	combo_name_label.text = result.combo_name
+	score_label.text = str(_animation_running_score)
+	multiplier_label.text = str(result.multiplier)
+	turn_score_label.text = " "
+	
+	var tween = create_tween().set_parallel(false)
+	var current_roll_results = game_manager.get_roll_results()
+	
+	# 3. 주사위 애니메이션
+	for die_node in nodes:
+		if not is_instance_valid(die_node): continue
+
+		var die_value = 0
+		if current_roll_results.has(die_node.name):
+			die_value = int(current_roll_results[die_node.name])
+		elif die_node.has_meta("value"):
+			die_value = die_node.get_meta("value")
+		
+		var original_pos = die_node.global_position
+		var bounce_height = original_pos + Vector3(0, 1.5, 0)
+		
+		# Bounce Up
+		tween.tween_property(die_node, "global_position", bounce_height, 0.2).set_ease(Tween.EASE_OUT)
+		
+		# 점수 업데이트 (bind 사용) 및 '띵' 효과
+		tween.tween_callback(_update_animation_score.bind(die_value))
+		tween.tween_interval(0.01) # 텍스트 렌더링 딜레이
+		tween.tween_property(score_label, "scale", Vector2(1.4, 1.4), 0.1).set_trans(Tween.TRANS_SINE)
+		tween.tween_property(score_label, "scale", Vector2(1.0, 1.0), 0.1).set_trans(Tween.TRANS_SINE)
+
+		# Bounce Down
+		tween.tween_property(die_node, "global_position", original_pos, 0.2).set_ease(Tween.EASE_IN)
+		tween.tween_interval(0.05)
+
+	# 4. 최종 계산 및 결과 표시
+	tween.tween_callback(func():
+		turn_score_label.text = "= %d" % result.points
+		turn_score_label.scale = Vector2(1.5, 1.5)
+		var inner_tween = create_tween()
+		inner_tween.tween_property(turn_score_label, "scale", Vector2(1, 1), 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BOUNCE)
+	)
+	
+	# 5. 게임 상태 업데이트 전 딜레이
+	tween.tween_interval(1.5)
+	
+	# 6. 게임 상태 업데이트 및 정리
+	tween.tween_callback(func():
+		_remove_combo_dice(nodes)
 		combo_select.clear()
+		
+		score_manager.total_score += result.points
 		Main.current_score = score_manager.get_total_score()
 		_update_ui_from_gamestate()
 
 		_has_submitted_in_turn = true
 		_update_ui_for_state()
-	else:
-		print("유효하지 않은 조합입니다.")
+		
+		_initialize_score_calc_ui()
+	)
 
 func _remove_combo_dice(nodes: Array) -> void:
 	game_manager.remove_combo_dice(nodes)

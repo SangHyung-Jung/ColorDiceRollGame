@@ -5,7 +5,7 @@ class_name ScoreManager
 extends Node
 
 # 유효한 조합이 완성되었을 때 발생
-signal combo_scored_detailed(result: ComboRules.ComboResult, total_score: int)
+signal combo_scored_detailed(result: ComboRules.ComboResult, nodes: Array)
 
 # 게임 전체의 누적 점수
 var total_score: int = 0
@@ -53,11 +53,8 @@ func evaluate_and_score_combo(selected_nodes: Array, roll_results: Dictionary) -
 		result.base_score, result.dice_sum, result.multiplier
 	])
 
-	total_score += result.points
-	print("누적 점수: %d" % total_score)
-
-	# [수정됨] 새로운 시그널 발생 (result 객체 통째로 전달)
-	combo_scored_detailed.emit(result, total_score)
+	# [수정됨] 새로운 시그널 발생 (result 객체와 노드 전달)
+	combo_scored_detailed.emit(result, selected_nodes)
 	
 	return true
 

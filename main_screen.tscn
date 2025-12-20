@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://c81qr2c7cgegt"]
+[gd_scene load_steps=9 format=3 uid="uid://c81qr2c7cgegt"]
 
 [ext_resource type="Script" uid="uid://tfyw8iy6l28q" path="res://main_screen.gd" id="1_ssyjo"]
 [ext_resource type="Texture2D" uid="uid://b6ra7i5qkug47" path="res://score_panel.png" id="2_stk2i"]
@@ -8,6 +8,18 @@
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_fplum"]
 texture = ExtResource("2_stk2i")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_scorebox"]
+bg_color = Color(0, 0, 0, 0.392157)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 0.501961)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_transparent"]
 
@@ -87,6 +99,66 @@ layout_mode = 2
 theme_override_fonts/font = ExtResource("3_7a4el")
 theme_override_font_sizes/font_size = 40
 text = "Current Score: 0"
+
+[node name="ScoreCalcBox" type="VBoxContainer" parent="MainLayout/InfoPanel/Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ComboNameLabel" type="Label" parent="MainLayout/InfoPanel/Panel/VBoxContainer/ScoreCalcBox"]
+custom_minimum_size = Vector2(0, 35)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7a4el")
+theme_override_font_sizes/font_size = 35
+text = " "
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CalculationBoxes" type="HBoxContainer" parent="MainLayout/InfoPanel/Panel/VBoxContainer/ScoreCalcBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="ScoreBox" type="PanelContainer" parent="MainLayout/InfoPanel/Panel/VBoxContainer/ScoreCalcBox/CalculationBoxes"]
+custom_minimum_size = Vector2(180, 80)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_scorebox")
+
+[node name="ScoreLabel" type="Label" parent="MainLayout/InfoPanel/Panel/VBoxContainer/ScoreCalcBox/CalculationBoxes/ScoreBox"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7a4el")
+theme_override_font_sizes/font_size = 50
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="XLabel" type="Label" parent="MainLayout/InfoPanel/Panel/VBoxContainer/ScoreCalcBox/CalculationBoxes"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7a4el")
+theme_override_font_sizes/font_size = 40
+text = "x"
+vertical_alignment = 1
+
+[node name="MultiplierBox" type="PanelContainer" parent="MainLayout/InfoPanel/Panel/VBoxContainer/ScoreCalcBox/CalculationBoxes"]
+custom_minimum_size = Vector2(100, 80)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_scorebox")
+
+[node name="MultiplierLabel" type="Label" parent="MainLayout/InfoPanel/Panel/VBoxContainer/ScoreCalcBox/CalculationBoxes/MultiplierBox"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7a4el")
+theme_override_font_sizes/font_size = 50
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TurnScoreLabel" type="Label" parent="MainLayout/InfoPanel/Panel/VBoxContainer/ScoreCalcBox"]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7a4el")
+theme_override_font_sizes/font_size = 40
+text = " "
+horizontal_alignment = 2
+vertical_alignment = 1
 
 [node name="TurnsLeftLabel" type="Label" parent="MainLayout/InfoPanel/Panel/VBoxContainer"]
 layout_mode = 2
