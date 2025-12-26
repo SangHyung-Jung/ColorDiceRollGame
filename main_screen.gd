@@ -108,6 +108,7 @@ func _initialize_score_animator() -> void:
 		"invest_button": invest_button,
 		"turn_end_button": turn_end_button,
 		"game_manager": game_manager,
+		"invested_dice_nodes": invested_dice_nodes,
 	}
 	score_animator.initialize(refs)
 
@@ -382,17 +383,34 @@ func _on_combo_scored_detailed(result: ComboRules.ComboResult, nodes: Array) -> 
 
 
 func _on_score_animation_finished(points: int, nodes: Array) -> void:
-	_remove_combo_dice(nodes)
-	combo_select.clear()
-	
-	score_manager.total_score += points
-	Main.current_score = score_manager.get_total_score()
-	_update_ui_from_gamestate()
+	var new_total_score = score_manager.get_total_score() + points
+	_animate_current_score(new_total_score, nodes)
 
-	_has_submitted_in_turn = true
-	_update_ui_for_state()
+
+func _animate_current_score(target_score: int, nodes: Array) -> void:
+	var current_score_text = current_score_label.text.split(": ")[1]
+	var start_score = int(current_score_text)
 	
-	_initialize_score_calc_ui()
+	var tween = create_tween()
+	
+	tween.tween_method(
+		func(val): update_current_score(val),
+		start_score,
+		target_score,
+		1.0 / SCORE_ANIM_SPEED
+	).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	
+	tween.tween_callback(func():
+		_remove_combo_dice(nodes)
+		combo_select.clear()
+		
+		score_manager.total_score = target_score
+		Main.current_score = target_score
+		
+		_has_submitted_in_turn = true
+		_update_ui_for_state()
+		_initialize_score_calc_ui()
+	)
 
 func _remove_combo_dice(nodes: Array) -> void:
 	game_manager.remove_combo_dice(nodes)
