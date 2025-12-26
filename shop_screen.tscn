@@ -206,7 +206,7 @@ stretch = true
 [node name="SubViewport" type="SubViewport" parent="MainLayout/GameArea/RollingArea"]
 transparent_bg = true
 handle_input_locally = false
-size = Vector2i(1470, 1080)
+size = Vector2i(2, 2)
 render_target_update_mode = 4
 
 [node name="InteractionUI" type="MarginContainer" parent="MainLayout/GameArea"]

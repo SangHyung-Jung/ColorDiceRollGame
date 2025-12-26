@@ -1,0 +1,92 @@
+[Master Plan] 다이내믹 스코어링 시스템
+1. 씬 구조 재설계 (Layering Strategy)
+가장 중요한 건 **"이펙트가 UI나 3D 화면에 가려지면 안 된다"**는 점입니다.
+
+현재 문제: 점수 이펙트가 일반 UI 컨테이너 안에 갇혀 있어 좌표 잡기가 힘들고 레이아웃에 영향을 받음.
+
+해결 방안: 최상위 덮개(Overlay) 레이어 생성.
+
+[수정할 씬 트리 구조]
+
+MainScreen (Root)
+
+GameWorld (3D 주사위, 배경 등)
+
+MainUI (기존 패널, 버튼들 - Control 노드)
+
+VFX_Layer (CanvasLayer - 신규 추가)
+
+속성: Layer 100 (항상 맨 위에 그려짐)
+
+FloatingTextContainer: 주사위 위로 뜨는 숫자들만 담는 통 (클릭 무시 설정).
+
+ScreenFlash: 화면 번쩍임용 ColorRect (흰색/투명).
+
+ParticleContainer: 불꽃놀이 등 2D 파티클용.
+
+2. 연출 시퀀스 (The Scoring Flow)
+발라트로의 핵심은 '동시'에 계산하지 않고 '순서대로' 계산하여 긴장감을 주는 것입니다.
+
+[단계별 로직]
+
+입력 차단 (Lock): 계산 시작 시 모든 버튼 비활성화.
+
+데이터 수신: ScoreManager에서 result와 selected_dice 배열을 받음.
+
+Phase 1: 칩(Chips) 쌓기 (Loop)
+
+선택된 주사위 배열을 하나씩 순회 (for문 + await/timer).
+
+Action: 주사위 하나가 '반짝' -> 해당 주사위 위치에서 점수 텍스트(+10)가 튀어오름.
+
+Feedback: 동시에 좌측 점수판(Chips) 숫자가 올라감 -> 점수판이 살짝 커졌다 작아짐 (Punch).
+
+효과음: 탁, 탁, 탁 (리듬감 있게)
+
+Phase 2: 배수(Mult) 적용
+
+칩 계산이 끝난 후 잠시 뜸(Pause).
+
+Action: 배수(Mult) 텍스트가 불타오르거나 흔들림.
+
+Feedback: 화면 전체가 미세하게 붉게 번쩍임 (Flash).
+
+Phase 3: 최종 합산 (Cash Out)
+
+칩 x 배수 계산.
+
+Action: 최종 점수(Total Score)로 숫자가 '드르륵' 올라가는 롤링 애니메이션.
+
+Feedback: 숫자가 다 올라가면 강하게 쿵! (Screen Shake + UI Shake).
+
+종료: 입력 잠금 해제, 주사위 정리.
+
+3. 필수 시각 효과 기술 (Juice Tech)
+단순 AnimationPlayer보다는 Godot의 **Tween**을 코드로 제어해야 맛이 삽니다.
+
+Punch (펀치): UI가 순간적으로 1.2배 커졌다가 1.0배로 돌아오는 탄성 효과.
+
+적용: 점수가 더해질 때마다 점수판 박스에 적용.
+
+Shake (쉐이크): 위치를 랜덤하게 흔듦.
+
+적용: 높은 배수(Multiplier)가 터질 때, 최종 점수 합산 시.
+
+Rolling Numbers (숫자 롤링): 0에서 1000으로 팍 바뀌는 게 아니라, 0, 15, 42... 1000처럼 빠르게 숫자가 올라가는 연출.
+
+Floating Text (플로팅 텍스트):
+
+3D 월드 좌표(주사위 위치)를 Camera3D.unproject_position()으로 2D 화면 좌표로 변환하여 VFX_Layer에 띄움.
+
+4. 작업 순서 가이드
+이 순서대로 진행하는 것을 추천합니다.
+
+씬 정리: 에디터에서 MainScreen에 CanvasLayer(이름: EffectsLayer)를 추가하고 그 아래 Control 노드를 만드세요.
+
+좌표 변환 테스트: 주사위 위에 텍스트가 정확히 뜨는지부터 확인 (unproject_position 사용).
+
+순차 재생 구현: 점수를 한 번에 보여주지 말고, Tween이나 Timer를 써서 주사위 개수만큼 딜레이를 주는 로직 작성.
+
+타격감 추가: 숫자가 올라갈 때마다 UI 크기를 조절하는 scale 트윈 추가.
+
+이 마스터 플랜대로 진행하면 코드가 꼬이지 않고 단계별로 완성도를 높일 수 있습니다. 어느 단계부터 구현을 도와드릴까요?

@@ -34,8 +34,45 @@ var _has_invested_in_turn: bool = false
 @onready var combo_name_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/ScoreCalcBox/ComboNameLabel
 @onready var score_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/ScoreCalcBox/CalculationBoxes/ScoreBox/ScoreLabel
 @onready var multiplier_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/ScoreCalcBox/CalculationBoxes/MultiplierBox/MultiplierLabel
+@onready var turn_score_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/ScoreCalcBox/TurnScoreLabel
+@onready var floating_text_container: Control = $EffectsLayer/FloatingTextContainer
+@onready var screen_flash: ColorRect = $EffectsLayer/ScreenFlash
+@onready var main_layout: HBoxContainer = $MainLayout
 
 var _animation_running_score: int = 0
+
+
+func _create_floating_text(text: String, position_3d: Vector3, color: Color = Color.WHITE) -> void:
+	var camera = rolling_world.get_node_or_null("Camera3D")
+	if not camera:
+		return
+
+	# 3D 월드 좌표를 SubViewport 내의 2D 좌표로 변환
+	var sub_viewport_pos = camera.unproject_position(position_3d)
+	# SubViewport의 전역 위치를 더해 전체 화면 기준의 최종 좌표 계산
+	var final_screen_pos = sub_viewport_pos + rolling_area.global_position
+
+	# 새 Label 노드 생성 및 설정
+	var label = Label.new()
+	label.text = text
+	label.modulate = color
+	label.add_theme_font_size_override("font_size", 40)
+	
+	floating_text_container.add_child(label)
+	# 피봇 오프셋을 중앙으로 설정하여 텍스트가 좌표의 중앙에 오도록 함
+	label.pivot_offset = label.get_size() / 2
+	label.global_position = final_screen_pos
+
+	# 애니메이션 트윈 생성
+	var tween = create_tween()
+	# 1. 위로 이동하며 사라지는 효과
+	tween.tween_property(label, "global_position", final_screen_pos - Vector2(0, 100), 1.0)\
+		.set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(label, "modulate:a", 0.0, 1.0)\
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+
+	# 2. 애니메이션이 끝나면 노드 삭제
+	tween.tween_callback(label.queue_free)
 
 
 # === 3D 씬 참조 ===
@@ -366,6 +403,45 @@ func _update_animation_score(die_value: int) -> void:
 	score_label.text = str(_animation_running_score)
 
 
+func _shake_screen(duration: float = 0.2, frequency: int = 15, amplitude: float = 10.0):
+	var tween = create_tween()
+	var noise = FastNoiseLite.new()
+	noise.seed = randi()
+	noise.frequency = frequency
+	
+	var original_pos = main_layout.position
+	
+	tween.tween_method(
+		func(t):
+			var offset = Vector2(noise.get_noise_1d(t * 1000), noise.get_noise_1d(t * 1000 + 500)) * amplitude * (1.0 - t)
+			main_layout.position = original_pos + offset,
+		0.0, 
+		1.0, 
+		duration
+	).set_ease(Tween.EASE_OUT)
+	tween.tween_callback(func(): main_layout.position = original_pos)
+
+
+func _animate_final_score(final_score: int):
+	turn_score_label.text = "" # Clear previous score
+	
+	var tween = create_tween()
+	# "property"를 사용하여 int 값을 롤링하고, "method"를 사용하여 레이블 텍스트를 업데이트
+	tween.tween_property(turn_score_label, "modulate:a", 1.0, 0.1) # Fade in
+	tween.tween_method(
+		func(val): turn_score_label.text = "+%d" % int(val),
+		0,
+		final_score,
+		1.0 / SCORE_ANIM_SPEED
+	).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	
+	tween.chain().tween_property(turn_score_label, "scale", Vector2(1.5, 1.5), 0.1 / SCORE_ANIM_SPEED)
+	tween.chain().tween_callback(_shake_screen.bind(0.3, 20, 15))
+	tween.chain().tween_property(turn_score_label, "scale", Vector2(1.0, 1.0), 0.1 / SCORE_ANIM_SPEED)
+
+
+
+
 func _play_score_animation(result: ComboRules.ComboResult, nodes: Array) -> void:
 	# 1. 입력 비활성화
 	submit_button.disabled = true
@@ -394,11 +470,14 @@ func _play_score_animation(result: ComboRules.ComboResult, nodes: Array) -> void
 		elif die_node.has_meta("value"):
 			die_value = die_node.get_meta("value")
 
-		var bounce_height = Vector3(0, 1.5, 0)
-		var original_pos = mesh.position 
+		# 플로팅 텍스트 생성
+		_create_floating_text("+" + str(die_value), die_node.global_position, Color.GOLD)
 
-		# Bounce Up (Mesh local position)
-		tween.tween_property(mesh, "position", bounce_height, 0.2 / SCORE_ANIM_SPEED).set_ease(Tween.EASE_OUT)
+		var bounce_height = die_node.global_position + Vector3(0, 1.0, 0)
+		var original_pos = die_node.global_position 
+
+		# Bounce Up
+		tween.tween_property(die_node, "global_position", bounce_height, 0.2 / SCORE_ANIM_SPEED).set_ease(Tween.EASE_OUT)
 
 		# 점수 업데이트 (bind 사용) 및 '띵' 효과
 		tween.tween_callback(_update_animation_score.bind(die_value))
@@ -406,18 +485,34 @@ func _play_score_animation(result: ComboRules.ComboResult, nodes: Array) -> void
 		tween.tween_property(score_label, "scale", Vector2(1.4, 1.4), 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
 		tween.tween_property(score_label, "scale", Vector2(1.0, 1.0), 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
 
-		# Bounce Down (Mesh local position)
-		tween.tween_property(mesh, "position", original_pos, 0.2 / SCORE_ANIM_SPEED).set_ease(Tween.EASE_IN)
-
-		# 떨림(Shake) 효과
-		tween.tween_property(mesh, "rotation_degrees:z", 15.0, 0.05 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
-		tween.tween_property(mesh, "rotation_degrees:z", -15.0, 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
-		tween.tween_property(mesh, "rotation_degrees:z", original_pos.z, 0.05 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
+		# Bounce Down
+		tween.tween_property(die_node, "global_position", original_pos, 0.2 / SCORE_ANIM_SPEED).set_ease(Tween.EASE_IN)
+		
+		# 메시의 로컬 위치를 사용하지 않고 노드 자체의 글로벌 위치를 사용하도록 수정
+		# 이전 코드에서 메시의 로컬 포지션을 사용하던 부분을 노드의 글로벌 포지션으로 변경합니다.
+		var shake_intensity = 10.0
+		tween.tween_property(die_node, "rotation_degrees:z", shake_intensity, 0.05 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
+		tween.tween_property(die_node, "rotation_degrees:z", -shake_intensity, 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
+		tween.tween_property(die_node, "rotation_degrees:z", 0.0, 0.05 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
 
 	tween.tween_interval(0.05 / SCORE_ANIM_SPEED)
-	# 4. 최종 계산 및 결과 표시 (사용자 요청으로 제거)
-	# (여기에 원래 점수 표시 로직이 있었으나 제거됨)
-	tween.tween_interval(0.01) # 잠시 딜레이
+	tween.tween_interval(0.5 / SCORE_ANIM_SPEED)
+
+	# Phase 2: 배수(Mult) 적용
+	var flash_tween = create_tween()
+	flash_tween.tween_property(screen_flash, "color", Color(1, 0, 0, 0.3), 0.1)
+	flash_tween.tween_property(screen_flash, "color", Color(1, 0, 0, 0), 0.3)
+	
+	tween.tween_property(multiplier_label, "scale", Vector2(1.5, 1.5), 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
+	tween.tween_property(multiplier_label, "rotation_degrees", 10.0, 0.05 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
+	tween.tween_property(multiplier_label, "rotation_degrees", -10.0, 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
+	tween.tween_property(multiplier_label, "rotation_degrees", 0.0, 0.05 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
+	tween.tween_property(multiplier_label, "scale", Vector2(1.0, 1.0), 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
+	
+	tween.tween_interval(0.3 / SCORE_ANIM_SPEED) # 잠시 딜레이
+	
+	# Phase 3: 최종 합산 (Cash Out)
+	tween.tween_callback(_animate_final_score.bind(result.points))
 
 	# 5. 게임 상태 업데이트 전 딜레이
 	tween.tween_interval(1.5 / SCORE_ANIM_SPEED)
