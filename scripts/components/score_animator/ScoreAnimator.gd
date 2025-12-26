@@ -59,29 +59,43 @@ func play_animation(result: ComboRules.ComboResult, nodes: Array) -> void:
 	# 3. 주사위 애니메이션
 	for die_node in nodes:
 		if not is_instance_valid(die_node): continue
+		
+		var mesh: MeshInstance3D = die_node.get_mesh()
+		if not mesh: continue
 
 		var die_value = 0
 		if current_roll_results.has(die_node.name):
 			die_value = int(current_roll_results[die_node.name])
 		elif die_node.has_meta("value"):
 			die_value = die_node.get_meta("value")
+		
+		var die_world_pos = die_node.global_position
+		
+		# Animate the mesh locally
+		var bounce_height = Vector3(0, 1.0, 0)
+		var original_pos = mesh.position
 
-		_create_floating_text("+" + str(die_value), die_node.global_position, Color.GOLD)
-
-		var bounce_height = die_node.global_position + Vector3(0, 1.0, 0)
-		var original_pos = die_node.global_position 
-
-		tween.tween_property(die_node, "global_position", bounce_height, 0.2 / SCORE_ANIM_SPEED).set_ease(Tween.EASE_OUT)
-		tween.tween_callback(_update_animation_score.bind(die_value))
-		tween.tween_interval(0.01)
+		# Bounce Up
+		tween.tween_property(mesh, "position", bounce_height, 0.2 / SCORE_ANIM_SPEED).set_ease(Tween.EASE_OUT)
+		
+		# Create text and update score at the peak of the bounce
+		tween.tween_callback(
+			func():
+				_create_floating_text("+" + str(die_value), die_world_pos)
+				_update_animation_score(die_value)
+		)
+		
 		tween.tween_property(score_label, "scale", Vector2(1.4, 1.4), 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
 		tween.tween_property(score_label, "scale", Vector2(1.0, 1.0), 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
-		tween.tween_property(die_node, "global_position", original_pos, 0.2 / SCORE_ANIM_SPEED).set_ease(Tween.EASE_IN)
 		
-		var shake_intensity = 10.0
-		tween.tween_property(die_node, "rotation_degrees:z", shake_intensity, 0.05 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
-		tween.tween_property(die_node, "rotation_degrees:z", -shake_intensity, 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
-		tween.tween_property(die_node, "rotation_degrees:z", 0.0, 0.05 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
+		# Bounce Down
+		tween.tween_property(mesh, "position", original_pos, 0.2 / SCORE_ANIM_SPEED).set_ease(Tween.EASE_IN)
+		
+		# Shake
+		var shake_intensity = 15.0
+		tween.tween_property(mesh, "rotation_degrees:z", shake_intensity, 0.05 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
+		tween.tween_property(mesh, "rotation_degrees:z", -shake_intensity, 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
+		tween.tween_property(mesh, "rotation_degrees:z", 0.0, 0.05 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
 
 	tween.tween_interval(0.5 / SCORE_ANIM_SPEED)
 
@@ -120,7 +134,11 @@ func _create_floating_text(text: String, position_3d: Vector3, color: Color = Co
 	var label = Label.new()
 	label.text = text
 	label.modulate = color
-	label.add_theme_font_size_override("font_size", 40)
+	# Style updates
+	label.add_theme_font_size_override("font_size", 50)
+	label.add_theme_color_override("font_shadow_color", Color.BLACK)
+	label.add_theme_constant_override("shadow_offset_x", 2)
+	label.add_theme_constant_override("shadow_offset_y", 2)
 	
 	floating_text_container.add_child(label)
 	label.pivot_offset = label.get_size() / 2
