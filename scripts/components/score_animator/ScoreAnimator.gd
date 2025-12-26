@@ -22,7 +22,7 @@ var turn_end_button: Button
 # Game Data References
 var game_manager: GameManager
 
-const SCORE_ANIM_SPEED = 2
+const SCORE_ANIM_SPEED = 2 # 애니메이션 속도 제어 변수 (값이 클수록 애니메이션이 빨라짐)
 var _animation_running_score: int = 0
 
 func initialize(refs: Dictionary):
@@ -101,8 +101,8 @@ func play_animation(result: ComboRules.ComboResult, nodes: Array) -> void:
 
 	# Phase 2: 배수(Mult) 적용
 	var flash_tween = create_tween()
-	flash_tween.tween_property(screen_flash, "color", Color(1, 0, 0, 0.3), 0.1)
-	flash_tween.tween_property(screen_flash, "color", Color(1, 0, 0, 0), 0.3)
+	flash_tween.tween_property(screen_flash, "color", Color(1, 0, 0, 0.3), 0.1 / SCORE_ANIM_SPEED)
+	flash_tween.tween_property(screen_flash, "color", Color(1, 0, 0, 0), 0.3 / SCORE_ANIM_SPEED)
 	
 	tween.tween_property(multiplier_label, "scale", Vector2(1.5, 1.5), 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
 	tween.tween_property(multiplier_label, "rotation_degrees", 10.0, 0.05 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
@@ -142,14 +142,18 @@ func _create_floating_text(text: String, position_3d: Vector3, color: Color = Co
 	
 	floating_text_container.add_child(label)
 	label.pivot_offset = label.get_size() / 2
-	label.global_position = final_screen_pos
+	
+	# Calculate the position right above the die
+	var text_offset_y = 150 # Pixels above the die
+	label.global_position = final_screen_pos - Vector2(0, text_offset_y)
 
 	var tween = create_tween()
-	tween.tween_property(label, "global_position", final_screen_pos - Vector2(0, 100), 1.0)\
-		.set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
-	tween.parallel().tween_property(label, "modulate:a", 0.0, 1.0)\
-		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	# "Pop" animation: appear instantly, short delay, then fade out quickly
+	label.modulate.a = 1.0 # Ensure it's fully visible at start
+	tween.tween_interval(0.3 / SCORE_ANIM_SPEED) # Controllable delay before fade
+	tween.tween_property(label, "modulate:a", 0.0, 0.1 / SCORE_ANIM_SPEED) # Quick fade out
 	tween.tween_callback(label.queue_free)
+
 
 func _update_animation_score(die_value: int) -> void:
 	_animation_running_score += die_value
