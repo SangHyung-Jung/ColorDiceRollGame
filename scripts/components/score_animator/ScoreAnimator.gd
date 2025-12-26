@@ -88,12 +88,14 @@ func play_animation(result: ComboRules.ComboResult, nodes: Array) -> void:
 				_update_animation_score(die_value)
 		)
 		
+		# Animate score label punch from its center
+		tween.tween_callback(func(): score_label.pivot_offset = score_label.size / 2)
 		tween.tween_property(score_label, "scale", Vector2(1.4, 1.4), 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
 		tween.tween_property(score_label, "scale", Vector2(1.0, 1.0), 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
+		tween.tween_callback(func(): score_label.pivot_offset = Vector2.ZERO)
 
 		# Bounce Down
 		tween.tween_property(mesh, "position", original_pos, 0.2 / SCORE_ANIM_SPEED).set_ease(Tween.EASE_IN)
-
 		# Shake
 		var shake_intensity = 15.0
 		tween.tween_property(mesh, "rotation_degrees:z", shake_intensity, 0.05 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
@@ -114,19 +116,21 @@ func play_animation(result: ComboRules.ComboResult, nodes: Array) -> void:
 	flash_tween.tween_property(screen_flash, "color", Color(1, 0, 0, 0.3), 0.1 / SCORE_ANIM_SPEED)
 	flash_tween.tween_property(screen_flash, "color", Color(1, 0, 0, 0), 0.3 / SCORE_ANIM_SPEED)
 
+	tween.tween_callback(func(): multiplier_label.pivot_offset = multiplier_label.size / 2)
 	tween.tween_property(multiplier_label, "scale", Vector2(1.5, 1.5), 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
 	tween.tween_property(multiplier_label, "rotation_degrees", 10.0, 0.05 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
 	tween.tween_property(multiplier_label, "rotation_degrees", -10.0, 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
 	tween.tween_property(multiplier_label, "rotation_degrees", 0.0, 0.05 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
 	tween.tween_property(multiplier_label, "scale", Vector2(1.0, 1.0), 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
+	tween.tween_callback(func(): multiplier_label.pivot_offset = Vector2.ZERO)
 
 	tween.tween_interval(0.3 / SCORE_ANIM_SPEED)
 
-	# Phase 3: 최종 합산 (강한 화면 흔들림만)
-	tween.tween_callback(_shake_screen.bind(0.3, 20, 15))
+	# Phase 3: 최종 계산 결과 표시
+	tween.tween_callback(_display_final_calculation.bind(result))
 
 	# 5. 게임 상태 업데이트 전 딜레이
-	tween.tween_interval(1.0 / SCORE_ANIM_SPEED) #딜레이 약간 줄임
+	tween.tween_interval(1.0 / SCORE_ANIM_SPEED)
 
 	# 6. 애니메이션 종료 시그널 발생
 	tween.tween_callback(func():
@@ -188,3 +192,16 @@ func _shake_screen(duration: float = 0.2, frequency: int = 15, amplitude: float 
 		duration
 	).set_ease(Tween.EASE_OUT)
 	tween.tween_callback(func(): main_layout.position = original_pos)
+
+func _display_final_calculation(result: ComboRules.ComboResult) -> void:
+	# Use the final "chips" score calculated during the animation
+	var final_chips = _animation_running_score
+	var calc_text = "%d x %d = %d" % [final_chips, result.multiplier, result.points]
+	
+	combo_name_label.text = calc_text
+	combo_name_label.pivot_offset = combo_name_label.size / 2
+	
+	var tween = create_tween()
+	tween.tween_property(combo_name_label, "scale", Vector2(1.3, 1.3), 0.1 / SCORE_ANIM_SPEED)
+	tween.chain().tween_callback(_shake_screen.bind(0.3, 20, 15)) # Strong shake on reveal
+	tween.tween_property(combo_name_label, "scale", Vector2(1.0, 1.0), 0.2 / SCORE_ANIM_SPEED)

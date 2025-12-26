@@ -101,6 +101,7 @@ theme_override_font_sizes/font_size = 40
 text = "Current Score: 0"
 
 [node name="ScoreCalcBox" type="VBoxContainer" parent="MainLayout/InfoPanel/Panel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 180)
 layout_mode = 2
 theme_override_constants/separation = 10
 
@@ -112,6 +113,8 @@ theme_override_font_sizes/font_size = 35
 text = " "
 horizontal_alignment = 1
 vertical_alignment = 1
+clip_text = true
+text_overrun_behavior = 3
 
 [node name="CalculationBoxes" type="HBoxContainer" parent="MainLayout/InfoPanel/Panel/VBoxContainer/ScoreCalcBox"]
 layout_mode = 2
