@@ -74,39 +74,59 @@ func play_animation(result: ComboRules.ComboResult, nodes: Array) -> void:
 		var die_world_pos = die_node.global_position
 		
 		# Animate the mesh locally
-		var bounce_height = Vector3(0, 1.0, 0)
+		var bounce_height = Vector3(0, 1.5, 0) # 높이를 조금 더 높임
 		var original_pos = mesh.position
-
-		# Bounce Up
-		tween.tween_property(mesh, "position", bounce_height, 0.2 / SCORE_ANIM_SPEED).set_ease(Tween.EASE_OUT)
+		var original_scale = mesh.scale # 원래 크기 저장
 		
-		# Create text and update score at the peak of the bounce
+		# 랜덤 회전 각도 설정 (Twitch 효과)
+		var random_rot = Vector3(
+			randf_range(-7, 7),
+			randf_range(-7, 7),
+			randf_range(-7, 7)
+		)
+		# 공중에서 원래 크기로 복귀
+		tween.tween_property(mesh, "scale", original_scale, 0.1 / SCORE_ANIM_SPEED)
+
+		# 점수 텍스트 표시 및 점수 업데이트 (정점 부근)
 		tween.tween_callback(
 			func():
 				var is_invested = invested_dice_nodes_ref.has(die_node)
 				_create_floating_text("+" + str(die_value), die_world_pos, is_invested)
 				_update_animation_score(die_value)
 		)
-		
 		# Animate score label punch from its center
 		tween.tween_callback(func(): score_label.pivot_offset = score_label.size / 2)
 		tween.tween_property(score_label, "scale", Vector2(1.4, 1.4), 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
 		tween.tween_property(score_label, "scale", Vector2(1.0, 1.0), 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
 		tween.tween_callback(func(): score_label.pivot_offset = Vector2.ZERO)
+		# 2. 낙하 (Fall): 빠르게 원래 위치로 떨어짐
+		tween.tween_property(mesh, "position", original_pos, 0.01 / SCORE_ANIM_SPEED)\
+			.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
 
-		# Bounce Down
-		tween.tween_property(mesh, "position", original_pos, 0.2 / SCORE_ANIM_SPEED).set_ease(Tween.EASE_IN)
-		# Shake
-		var shake_intensity = 15.0
-		tween.tween_property(mesh, "rotation_degrees:z", shake_intensity, 0.05 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
-		tween.tween_property(mesh, "rotation_degrees:z", -15.0, 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
-		tween.tween_property(mesh, "rotation_degrees:z", 0.0, 0.05 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
+		# 3. 착지 충격 (Squash - "Thump!"): 바닥에 닿는 순간 납작해짐
+		# X, Z는 넓어지고(1.4배), Y는 납작해짐(0.6배)
+		tween.chain().tween_property(mesh, "scale", original_scale * Vector3(1.2, 0.8, 1.2), 0.05 / SCORE_ANIM_SPEED)\
+			.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_EXPO)
 		
-		# Add a subtle screen shake for each die
-		tween.tween_callback(_shake_screen.bind(0.1, 15, 8))
+		# 4. 회복 및 움찔 (Recovery & Random Twitch)
+		# 쫀득하게(Elastic) 원래 크기로 돌아오면서 랜덤한 방향으로 튐
+		tween.tween_property(mesh, "scale", original_scale, 0.3 / SCORE_ANIM_SPEED)\
+			.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_ELASTIC)
 		
-		# 각 주사위 애니메이션 사이에 짧은 딜레이 추가
-		tween.tween_interval(0.1 / SCORE_ANIM_SPEED)
+		# 동시에 랜덤한 방향으로 회전했다가 돌아옴 (움찔거리는 느낌)
+		tween.parallel().tween_property(mesh, "rotation_degrees", random_rot, 0.01 / SCORE_ANIM_SPEED)\
+			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tween.tween_property(mesh, "rotation_degrees", Vector3.ZERO, 0.01 / SCORE_ANIM_SPEED)\
+			.set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+		
+		# 화면 흔들림 (강도 약간 증가)
+		tween.tween_callback(_shake_screen.bind(0.15, 20, 12))
+		
+		## 각 주사위 사이의 간격 (약간 더 타이트하게)
+		tween.tween_interval(0.08 / SCORE_ANIM_SPEED)
+#
+		## 각 주사위 애니메이션 사이에 짧은 딜레이 추가
+		#tween.tween_interval(0.1 / SCORE_ANIM_SPEED)
 
 	# 모든 주사위 애니메이션이 끝난 후, 다음 단계로 넘어가기 전 잠시 멈춤
 	tween.tween_interval(0.4 / SCORE_ANIM_SPEED)
