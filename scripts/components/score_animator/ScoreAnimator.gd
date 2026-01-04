@@ -44,6 +44,9 @@ func initialize(refs: Dictionary):
 
 
 func play_animation(result: ComboRules.ComboResult, nodes: Array) -> void:
+	# 사운드를 미리 불러옵니다. SoundManager가 중복 로드를 방지해줍니다.
+	SoundManager.preload_sound("dice_count", "res://assets/audio/die-throw-1.ogg")
+
 	# 1. 입력 비활성화
 	submit_button.disabled = true
 	invest_button.disabled = true
@@ -90,6 +93,8 @@ func play_animation(result: ComboRules.ComboResult, nodes: Array) -> void:
 		# 점수 텍스트 표시 및 점수 업데이트 (정점 부근)
 		tween.tween_callback(
 			func():
+				# ✨ 사운드 재생 추가!
+				SoundManager.play("dice_count")
 				var is_invested = invested_dice_nodes_ref.has(die_node)
 				_create_floating_text("+" + str(die_value), die_world_pos, is_invested)
 				_update_animation_score(die_value)

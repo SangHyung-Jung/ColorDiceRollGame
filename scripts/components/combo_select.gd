@@ -7,6 +7,10 @@ var _order: Array[Node3D] = []
 
 const SELECT_SCALE := Vector3(1.25, 1.25, 1.25)
 
+func _ready():
+	# 주사위 선택/해제 시 재생할 사운드를 미리 불러옵니다.
+	SoundManager.preload_sound("dice_select", "res://assets/audio/die-throw-1.ogg")
+
 func enter() -> void:
 	active = true
 func exit() -> void:
@@ -36,6 +40,10 @@ func process_input(event: InputEvent) -> bool:
 func _toggle(hit: Node) -> void:
 	var d := _dice_root(hit)
 	if d == null: return
+	
+	# 주사위 선택/해제 시 사운드를 재생합니다.
+	SoundManager.play("dice_select")
+	
 	var idv: int = int(d.get_instance_id())
 	if _sel.has(idv):
 		_sel.erase(idv); _order.erase(d); _set_selected(d, false)
