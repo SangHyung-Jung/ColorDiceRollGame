@@ -653,12 +653,12 @@ func _on_stage_manager_round_advanced(new_stage: int, new_round: int) -> void:
 	_has_submitted_in_turn = false
 	_has_invested_in_turn = false
 	
-	# 4. 새 라운드의 첫 주사위 비동기적으로 스폰
-	await _setup_game()
-
-	# 5. 컵 상태를 리셋하고 보이게 하여 롤 준비 상태로 만듦
+	# 4. 새 라운드를 위해 컵을 리셋하고 주사위를 채움
 	cup.reset()
 	cup.show()
+	await _reset_roll()
+
+	# 5. 게임 상태를 롤 입력 대기로 전환
 	_set_state(GameState.AWAITING_ROLL_INPUT)
 
 
