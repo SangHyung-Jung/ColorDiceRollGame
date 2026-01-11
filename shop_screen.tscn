@@ -125,12 +125,12 @@ layout_mode = 2
 theme_override_constants/separation = 10
 alignment = 1
 
-[node name="BackButton" type="Button" parent="MainLayout/GameArea/ShopHeader"]
+[node name="NextRoundButton" type="Button" parent="MainLayout/GameArea/ShopHeader"]
 custom_minimum_size = Vector2(150, 60)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_7a4el")
 theme_override_font_sizes/font_size = 40
-text = "Back"
+text = "Next Round"
 
 [node name="Title" type="Label" parent="MainLayout/GameArea/ShopHeader"]
 layout_mode = 2

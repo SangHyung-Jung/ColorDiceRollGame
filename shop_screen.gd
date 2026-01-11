@@ -3,17 +3,15 @@ class_name ShopScreen
 
 # UI 노드 참조
 @onready var joker_grid_container: GridContainer = $MainLayout/GameArea/ScrollContainer/JokerGridContainer
-@onready var back_button: Button = $MainLayout/GameArea/ShopHeader/BackButton
+@onready var next_round_button: Button = $MainLayout/GameArea/ShopHeader/NextRoundButton
 
 # 리소스 로드
 const JokerShopItemScene = preload("res://scenes/components/joker_shop_item.tscn")
 
 
 func _ready() -> void:
-	# 이전에 있던 게임 로직은 모두 제거하고 상점 로직에 집중합니다.
-	
-	# 뒤로가기 버튼 시그널 연결
-	back_button.pressed.connect(_on_back_button_pressed)
+	# 다음 라운드 시작 버튼 시그널 연결
+	next_round_button.pressed.connect(_on_next_round_button_pressed)
 	
 	# 상점 아이템 채우기
 	_populate_shop_items()
@@ -37,6 +35,7 @@ func _populate_shop_items() -> void:
 		joker_item.joker_info = joker_info # 데이터를 먼저 할당합니다.
 		joker_grid_container.add_child(joker_item) # 그 다음에 씬 트리에 추가합니다.
 
-## 뒤로가기 버튼을 누르면 메인 화면으로 돌아갑니다.
-func _on_back_button_pressed() -> void:
+## '다음 라운드' 버튼을 누르면 다음 라운드 상태로 설정하고 메인 게임 화면으로 돌아갑니다.
+func _on_next_round_button_pressed() -> void:
+	StageManager.advance_to_next_round()
 	get_tree().change_scene_to_file("res://main_screen.tscn")

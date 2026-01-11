@@ -30,5 +30,14 @@ func _ready():
 	#         buy_button.disabled = false
 	
 func _on_buy_button_pressed():
-	# 구매 로직 구현
-	print("Buying: ", name_label.text)
+	var price = joker_info.get("Price", 999)
+	if Main.gold >= price:
+		Main.gold -= price
+		print("Bought: %s for $%d. Remaining Gold: $%d" % [name_label.text, price, Main.gold])
+		# 구매 후 버튼 비활성화 또는 상태 변경
+		buy_button.disabled = true
+		buy_button.text = "Owned"
+		# 골드 UI 업데이트를 위해 상위에 시그널을 보낼 수 있습니다.
+		# emit_signal("item_purchased")
+	else:
+		print("Not enough gold to buy %s. Need $%d, have $%d" % [name_label.text, price, Main.gold])

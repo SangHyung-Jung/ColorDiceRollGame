@@ -21,7 +21,6 @@ var _has_invested_in_turn: bool = false
 @onready var invests_left_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/InvestsLeftLabel
 @onready var gold_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/GoldLabel
 @onready var view_dice_bag_button: Button = $MainLayout/InfoPanel/Panel/VBoxContainer/ViewDiceBagButton
-@onready var shop_button: Button = $MainLayout/InfoPanel/Panel/VBoxContainer/ShopButton
 @onready var submit_button: Button = $MainLayout/GameArea/InteractionUI/HBoxContainer/TextureRect/SubmitButton
 @onready var invest_button: Button = $MainLayout/GameArea/InteractionUI/HBoxContainer/TextureRect2/InvestButton
 @onready var turn_end_button: Button = $MainLayout/GameArea/InteractionUI/HBoxContainer/TextureRect3/TurnEndButton
@@ -294,7 +293,6 @@ func _connect_signals() -> void:
 	invest_button.pressed.connect(_on_invest_pressed)
 	turn_end_button.pressed.connect(_on_turn_end_pressed)
 	view_dice_bag_button.pressed.connect(_on_view_dice_bag_pressed)
-	shop_button.pressed.connect(_on_shop_button_pressed)
 	sort_by_color_button.pressed.connect(_on_sort_by_color_pressed)
 	sort_by_number_button.pressed.connect(_on_sort_by_number_pressed)
 	#rolling_area.gui_input.connect(_on_rolling_area_gui_input)
@@ -549,9 +547,6 @@ func _on_view_dice_bag_pressed() -> void:
 	dice_bag_popup.update_counts(game_manager.bag)
 	dice_bag_popup.show()
 
-func _on_shop_button_pressed() -> void:
-	get_tree().change_scene_to_file("res://shop_screen.tscn")
-
 func _on_sort_by_color_pressed() -> void:
 	if invested_dice_nodes.is_empty():
 		return
@@ -639,7 +634,7 @@ func _handle_round_clear() -> void:
 	round_clear_popup.popup_centered()
 
 func _on_round_clear_popup_continue_pressed() -> void:
-	StageManager.advance_to_next_round()
+	get_tree().change_scene_to_file("res://shop_screen.tscn")
 
 func _on_stage_manager_round_advanced(new_stage: int, new_round: int) -> void:
 	# 1. 새 라운드를 위해 ScoreManager의 점수 초기화
