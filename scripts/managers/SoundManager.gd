@@ -38,17 +38,21 @@ func _ready():
 ## @param sound_name: _streams 딕셔너리에 미리 불러온 사운드의 키(이름)
 ## @param channel: 사운드를 재생할 채널 (기본값: SFX)
 func play(sound_name: String, channel: String = CHANNEL_SFX):
-	# 요청한 사운드와 채널이 유효한지 확인합니다.
-	if not _streams.has(sound_name):
-		printerr("SoundManager Error: Sound not preloaded: ", sound_name)
-		return
-
 	if not _players.has(channel):
 		printerr("SoundManager Error: Player channel not found: ", channel)
 		return
 
 	# 해당 채널의 플레이어를 가져옵니다.
 	var player = _players[channel]
+
+	# 만약 플레이어가 이미 소리를 재생 중이라면, 새로운 요청을 무시합니다.
+	if player.is_playing():
+		return
+
+	# 요청한 사운드가 유효한지 확인합니다.
+	if not _streams.has(sound_name):
+		printerr("SoundManager Error: Sound not preloaded: ", sound_name)
+		return
 
 	# 사운드 스트림을 설정하고 재생합니다.
 	player.stream = _streams[sound_name]
@@ -94,6 +98,12 @@ func play_music(music_name: String):
 	# 배경음악은 보통 반복 재생되므로, stream의 loop 속성을 true로 설정하는 것이 일반적입니다.
 	# 예시: player.stream.loop = true
 	player.play()
+
+
+## 지정된 채널의 사운드 재생을 즉시 중지합니다.
+func stop(channel: String):
+	if _players.has(channel):
+		_players[channel].stop()
 
 
 ## 사운드 파일을 미리 불러와 _streams 딕셔너리에 저장합니다.

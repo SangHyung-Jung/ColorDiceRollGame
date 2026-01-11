@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://baqlinkdb067m"
-path="res://.godot/imported/dice_rolling.wav-968a2c39b3730aee8f8961e176f2689c.sample"
+path="res://.godot/imported/dice_rolling.wav-e0dad821ec1a5c4c61d36f547c74fdcc.sample"
 
 [deps]
 
-source_file="res://casino assets/술/dice_rolling.wav"
-dest_files=["res://.godot/imported/dice_rolling.wav-968a2c39b3730aee8f8961e176f2689c.sample"]
+source_file="res://casino assets/dice_rolling.wav"
+dest_files=["res://.godot/imported/dice_rolling.wav-e0dad821ec1a5c4c61d36f547c74fdcc.sample"]
 
 [params]
 

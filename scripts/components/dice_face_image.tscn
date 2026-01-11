@@ -1,7 +1,9 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=2 format=3 uid="uid://cxj68se1mp5vj"]
 
 [ext_resource type="Script" path="res://scripts/components/dice_face_image.gd" id="1"]
 
 [node name="DiceFaceImage" type="Control"]
 custom_minimum_size = Vector2(80, 80)
+layout_mode = 3
+anchors_preset = 0
 script = ExtResource("1")

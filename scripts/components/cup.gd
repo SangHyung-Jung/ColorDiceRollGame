@@ -41,13 +41,15 @@ const DIAGONAL_VECTOR := Vector3(1.15, 1.0, -1.15)
 ## 컵 초기화 - 위치 저장 및 시그널 연결
 func _ready() -> void:
 	# 사운드 매니저를 통해 컵 흔들기 사운드를 미리 로드합니다.
-	SoundManager.preload_sound("cup_shake", "res://assets/audio/dice-shake-3.ogg")
-	SoundManager.preload_sound("pour_sound", "res://assets/audio/dice-throw-1.ogg")
+	#SoundManager.preload_sound("cup_shake", "res://assets/audio/dice-shake-3.ogg")
+	#SoundManager.preload_sound("pour_sound", "res://assets/audio/dice-throw-1.ogg")
+	SoundManager.preload_sound("cup_shake", "res://assets/audio/dice_rolling.wav")
+	SoundManager.preload_sound("pour_sound", "res://assets/audio/dice_shoot.wav")
 
 	# 사운드 재생을 위한 타이머를 생성하고 설정합니다.
 	_shake_sound_timer = Timer.new()
 	_shake_sound_timer.name = "ShakeSoundTimer"
-	_shake_sound_timer.wait_time = 0.35  # 0.35초마다 사운드를 중첩 재생
+	_shake_sound_timer.wait_time = 0.35  # 0.35초마다 사운드를 재생
 	_shake_sound_timer.timeout.connect(_on_shake_sound_timer_timeout)
 	add_child(_shake_sound_timer)
 
@@ -147,8 +149,9 @@ func stop_shaking() -> void:
 		return  # 이미 중지된 상태
 	is_shaking = false
 
-	# 사운드 타이머 중지
+	# 사운드 타이머 중지 및 재생 중인 소리 즉시 정지
 	_shake_sound_timer.stop()
+	SoundManager.stop(SoundManager.CHANNEL_SFX)
 
 	# 원위치로 돌아가는 부드러운 애니메이션
 	var return_tween: Tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
@@ -255,4 +258,4 @@ func _apply_shake_forces_to_dice() -> void:
 
 ## 흔들기 사운드 타이머가 만료될 때마다 호출됩니다.
 func _on_shake_sound_timer_timeout():
-	SoundManager.play_oneshot("cup_shake")
+	SoundManager.play("cup_shake")
