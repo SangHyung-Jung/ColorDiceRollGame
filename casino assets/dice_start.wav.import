@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://bgeusf2hxccn0"
+path="res://.godot/imported/dice_start.wav-23ed26d774708db871a651b14eedd165.sample"
+
+[deps]
+
+source_file="res://casino assets/dice_start.wav"
+dest_files=["res://.godot/imported/dice_start.wav-23ed26d774708db871a651b14eedd165.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

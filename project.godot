@@ -21,6 +21,7 @@ Main="*res://scripts/main.gd"
 TextureCache="*res://scripts/utils/dice_face_texture_cache.gd"
 SoundManager="*res://scripts/managers/SoundManager.gd"
 StageManager="*res://scripts/managers/stage_manager.gd"
+JokerManager="*res://scripts/managers/joker_manager.gd"
 
 [display]
 

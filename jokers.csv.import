@@ -1,0 +1,17 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://r205klcft048"
+
+[deps]
+
+files=["res://jokers.korean.translation", "res://jokers.english.translation", "res://jokers.image.translation", "res://jokers.description.translation", "res://jokers.unlock.translation"]
+
+source_file="res://jokers.csv"
+dest_files=["res://jokers.korean.translation", "res://jokers.english.translation", "res://jokers.image.translation", "res://jokers.description.translation", "res://jokers.unlock.translation"]
+
+[params]
+
+compress=true
+delimiter=0

@@ -115,205 +115,47 @@ theme_override_styles/pressed = SubResource("StyleBoxEmpty_transparent")
 theme_override_styles/normal = SubResource("StyleBoxEmpty_transparent")
 text = "Dice Bag"
 
-[node name="GameArea" type="Control" parent="MainLayout"]
+[node name="GameArea" type="VBoxContainer" parent="MainLayout"]
 layout_mode = 2
 size_flags_horizontal = 3
-mouse_filter = 2
+theme_override_constants/separation = 20
 
-[node name="SocketArea" type="VBoxContainer" parent="MainLayout/GameArea"]
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -450.0
-offset_top = 20.0
-offset_right = 450.0
-offset_bottom = 120.0
-grow_horizontal = 2
-
-[node name="SocketContainer" type="HBoxContainer" parent="MainLayout/GameArea/SocketArea"]
+[node name="ShopHeader" type="HBoxContainer" parent="MainLayout/GameArea"]
 layout_mode = 2
 theme_override_constants/separation = 10
 alignment = 1
 
-[node name="SortButtonsContainer" type="HBoxContainer" parent="MainLayout/GameArea/SocketArea"]
+[node name="BackButton" type="Button" parent="MainLayout/GameArea/ShopHeader"]
+custom_minimum_size = Vector2(150, 60)
 layout_mode = 2
-mouse_filter = 0
-alignment = 2
-
-[node name="TextureRect" type="TextureRect" parent="MainLayout/GameArea/SocketArea/SortButtonsContainer"]
-modulate = Color(1, 1, 1, 0.784314)
-custom_minimum_size = Vector2(150, 100)
-layout_mode = 2
-size_flags_vertical = 4
-size_flags_stretch_ratio = 0.15
-mouse_filter = 2
-texture = ExtResource("4_kwhh3")
-expand_mode = 3
-
-[node name="SortByColorButton" type="Button" parent="MainLayout/GameArea/SocketArea/SortButtonsContainer/TextureRect"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
 theme_override_fonts/font = ExtResource("3_7a4el")
 theme_override_font_sizes/font_size = 40
-theme_override_styles/focus = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/disabled = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/pressed = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/normal = SubResource("StyleBoxEmpty_transparent")
-text = "Color"
+text = "Back"
 
-[node name="TextureRect2" type="TextureRect" parent="MainLayout/GameArea/SocketArea/SortButtonsContainer"]
-modulate = Color(1, 1, 1, 0.784314)
-custom_minimum_size = Vector2(200, 100)
-layout_mode = 2
-size_flags_vertical = 4
-size_flags_stretch_ratio = 0.15
-mouse_filter = 2
-texture = ExtResource("4_kwhh3")
-expand_mode = 3
-
-[node name="SortByNumberButton" type="Button" parent="MainLayout/GameArea/SocketArea/SortButtonsContainer/TextureRect2"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_fonts/font = ExtResource("3_7a4el")
-theme_override_font_sizes/font_size = 40
-theme_override_styles/focus = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/disabled = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/pressed = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/normal = SubResource("StyleBoxEmpty_transparent")
-text = "Number"
-
-[node name="RollingArea" type="SubViewportContainer" parent="MainLayout/GameArea"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-stretch = true
-
-[node name="SubViewport" type="SubViewport" parent="MainLayout/GameArea/RollingArea"]
-transparent_bg = true
-handle_input_locally = false
-size = Vector2i(2, 2)
-render_target_update_mode = 4
-
-[node name="InteractionUI" type="MarginContainer" parent="MainLayout/GameArea"]
-custom_minimum_size = Vector2(0, 150)
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -150.0
-grow_horizontal = 2
-grow_vertical = 0
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 10
-
-[node name="HBoxContainer" type="HBoxContainer" parent="MainLayout/GameArea/InteractionUI"]
-layout_mode = 2
-theme_override_constants/separation = 15
-alignment = 1
-
-[node name="VSeparator3" type="Control" parent="MainLayout/GameArea/InteractionUI/HBoxContainer"]
-custom_minimum_size = Vector2(300, 30)
-layout_mode = 2
-
-[node name="TextureRect" type="TextureRect" parent="MainLayout/GameArea/InteractionUI/HBoxContainer"]
-modulate = Color(1, 1, 1, 0.784314)
-custom_minimum_size = Vector2(0, 100)
+[node name="Title" type="Label" parent="MainLayout/GameArea/ShopHeader"]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 4
-size_flags_stretch_ratio = 0.15
-mouse_filter = 2
-texture = ExtResource("4_kwhh3")
-expand_mode = 3
+theme_override_fonts/font = ExtResource("3_7a4el")
+theme_override_font_sizes/font_size = 60
+text = "JOKER SHOP"
+horizontal_alignment = 1
 
-[node name="SubmitButton" type="Button" parent="MainLayout/GameArea/InteractionUI/HBoxContainer/TextureRect"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="RerollButton" type="Button" parent="MainLayout/GameArea/ShopHeader"]
+custom_minimum_size = Vector2(150, 60)
+layout_mode = 2
 theme_override_fonts/font = ExtResource("3_7a4el")
 theme_override_font_sizes/font_size = 40
-theme_override_styles/focus = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/disabled = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/pressed = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/normal = SubResource("StyleBoxEmpty_transparent")
-text = "Combination"
+text = "Reroll"
 
-[node name="TextureRect2" type="TextureRect" parent="MainLayout/GameArea/InteractionUI/HBoxContainer"]
-modulate = Color(1, 1, 1, 0.784314)
-custom_minimum_size = Vector2(0, 100)
+[node name="ScrollContainer" type="ScrollContainer" parent="MainLayout/GameArea"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 2
+
+[node name="JokerGridContainer" type="GridContainer" parent="MainLayout/GameArea/ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 4
-size_flags_stretch_ratio = 0.15
-mouse_filter = 2
-texture = ExtResource("4_kwhh3")
-expand_mode = 3
-
-[node name="InvestButton" type="Button" parent="MainLayout/GameArea/InteractionUI/HBoxContainer/TextureRect2"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_fonts/font = ExtResource("3_7a4el")
-theme_override_font_sizes/font_size = 40
-theme_override_styles/focus = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/disabled = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/pressed = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/normal = SubResource("StyleBoxEmpty_transparent")
-text = "Invest"
-
-[node name="TextureRect3" type="TextureRect" parent="MainLayout/GameArea/InteractionUI/HBoxContainer"]
-modulate = Color(1, 1, 1, 0.784314)
-custom_minimum_size = Vector2(0, 100)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 4
-size_flags_stretch_ratio = 0.15
-mouse_filter = 2
-texture = ExtResource("4_kwhh3")
-expand_mode = 3
-
-[node name="TurnEndButton" type="Button" parent="MainLayout/GameArea/InteractionUI/HBoxContainer/TextureRect3"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_fonts/font = ExtResource("3_7a4el")
-theme_override_font_sizes/font_size = 40
-theme_override_styles/focus = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/disabled = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/pressed = SubResource("StyleBoxEmpty_transparent")
-theme_override_styles/normal = SubResource("StyleBoxEmpty_transparent")
-text = "End"
-
-[node name="VSeparator2" type="Control" parent="MainLayout/GameArea/InteractionUI/HBoxContainer"]
-custom_minimum_size = Vector2(300, 30)
-layout_mode = 2
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 20
+columns = 4
