@@ -5,6 +5,7 @@ class_name JokerShopItem
 @onready var description_label: Label = $MarginContainer/VBoxContainer/DescriptionLabel
 @onready var unlock_label: Label = $MarginContainer/VBoxContainer/UnlockLabel
 @onready var icon_texture: TextureRect = $MarginContainer/VBoxContainer/IconTexture
+@onready var price_label: Label = $MarginContainer/VBoxContainer/PriceLabel
 @onready var buy_button: Button = $MarginContainer/VBoxContainer/BuyButton
 
 # shop_screen.gd에서 이 변수에 데이터를 채워줍니다.
@@ -18,6 +19,7 @@ func _ready():
 	name_label.text = joker_info.get("korean_name", "N/A")
 	description_label.text = joker_info.get("description", "")
 	unlock_label.text = "해금: " + joker_info.get("unlock_condition", "???")
+	price_label.text = "Price: $" + str(joker_info.get("Price", 0))
 	
 	var image_path = joker_info.get("image_path", "")
 	if image_path != "N/A" and FileAccess.file_exists(image_path):

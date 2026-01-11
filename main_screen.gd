@@ -19,6 +19,7 @@ var _has_invested_in_turn: bool = false
 @onready var current_score_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/CurrentScoreLabel
 @onready var turns_left_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/TurnsLeftLabel
 @onready var invests_left_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/InvestsLeftLabel
+@onready var gold_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/GoldLabel
 @onready var view_dice_bag_button: Button = $MainLayout/InfoPanel/Panel/VBoxContainer/ViewDiceBagButton
 @onready var shop_button: Button = $MainLayout/InfoPanel/Panel/VBoxContainer/ShopButton
 @onready var submit_button: Button = $MainLayout/GameArea/InteractionUI/HBoxContainer/TextureRect/SubmitButton
@@ -309,6 +310,7 @@ func _update_ui_from_gamestate() -> void:
 	update_current_score(Main.current_score)
 	update_turns_left(Main.turns_left)
 	update_invests_left(Main.invests_left)
+	update_gold(Main.gold)
 
 func _on_rolling_area_resized() -> void:
 	var viewport_size = rolling_area.size
@@ -624,12 +626,15 @@ func _update_ui_for_state() -> void:
 			sort_by_number_button.disabled = false
 
 func _handle_round_clear() -> void:
-	# 게임 상태를 멈추거나, 입력을 막는 상태로 전환할 수 있습니다.
-	# 예: _set_state(GameState.ROUND_CLEAR)
+	# 1. 골드 보상 계산 및 Main.gold에 반영
+	var rewards = StageManager.calculate_round_rewards()
+	
+	# 2. 팝업에 라운드 결과와 보상 정보를 전달하여 표시
 	round_clear_popup.setup(
 		StageManager.current_round,
 		StageManager.get_current_target_score(),
-		Main.current_score
+		Main.current_score,
+		rewards
 	)
 	round_clear_popup.popup_centered()
 
@@ -672,5 +677,7 @@ func update_turns_left(count: int) -> void:
 	turns_left_label.text = "Left Turns: %d" % count
 func update_invests_left(count: int) -> void:
 	invests_left_label.text = "Left Invests: %d" % count
+func update_gold(amount: int) -> void:
+	gold_label.text = "Gold: $%d" % amount
 func update_result_label(text: String) -> void:
 	result_label.text = "예상 점수: " + text

@@ -1,0 +1,151 @@
+id,korean_name,english_name,image_path,description,unlock_condition
+1,위스키잔,whiskey,res://assets/joker_images/whiskey.png,"족보 성공 시 점수 +100",기본
+2,버번병,bourbon,res://assets/joker_images/bourbon.png,"같은 색 3개 이상 시 배율 +15",기본
+3,꼬냑잔,cognac,res://assets/joker_images/cognac.png,"투자만 하고 종료 시 다음 족보 점수 +300, 배율 +10",풀하우스 3회
+4,와인잔,wine,res://assets/joker_images/wine.png,"짝수 주사위 1개당 점수 +40",짝수 조합 2회
+5,샴페인 병,champagne,res://assets/joker_images/champagne.png,"모든 족보 기본 배율 +8",라운드 클리어 2회
+6,하이볼 글라스,highball,res://assets/joker_images/highball.png,"스트레이트 성공 시 점수 +150",스트레이트 3회
+7,맥주 피처,beer pitcher,res://assets/joker_images/beer pitcher.png,"합 20 이상 시 점수 +200",합≥20 족보 2회
+8,보드카 샷잔,vodka,res://assets/joker_images/vodka.png,"홀수 주사위 1개당 점수 +40",홀수 조합 5회
+9,마티니,martini,res://assets/joker_images/martini.png,"1 포함 족보 점수 +150",1 포함 족보 3회
+10,맨해튼,N/A,N/A,"6 포함 족보 점수 +150",6 포함 족보 3회
+11,시가,N/A,N/A,"라운드 시작 시 점수 +250 획득",기본
+12,시가 케이스,cigar case,res://assets/joker_images/cigar case.png,"남은 턴이 2회 이하일 때 배율 +12",기본
+13,재떨이,N/A,N/A,"이번 라운드에 버린 주사위 1개당 점수 +20",주사위 50개 버림
+14,금장 라이터,N/A,N/A,"족보 성공 시 점수 +120",족보 20회 성공
+15,지포 라이터,N/A,N/A,"5 포함 시 점수 +100",5 포함 족보 5회
+16,담배갑,N/A,N/A,"투페어 성공 시 점수 +150",투페어 3회
+17,파이프,N/A,N/A,"풀하우스 성공 시 점수 +300",풀하우스 1회
+18,파이프 담배통,N/A,N/A,"싱글 컬러 스트레이트 성공 시 점수 +400",싱글 스트레이트 1회
+19,성냥갑,N/A,N/A,"런' 족보 성공 시 점수 +100",첫 실패
+20,은색 재떨이,N/A,N/A,"셋' 족보 성공 시 점수 +100",누적 실패 3회
+21,포커 카드 덱,poker deck,res://assets/joker_images/poker deck.png,"모든 족보 기본 배율 +6",기본
+22,카드 슈,card shoe,res://assets/joker_images/card shoe.png,"셋(트리플) 성공 시 점수 +150",기본
+23,다이스 컵,dice cup,res://assets/joker_images/dice cup.png,"[액티브] 매 턴 1회 주사위 1개 리롤 (눈 유지, 색상 랜덤)",족보 10회 성공
+24,크랩스 스틱,craps stick,res://assets/joker_images/craps stick.png,"합=7 시 점수 +300",합=7 족보 2회
+25,룰렛 볼,roullette ball,res://assets/joker_images/roullette ball.png,"무작위 주사위 눈수 x20 만큼 점수 추가",라운드 2 도달
+26,미니휠,mini wheel,res://assets/joker_images/mini wheel.png,"라운드 종료 시 점수 +300~500 랜덤 획득",라운드 3 도달
+27,슬롯머신 토큰,slotmachine tokens,res://assets/joker_images/slotmachine tokens.png,"야트 성공 시 배율 +60",야트 1회
+28,룰북 작은책자,rule book,res://assets/joker_images/rule book.png,"라지 스트레이트 성공 시 배율 +25",라지 스트레이트 1회
+29,딜러 칩 트레이,chip tray,res://assets/joker_images/chip tray.png,"모든 족보 기본 점수 +100",족보 20회 성공
+30,배팅용 마커,betting marker,res://assets/joker_images/betting marker.png,"싱글 컬러 족보 배율 +12",싱글 컬러 3회
+31,달러 뭉치,dollar bundle,res://assets/joker_images/dollar bundle.png,"모든 족보 기본 배율 +5",기본
+32,현금 다발,cash stack,res://assets/joker_images/cash stack.png,"합 25 이상 족보 제출 시 +$2 골드",합≥25 족보 2회
+33,금괴 미니어처,gold ingot,res://assets/joker_images/gold ingot.png,"6 두 개 이상 포함 시 점수 +300",6 두 개 족보 3회
+34,은화 더미,silver coin,res://assets/joker_images/silver coin.png,"1 두 개 이상 포함 시 점수 +250",1 두 개 족보 3회
+35,크레딧 바우처,credit voucher,res://assets/joker_images/credit voucher.png,"상점 아이템 가격 30% 할인",라운드 실패
+36,돈 가방,money bag,res://assets/joker_images/money bag.png,"목표 초과 달성 시 초과분 500점당 +$1 골드 (최대 $5)",목표 초과 달성
+37,지갑,wallet,res://assets/joker_images/wallet.png,"매 턴 점수 +50",기본
+38,돈 세는 기계,money counter,res://assets/joker_images/money counter.png,"같은 숫자 조합 배율 +12",트리플 3회
+39,수표책,check book,res://assets/joker_images/check book.png,"족보 성공 시 점수 +250",족보 30회 성공
+40,금화 주머니,coin pouch,res://assets/joker_images/coin pouch.png,"홀수 주사위 1개당 점수 +50",홀수 조합 5회
+41,행운의 말발굽,lucky horseshoe,res://assets/joker_images/lucky horseshoe.png,"게임 오버 시 1회 부활 (해당 턴 점수 2배 지원)",기본
+42,네잎클로버,four-leaf clover,res://assets/joker_images/four-leaf clover.png,"족보 성공 시 15% 확률로 해당 족보 점수 +500",기본
+43,토끼 발 참장,rabit foot charm,res://assets/joker_images/rabit foot charm.png,"스트레이트 성공 시 점수 +250",스몰 스트레이트 1회
+44,주사위 펜던트,dice pendant,res://assets/joker_images/dice pendant.png,"4-카인드 성공 시 점수 +400",4카 1회 성공
+45,골드 체인,gold chain,res://assets/joker_images/gold chain.png,"싱글 컬러 족보 성공 시 배율 +40",올동색 1회
+46,다이아 반지,diamond ring,res://assets/joker_images/diamond ring.png,"모든 족보 기본 배율 +12",점수 500 이상
+47,보석 브로치,jewel broch,res://assets/joker_images/jewel broch.png,"필드 투자 시 40% 확률로 투자 횟수 유지",족보 20회 성공
+48,루비 목걸이,ruby necklace,res://assets/joker_images/ruby necklace.png,"빨강 주사위 포함 시 배율 +12",빨강 족보 3회
+49,사파이어 귀걸이,sapphire earrings,res://assets/joker_images/sapphire earrings.png,"파랑 주사위 포함 시 점수 +150",파랑 족보 3회
+50,에메랄드 팔찌,emerald bracelet,res://assets/joker_images/emerald bracelet.png,"초록 주사위 포함 시 점수 +150",초록 족보 3회
+51,카드 프로텍터,card protector,res://assets/joker_images/card protector.png,"필드 투자 시 점수 +100",기본
+52,칵테일 냅킨,cocktail napkin,res://assets/joker_images/cocktail napkin.png,"라운드당 1회 상점 리롤 무료",족보 10회 성공
+53,테이블 벨,service bell,res://assets/joker_images/service bell.png,"라운드 성공 시 +$2 골드",라운드 클리어 2회
+54,음료 코스터,drink coaster,res://assets/joker_images/drink coaster.png,"짝수 주사위 1개당 점수 +20",짝수 조합 5회
+55,카드 절단기,N/A,N/A,"첫 턴 시작 시 점수 +100",5판 플레이
+56,계산기,calculator,res://assets/joker_images/calculator.png,"주사위 합이 '짝수'라면 배율 +12",기본
+57,게임 펜슬,game pencil,res://assets/joker_images/game pencil.png,"족보 성공 시 다음 족보 점수 +80",족보 15회 성공
+58,점수 기록지,score sheet,res://assets/joker_images/score sheet.png,"누적 100점마다 점수 +50 (라운드 내 유지)",점수 300 이상
+59,덱 스페이서,deck spacer,res://assets/joker_images/deck spacer.png,"라운드 목표 점수 -5%",족보 50회 성공
+60,딜러 명찰,dealer name tag,res://assets/joker_images/dealer name tag.png,"남은 턴 5회 이상 시 라운드 보상 점수 +600",족보 25회 성공
+61,슬롯머신 레버,slot machine lepion,res://assets/joker_images/slot machine lepion.png,"족보 성공 시 추가 점수 +100~300 랜덤",기본
+62,미니 블랙잭,blackjack table,res://assets/joker_images/blackjack table.png,"스트레이트 성공 시 점수 +250",기본
+63,주사위 타워,dice tower,res://assets/joker_images/dice tower.png,"턴 종료 시마다 최종 점수 +20 성장 (라운드 내 유지)",라운드 2 도달
+64,전자 스코어보드,electronic scoreboard,res://assets/joker_images/electronic scoreboard.png,"라운드 종료 시 누적 배율 +0.5 (최대 +10)",라운드 3 도달
+65,네온 간판,neon signboard,res://assets/joker_images/neon signboard.png,"레인보우 성공 시 배율 +20",레인보우 1회
+66,보너스 휠,bonus wheel,res://assets/joker_images/bonus wheel.png,"라운드 시작 시 점수 +200~400 랜덤",라운드 4 도달
+67,배당률 보드,fare board,res://assets/joker_images/fare board.png,"모든 족보의 기본 배율 +3",족보 25회 성공
+68,룰렛 칩 케이스,chip case,res://assets/joker_images/chip case.png,"야트 성공 시 배율 +45",야트 3회
+69,주크박스,jukebox,res://assets/joker_images/jukebox.png,"라운드 종료 시 15% 확률로 실패 무효",라운드 실패
+70,카지노 벽시계,casino wall clock,res://assets/joker_images/casino wall clock.png,"5턴 경과 시 상점 재화 +$10 골드",10판 플레이
+71,커피 머그잔,coffee mug,res://assets/joker_images/coffee mug.png,"라운드 시작 시 점수 +200",기본
+72,에스프레소 컵,espresso,res://assets/joker_images/espresso.png,"1 주사위 개당 점수 +40",1 포함 족보 3회
+73,사탕 바구니,candy basket,res://assets/joker_images/candy basket.png,"3 주사위 개당 점수 +50",3 포함 족보 3회
+74,레몬 슬라이스,lemon slice,res://assets/joker_images/lemon slice.png,"스몰 스트레이트 성공 시 점수 +150",스몰 스트레이트 2회
+75,소금통,salt shaker,res://assets/joker_images/salt shaker.png,"짝수만 조합 시 배율 +25",짝수만 3회
+76,볼펜,ballpen,res://assets/joker_images/ballpen.png,"패(Hand)의 크기 +1 증가 (6개)",족보 15회 성공
+77,다이어리,diary,res://assets/joker_images/diary.png,"라운드 목표 점수 -150점",목표 10 이하 클리어
+78,열쇠뭉치,bunch of keys,res://assets/joker_images/bunch of keys.png,"6 두 개 이상 포함 시 점수 +250",6 두 개 족보 3회
+79,선글라스,sunglasses,res://assets/joker_images/sunglasses.png,"이번 턴에 '투자'를 하지 않고 족보 제출 시 배율 +15",기본
+80,손목시계,watch,res://assets/joker_images/watch.png,"남은 턴 3턴 이하일 때 배율 +15",기본
+81,작은 권총,small pistol,res://assets/joker_images/small pistol.png,"남은 턴이 단 1회일 때 최종 점수 X 2.0",라운드 실패
+82,주머니칼,pocket knife,res://assets/joker_images/pocket knife.png,"상점 아이템 1개 무료 잠금 가능",스몰 스트레이트 1회
+83,열쇠 카드,key card,res://assets/joker_images/key card.png,"특정 색 족보 무조건 성공 (색상 요구조건 무시)",싱글 컬러 3회
+84,카드 속임수 기구,N/A,N/A,"라운드 목표 점수 -15%",라운드 3 도달
+85,도박사 책자,gambler's secret,res://assets/joker_images/gambler's secret.png,"싱글컬러 시 숫자가 1개 끊겨도 스트레이트 인정",점수 1000 이상
+86,수첩,notebook,res://assets/joker_images/notebook.png,"풀하우스 성공 시 배율 +7",누적 실패 3회
+87,지도 조각,map piece,res://assets/joker_images/map piece.png,"4-카인드 배율 +20",4카 1회 성공
+88,작은 금고,secret vault,res://assets/joker_images/secret vault.png,"라운드 종료 시 점수 +400",라운드 2 도달
+89,비밀 편지,secret letter,res://assets/joker_images/secret letter.png,"투자' 행동 시마다 +$1 골드",족보 20회 성공
+90,쪽지,note,res://assets/joker_images/note.png,"3개 이하의 주사위로 족보 제출 시 배율 +15",첫 실패
+91,크리스털 볼,crystal ball,res://assets/joker_images/crystal ball.png,"다음 라운드 첫 족보 점수 +500",라운드 2 도달
+92,타로 카드,cards of fate,res://assets/joker_images/cards of fate.png,"매 라운드 무작위 족보 점수 +200",기본
+93,마술사의 모자,magician's hat,res://assets/joker_images/magician's hat.png,"정확히 4개의 주사위로 족보 제출 시 배율 +20",야트 2회
+94,주술 부적,N/A,N/A,"같은 색 3개 이상 시 점수 +250",같은 색 3개 2회
+95,해골 장식,skull decor,res://assets/joker_images/skull decor.png,"필드의 빈 칸 1개당 배율 +2",라운드 실패
+96,미니 오르골,mini music box,res://assets/joker_images/mini music box.png,"투자'만 하고 종료 시 다음 턴 배율 +8",5판 플레이
+97,장난감 다이스,toy dice,res://assets/joker_images/toy dice.png,"주사위 합계 점수 +200",합≥25 족보 3회
+98,작은 글로브,mini globe,res://assets/joker_images/mini globe.png,"레인보우 성공 시 점수 +350",레인보우 2회
+99,모래시계,hourglass,res://assets/joker_images/hourglass.png,"라운드 턴 제한 +1 Turn",10판 플레이
+100,작은 촛대,candle,res://assets/joker_images/candle.png,"1' 주사위는 항상 와일드 컬러 취급",족보 15회 성공
+101,성장하는 잔,glass of growth,res://assets/joker_images/glass of growth.png,"상점 리롤 시마다 배율 +0.3 누적 (최대 +15)",페어 10회
+102,와인랙,wine rack,res://assets/joker_images/wine rack.png,"보유한 골드 $10당 점수 +30",술 3개 보유
+103,비어타워,beer tower,res://assets/joker_images/beer tower.png,"라운드 클리어마다 점수 +70 누적 (영구)",라운드 2 도달
+104,숙성 위스키통,aged whiskey,res://assets/joker_images/aged whiskey.png,"라운드 클리어마다 배율 +2 누적 (최대 +30)",라운드 3 도달
+105,칵테일 믹서,cocktail cask,res://assets/joker_images/cocktail cask.png,"족보에 사용한 주사위 1개당 배율 +2",술 5개 사용
+106,시가 보관함,cigar humidor,res://assets/joker_images/cigar humidor.png,"라운드 내 버린 주사위 5개당 배율 +3",흡연 3개 보유
+107,연기 자욱한 방,N/A,N/A,"필드에 있는 빈 칸 1개당 배율 +3",라운드 실패
+108,파이프랙,pipe rack,res://assets/joker_images/pipe rack.png,"풀하우스 성공 시마다 해당 족보 점수 +70 증가",풀하우스 3회
+109,담배 파우치,tobacco pouch,res://assets/joker_images/tobacco pouch.png,"트리플 성공 시마다 배율 +1 증가",트리플 5회
+110,라이터 컬렉션,lighter collection,res://assets/joker_images/lighter collection.png,"보유 조커 1개당 점수 +50",흡연 5개 보유
+111,칩 정리대,chip rack,res://assets/joker_images/chip rack.png,"보유 아이템 개수당 점수 +5% 합산 보너스",아이템 10개 보유
+112,카드 타워,card tower,res://assets/joker_images/card tower.png,"누적 족보 10회마다 점수 +70 증가",족보 20회 성공
+113,크랩스 테이블,cribs table,res://assets/joker_images/cribs table.png,"합=7 나올 때마다 해당 족보 점수 +200 증가",합=7 3회 성공
+114,슬롯 릴 모형,mini reel model,res://assets/joker_images/mini reel model.png,"같은 숫자 족보 시마다 점수 +70 증가",트리플 5회
+115,딜러 북,dealer's book,res://assets/joker_images/dealer's book.png,"라운드 클리어마다 배율 +3 증가 (최대 +24)",라운드 3 도달
+116,저금통,piggy bank,res://assets/joker_images/piggy bank.png,"라운드 종료 시마다 점수 +100 증가",라운드 종료 5회
+117,현금 금고,secret vault,res://assets/joker_images/secret vault.png,"골드 $20 보유 시 라운드 종료 시 +$1 골드 이자",점수 500 이상
+118,금고 열쇠,secret vault key,res://assets/joker_images/secret vault key.png,"같은 숫자 조합 배율 +15",트리플 5회
+119,투자 계약서,investment contract,res://assets/joker_images/investment contract.png,"투자 1회마다 배율 +0.5 증가 (라운드 내 유지)",투자 10회
+120,재테크 서류철,finance file,res://assets/joker_images/finance file.png,"무패로 라운드 5 클리어 시 최종 골드 1.5배",무패 클리어
+121,행운 주머니,lucky pouch,res://assets/joker_images/lucky pouch.png,"상점 리롤 시마다 이번 라운드 첫 족보 점수 +50",라운드 실패
+122,부적 목걸이,charm necklace,res://assets/joker_images/charm necklace.png,"남은 턴 횟수가 5회 이상일 때 족보 성공 시 점수 +200",행운 3개 보유
+123,운의 비늘,luck scale,res://assets/joker_images/luck scale.png,"홀수 턴에 종료 시 다음 턴 최대 투자 횟수 +1",투자 20회
+124,행운의 동전,lucky coin,res://assets/joker_images/lucky coin.png,"족보 성공 시 10% 확률로 해당 족보 점수 +800",라운드 4 도달
+125,별자리 반지,zodiac ring,res://assets/joker_images/zodiac ring.png,"홀수 족보 성공 시마다 해당 족보 점수 +70 증가",홀수 족보 5회
+126,기록용 수첩,logbook,res://assets/joker_images/logbook.png,"족보 10회마다 점수 +100 증가",족보 20회 성공
+127,계산 기록기,score counter,res://assets/joker_images/score counter.png,"점수 1000 획득 시마다 배율 +0.5 증가 (최대 +10)",점수 500 이상
+128,기록판,score board,res://assets/joker_images/score board.png,"라운드 클리어마다 점수 +200 증가",라운드 3 도달
+129,점수 보드판,score board2,res://assets/joker_images/score board2.png,"누적 점수 3000마다 점수 +300 증가",점수 300 이상
+130,딜러 수첩,dealer's note,res://assets/joker_images/dealer's note.png,"남은 턴 1회당 배율 +1 영구 누적",투자 10회
+131,성장하는 룰렛,roulette of growth,res://assets/joker_images/roulette of growth.png,"라운드 4부터 족보 성공 시마다 점수 +100 증가",라운드 4 도달
+132,미니 슬롯기,mini slot,res://assets/joker_images/mini slot.png,"같은 숫자 족보마다 배율 +1 증가",같은 숫자 10회
+133,라운드 북,N/A,N/A,"라운드 종료 시마다 점수 +200 증가",라운드 5 진입
+134,배당 기록지,N/A,N/A,"족보 성공 시마다 점수 +40 증가",족보 30회 성공
+135,카지노 마스터칩,master chip,res://assets/joker_images/master chip.png,"모든 족보 배율 +15",라운드 5 클리어
+136,벽걸이 달력,calendar,res://assets/joker_images/calendar.png,"매 라운드 시작 시 점수 +100 증가",10판 플레이
+137,노트북,laptop,res://assets/joker_images/laptop.png,"스트레이트 성공 시마다 배율 +1 증가",점수 1000 이상
+138,커피 머신,coffee machine,res://assets/joker_images/coffee machine.png,"라운드 시작 시마다 배율 +1 증가",라운드 3 도달
+139,휴대폰,phone,res://assets/joker_images/phone.png,"아이템 사용할 때마다 점수 +70 증가",족보 30회 성공
+140,안경 케이스,glasses,res://assets/joker_images/glasses.png,"짝수 족보 성공 시마다 점수 +100 증가",짝수 족보 5회
+141,어둠의 계약서,dark contract,res://assets/joker_images/dark contract.png,"상점에서 구매 안 할 시 다음 라운드 골드 +$5",실패 3회
+142,비밀 금고,secret vault,res://assets/joker_images/secret vault.png,"라운드 종료 시마다 점수 +300 증가",라운드 3 도달
+143,암호화된 문서,encrypted document,res://assets/joker_images/encrypted document.png,"족보 성공 시 5% 확률로 해당 족보 점수 2배",족보 40회 성공
+144,그림자 박스,shadow box,res://assets/joker_images/shadow box.png,"패에 남은 주사위 눈 합계 x10 만큼 점수 추가",비밀 3개 보유
+145,은밀한 편지,covert letter,res://assets/joker_images/covert letter.png,"2턴 이내 클리어 시 보상 골드 +$5",누적 실패 5회
+146,파동석,wave stone,res://assets/joker_images/wave stone.png,"패에 1과 6이 동시에 있다면 배율 +30",라운드 실패
+147,시간의 수정구,chronos crystal,res://assets/joker_images/chronos crystal.png,"턴 종료 시마다 최종 배율 +0.1 누적 (최대 X1.6)",라운드 3 도달
+148,운명의 카드,cards of fate,res://assets/joker_images/cards of fate.png,"라운드 시작 시 무작위 배율 +5~15 획득",라운드 4 도달
+149,욕망의 금고,desire coffers,res://assets/joker_images/desire coffers.png,"조커 슬롯 5개 꽉 채우면 최종 배율 X 1.3",슬롯 5개 보유
+150,차원의 틈새,dimension rift,res://assets/joker_images/dimension rift.png,"스테이지당 최종 배율 X 0.1 추가 (최대 X 1.6)",라운드 5 도달

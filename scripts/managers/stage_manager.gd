@@ -85,3 +85,34 @@ func handle_round_clear() -> void:
 	# 팝업을 띄우는 로직은 main_screen.gd에서 처리하고
 	# 팝업이 닫힐 때 이 클래스의 advance_to_next_round()를 호출하도록 연결합니다.
 	pass
+
+## 라운드 클리어 시 골드 보상을 계산합니다.
+func calculate_round_rewards() -> Dictionary:
+	var rewards = {
+		"base": 0,
+		"turns": 0,
+		"interest": 0,
+		"over_achieve": 0,
+		"total": 0
+	}
+	
+	# 1. 라운드 클리어 기본 보상: +$4
+	rewards["base"] = 4
+	
+	# 2. 남은 턴 보너스: 1회당 +$1
+	rewards["turns"] = Main.turns_left
+	
+	# 3. 이자 보너스: 보유 골드 $5당 +$1
+	rewards["interest"] = int(floor(float(Main.gold) / 5.0))
+	
+	# 4. 초과 달성 보너스: 목표 점수의 150% 이상 달성 시 +$1
+	if Main.current_score >= (get_current_target_score() * 1.5):
+		rewards["over_achieve"] = 1
+		
+	# 총합 계산
+	rewards["total"] = rewards["base"] + rewards["turns"] + rewards["interest"] + rewards["over_achieve"]
+	
+	# 계산된 골드를 실제 재화에 반영
+	Main.gold += rewards["total"]
+	
+	return rewards

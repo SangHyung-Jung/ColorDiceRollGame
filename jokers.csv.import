@@ -6,10 +6,10 @@ uid="uid://r205klcft048"
 
 [deps]
 
-files=["res://jokers.korean.translation", "res://jokers.english.translation", "res://jokers.image.translation", "res://jokers.description.translation", "res://jokers.unlock.translation"]
+files=["res://jokers.korean.translation", "res://jokers.english.translation", "res://jokers.image.translation", "res://jokers.description.translation", "res://jokers.unlock.translation", "res://jokers.Tier.translation", "res://jokers.Price.translation"]
 
 source_file="res://jokers.csv"
-dest_files=["res://jokers.korean.translation", "res://jokers.english.translation", "res://jokers.image.translation", "res://jokers.description.translation", "res://jokers.unlock.translation"]
+dest_files=["res://jokers.korean.translation", "res://jokers.english.translation", "res://jokers.image.translation", "res://jokers.description.translation", "res://jokers.unlock.translation", "res://jokers.Tier.translation", "res://jokers.Price.translation"]
 
 [params]
 

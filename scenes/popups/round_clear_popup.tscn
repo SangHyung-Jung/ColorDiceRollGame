@@ -42,6 +42,55 @@ text = "Target: YYY / Result: ZZZ"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="RewardGrid" type="GridContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+columns = 2
+
+[node name="BaseRewardTitle" type="Label" parent="MarginContainer/VBoxContainer/RewardGrid"]
+layout_mode = 2
+text = "기본 보상:"
+horizontal_alignment = 2
+
+[node name="BaseRewardLabel" type="Label" parent="MarginContainer/VBoxContainer/RewardGrid"]
+layout_mode = 2
+text = "+ $4"
+
+[node name="TurnsBonusTitle" type="Label" parent="MarginContainer/VBoxContainer/RewardGrid"]
+layout_mode = 2
+text = "턴 보너스:"
+horizontal_alignment = 2
+
+[node name="TurnsBonusLabel" type="Label" parent="MarginContainer/VBoxContainer/RewardGrid"]
+layout_mode = 2
+text = "+ $0"
+
+[node name="InterestBonusTitle" type="Label" parent="MarginContainer/VBoxContainer/RewardGrid"]
+layout_mode = 2
+text = "이자 보너스:"
+horizontal_alignment = 2
+
+[node name="InterestBonusLabel" type="Label" parent="MarginContainer/VBoxContainer/RewardGrid"]
+layout_mode = 2
+text = "+ $0"
+
+[node name="OverachieveBonusTitle" type="Label" parent="MarginContainer/VBoxContainer/RewardGrid"]
+layout_mode = 2
+text = "초과 달성:"
+horizontal_alignment = 2
+
+[node name="OverachieveBonusLabel" type="Label" parent="MarginContainer/VBoxContainer/RewardGrid"]
+layout_mode = 2
+text = "+ $0"
+
+[node name="TotalRewardLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "총 획득: + $4"
+horizontal_alignment = 1
+
 [node name="ContinueButton" type="Button" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3

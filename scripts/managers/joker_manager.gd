@@ -25,11 +25,14 @@ func _load_joker_data() -> void:
 
 		var joker_info: Dictionary = {}
 		for i in range(headers.size()):
-			var key = headers[i]
+			var key = headers[i].strip_edges()
 			var value = line_data[i]
-			# id는 정수형으로 변환
-			if key == "id":
-				value = int(value)
+			# id와 Price는 정수형으로 변환
+			if key == "id" or key == "Price":
+				if value.is_valid_int():
+					value = int(value)
+				else:
+					value = 0 # 숫자가 아닐 경우 기본값 0
 			joker_info[key] = value
 		
 		joker_data.append(joker_info)
@@ -48,3 +51,7 @@ func get_joker_by_id(id: int) -> Dictionary:
 		if joker.has("id") and joker["id"] == id:
 			return joker
 	return {}
+
+## 조커의 판매 가격을 계산합니다 (구매가의 50%, 올림).
+func get_sell_price(buy_price: int) -> int:
+	return int(ceil(float(buy_price) * 0.5))
