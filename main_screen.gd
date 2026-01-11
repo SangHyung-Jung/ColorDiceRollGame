@@ -54,6 +54,7 @@ var rolling_world: Node3D
 const RollingWorldScene = preload("res://scenes/rolling_world.tscn")
 const CupScene := preload("res://cup.tscn")
 const DiceBagPopupScene = preload("res://scripts/components/dice_bag_popup.tscn")
+const RoundClearPopupScene = preload("res://scenes/popups/round_clear_popup.tscn")
 const ScoreAnimatorScene = preload("res://scripts/components/score_animator/ScoreAnimator.gd")
 const SocketTexture = preload("res://dice_socket.png")
 
@@ -63,6 +64,8 @@ var socket_positions: Array[Vector3] = []
 var invested_dice_nodes: Array[Node3D] = []
 
 var dice_bag_popup: Window
+var round_clear_popup: RoundClearPopup
+
 
 func _ready() -> void:
 	# 3D 월드 생성
@@ -73,6 +76,10 @@ func _ready() -> void:
 	# 팝업 초기화
 	dice_bag_popup = DiceBagPopupScene.instantiate()
 	add_child(dice_bag_popup)
+
+	round_clear_popup = RoundClearPopupScene.instantiate()
+	add_child(round_clear_popup)
+
 
 	# 초기화
 	_initialize_managers()
@@ -291,10 +298,14 @@ func _connect_signals() -> void:
 	sort_by_number_button.pressed.connect(_on_sort_by_number_pressed)
 	#rolling_area.gui_input.connect(_on_rolling_area_gui_input)
 	rolling_area.resized.connect(_on_rolling_area_resized)
+	
+	round_clear_popup.continue_pressed.connect(_on_round_clear_popup_continue_pressed)
+	StageManager.round_advanced.connect(_on_stage_manager_round_advanced)
+
 
 func _update_ui_from_gamestate() -> void:
-	update_stage(Main.stage)
-	update_target_score(Main.target_score)
+	update_stage(StageManager.current_stage)
+	update_target_score(StageManager.get_current_target_score())
 	update_current_score(Main.current_score)
 	update_turns_left(Main.turns_left)
 	update_invests_left(Main.invests_left)
@@ -410,6 +421,11 @@ func _animate_current_score(target_score: int, nodes: Array) -> void:
 		_has_submitted_in_turn = true
 		_update_ui_for_state()
 		_initialize_score_calc_ui()
+
+		# 라운드 클리어 확인
+		if Main.current_score >= StageManager.get_current_target_score():
+			_handle_round_clear()
+
 	)
 
 func _remove_combo_dice(nodes: Array) -> void:
@@ -606,6 +622,46 @@ func _update_ui_for_state() -> void:
 			view_dice_bag_button.disabled = false
 			sort_by_color_button.disabled = false
 			sort_by_number_button.disabled = false
+
+func _handle_round_clear() -> void:
+	# 게임 상태를 멈추거나, 입력을 막는 상태로 전환할 수 있습니다.
+	# 예: _set_state(GameState.ROUND_CLEAR)
+	round_clear_popup.setup(
+		StageManager.current_round,
+		StageManager.get_current_target_score(),
+		Main.current_score
+	)
+	round_clear_popup.popup_centered()
+
+func _on_round_clear_popup_continue_pressed() -> void:
+	StageManager.advance_to_next_round()
+
+func _on_stage_manager_round_advanced(new_stage: int, new_round: int) -> void:
+	# 1. 새 라운드를 위해 ScoreManager의 점수 초기화
+	score_manager.reset_score()
+	# 2. UI 업데이트 (새 목표 점수, 현재 점수 0 등)
+	_update_ui_from_gamestate()
+	
+	# 3. 이전 라운드의 모든 주사위 제거
+	var all_dice = dice_spawner.get_dice_nodes() + invested_dice_nodes
+	for d in all_dice:
+		if is_instance_valid(d):
+			d.queue_free()
+	dice_spawner.clear_dice_nodes()
+	invested_dice_nodes.clear()
+	
+	_has_submitted_in_turn = false
+	_has_invested_in_turn = false
+	
+	# 4. 새 라운드의 첫 주사위 비동기적으로 스폰
+	await _setup_game()
+
+	# 5. 컵 상태를 리셋하고 보이게 하여 롤 준비 상태로 만듦
+	cup.reset()
+	cup.show()
+	_set_state(GameState.AWAITING_ROLL_INPUT)
+
+
 
 # --- Public API ---
 func update_stage(stage_num: int) -> void:
