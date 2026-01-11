@@ -5,6 +5,7 @@
 [ext_resource type="FontFile" uid="uid://ulruyehktvyh" path="res://font/boldpixels/BoldPixels.otf" id="3_7a4el"]
 [ext_resource type="Texture2D" uid="uid://b73pj7813d7vi" path="res://dice_socket2.png" id="4_kwhh3"]
 [ext_resource type="Texture2D" uid="uid://dtv5mtrg1vdg0" path="res://background_dice.png" id="5_wevgp"]
+[ext_resource type="PackedScene" uid="uid://c7d6e5f4g3h2" path="res://scenes/components/joker_inventory.tscn" id="6_abcde"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_fplum"]
 texture = ExtResource("2_stk2i")
@@ -99,6 +100,16 @@ layout_mode = 2
 theme_override_fonts/font = ExtResource("3_7a4el")
 theme_override_font_sizes/font_size = 40
 text = "# Investments: 5"
+
+[node name="GoldLabel" type="Label" parent="MainLayout/InfoPanel/Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7a4el")
+theme_override_font_sizes/font_size = 40
+text = "Gold: $0"
+
+[node name="JokerInventory" parent="MainLayout/InfoPanel/Panel/VBoxContainer" instance=ExtResource("6_abcde")]
+unique_name_in_owner = true
+layout_mode = 2
 
 [node name="VSeparator3" type="Control" parent="MainLayout/InfoPanel/Panel/VBoxContainer"]
 custom_minimum_size = Vector2(0, 50)

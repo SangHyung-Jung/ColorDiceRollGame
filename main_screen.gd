@@ -20,6 +20,7 @@ var _has_invested_in_turn: bool = false
 @onready var turns_left_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/TurnsLeftLabel
 @onready var invests_left_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/InvestsLeftLabel
 @onready var gold_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/GoldLabel
+@onready var joker_inventory: HBoxContainer = %JokerInventory
 @onready var view_dice_bag_button: Button = $MainLayout/InfoPanel/Panel/VBoxContainer/ViewDiceBagButton
 @onready var submit_button: Button = $MainLayout/GameArea/InteractionUI/HBoxContainer/TextureRect/SubmitButton
 @onready var invest_button: Button = $MainLayout/GameArea/InteractionUI/HBoxContainer/TextureRect2/InvestButton
@@ -96,8 +97,9 @@ func _ready() -> void:
 	_update_ui_from_gamestate()
 	_on_rolling_area_resized()
 	
+	joker_inventory.update_display(Main.owned_jokers)
+	
 	_set_state(GameState.AWAITING_ROLL_INPUT)
-
 func _initialize_score_animator() -> void:
 	score_animator = ScoreAnimatorScene.new()
 	add_child(score_animator)

@@ -1,6 +1,8 @@
 extends PanelContainer
 class_name JokerShopItem
 
+signal item_purchased
+
 @onready var name_label: Label = $MarginContainer/VBoxContainer/NameLabel
 @onready var description_label: Label = $MarginContainer/VBoxContainer/DescriptionLabel
 @onready var unlock_label: Label = $MarginContainer/VBoxContainer/UnlockLabel
@@ -30,14 +32,21 @@ func _ready():
 	#         buy_button.disabled = false
 	
 func _on_buy_button_pressed():
+	if Main.owned_jokers.size() >= 5:
+		print("Joker inventory is full (Max 5).")
+		return
+
 	var price = joker_info.get("Price", 999)
 	if Main.gold >= price:
 		Main.gold -= price
+		Main.owned_jokers.append(joker_info)
 		print("Bought: %s for $%d. Remaining Gold: $%d" % [name_label.text, price, Main.gold])
+		
 		# 구매 후 버튼 비활성화 또는 상태 변경
 		buy_button.disabled = true
 		buy_button.text = "Owned"
-		# 골드 UI 업데이트를 위해 상위에 시그널을 보낼 수 있습니다.
-		# emit_signal("item_purchased")
+		
+		# 상위 노드(shop_screen)에 구매가 일어났음을 알림
+		item_purchased.emit()
 	else:
 		print("Not enough gold to buy %s. Need $%d, have $%d" % [name_label.text, price, Main.gold])

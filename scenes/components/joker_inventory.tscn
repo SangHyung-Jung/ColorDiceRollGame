@@ -1,0 +1,91 @@
+[gd_scene load_steps=3 format=3 uid="uid://c7d6e5f4g3h2"]
+
+[ext_resource type="Script" path="res://scripts/components/joker_inventory.gd" id="1_inventory"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_slot"]
+bg_color = Color(0, 0, 0, 0.392157)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 0.5)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="JokerInventory" type="HBoxContainer"]
+custom_minimum_size = Vector2(0, 100)
+theme_override_constants/separation = 10
+alignment = 1
+script = ExtResource("1_inventory")
+
+[node name="Slot1" type="AspectRatioContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+ratio = 0.75
+
+[node name="Background" type="PanelContainer" parent="Slot1"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
+
+[node name="Icon" type="TextureRect" parent="Slot1/Background"]
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Slot2" type="AspectRatioContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+ratio = 0.75
+
+[node name="Background" type="PanelContainer" parent="Slot2"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
+
+[node name="Icon" type="TextureRect" parent="Slot2/Background"]
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Slot3" type="AspectRatioContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+ratio = 0.75
+
+[node name="Background" type="PanelContainer" parent="Slot3"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
+
+[node name="Icon" type="TextureRect" parent="Slot3/Background"]
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Slot4" type="AspectRatioContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+ratio = 0.75
+
+[node name="Background" type="PanelContainer" parent="Slot4"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
+
+[node name="Icon" type="TextureRect" parent="Slot4/Background"]
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Slot5" type="AspectRatioContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+ratio = 0.75
+
+[node name="Background" type="PanelContainer" parent="Slot5"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
+
+[node name="Icon" type="TextureRect" parent="Slot5/Background"]
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
