@@ -10,11 +10,11 @@ enum DiceColor {
 }
 
 const DICE_GLTF_SCENES = {
-	#DiceColor.WHITE: preload("res://assets/models/0_dice_white.gltf"),
-	#DiceColor.BLACK: preload("res://assets/models/0_dice_black.gltf"),
-	#DiceColor.RED: preload("res://assets/models/0_dice_red.gltf"),
-	#DiceColor.BLUE: preload("res://assets/models/0_dice_blue.gltf"),
-	#DiceColor.GREEN: preload("res://assets/models/0_dice_green.gltf")
+	DiceColor.WHITE: preload("res://assets/models/0_dice_white.gltf"),
+	DiceColor.BLACK: preload("res://assets/models/0_dice_black.gltf"),
+	DiceColor.RED: preload("res://assets/models/0_dice_red.gltf"),
+	DiceColor.BLUE: preload("res://assets/models/0_dice_blue.gltf"),
+	DiceColor.GREEN: preload("res://assets/models/0_dice_green.gltf")
 
 	#DiceColor.WHITE: preload("res://assets/models/1_plus_dice_white.gltf"),
 	#DiceColor.BLACK: preload("res://assets/models/1_plus_dice_black.gltf"),
@@ -34,11 +34,11 @@ const DICE_GLTF_SCENES = {
 	#DiceColor.BLUE: preload("res://assets/models/3_multiply_dice_blue.gltf"),
 	#DiceColor.GREEN: preload("res://assets/models/3_multiply_dice_green.gltf")
 
-	DiceColor.WHITE: preload("res://assets/models/4_faceless_dice_white.gltf"),
-	DiceColor.BLACK: preload("res://assets/models/4_faceless_dice_black.gltf"),
-	DiceColor.RED: preload("res://assets/models/5_lucky_dice_777.gltf"),
-	DiceColor.BLUE: preload("res://assets/models/5_lucky_dice_777.gltf"),
-	DiceColor.GREEN: preload("res://assets/models/5_lucky_dice_777.gltf")	
+	#DiceColor.WHITE: preload("res://assets/models/4_faceless_dice_white.gltf"),
+	#DiceColor.BLACK: preload("res://assets/models/4_faceless_dice_black.gltf"),
+	#DiceColor.RED: preload("res://assets/models/5_lucky_dice_777.gltf"),
+	#DiceColor.BLUE: preload("res://assets/models/5_lucky_dice_777.gltf"),
+	#DiceColor.GREEN: preload("res://assets/models/5_lucky_dice_777.gltf")	
 
 }
 

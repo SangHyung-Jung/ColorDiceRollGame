@@ -233,7 +233,7 @@ func _setup_game() -> void:
 	game_manager.setup_cup(cup)
 	input_manager.initialize(combo_select, rolling_world.get_node("Camera3D")) 
 	dice_spawner.initialize(cup, world_3d)
-	_invest_initial_dice()
+	await _invest_initial_dice()
 	cup._set_ceiling_collision(false)
 	await _spawn_initial_dice()
 	cup._set_ceiling_collision(true)
@@ -642,7 +642,7 @@ func _on_stage_manager_round_advanced(new_stage: int, new_round: int) -> void:
 	# 2. UI 업데이트 (새 목표 점수, 현재 점수 0 등)
 	_update_ui_from_gamestate()
 	
-	# 3. 이전 라운드의 모든 주사위 제거
+	# 3. 이전 라운드의 모든 주사위 제거 (굴린 것 + 투자했던 것)
 	var all_dice = dice_spawner.get_dice_nodes() + invested_dice_nodes
 	for d in all_dice:
 		if is_instance_valid(d):
@@ -652,12 +652,10 @@ func _on_stage_manager_round_advanced(new_stage: int, new_round: int) -> void:
 	
 	_has_submitted_in_turn = false
 	_has_invested_in_turn = false
-	
-	# 4. 새 라운드를 위해 컵을 리셋하고 주사위를 채움
-	cup.reset()
-	cup.show()
-	await _reset_roll()
 
+	# 4. 새 라운드를 완벽하게 새로 설정 (주사위 주머니 리셋 포함)
+	await _setup_game()
+	
 	# 5. 게임 상태를 롤 입력 대기로 전환
 	_set_state(GameState.AWAITING_ROLL_INPUT)
 
