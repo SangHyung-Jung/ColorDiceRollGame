@@ -1,6 +1,6 @@
-[gd_scene load_steps=8 format=3 uid="uid://dp66x6r12345"]
+[gd_scene load_steps=9 format=3 uid="uid://b7dllnjo8iisv"]
 
-[ext_resource type="Script" path="res://scripts/components/game_hud.gd" id="1_abcde"]
+[ext_resource type="Script" uid="uid://bdc2aef0pj644" path="res://scripts/components/game_hud.gd" id="1_abcde"]
 [ext_resource type="Texture2D" uid="uid://b6ra7i5qkug47" path="res://score_panel.png" id="2_stk2i"]
 [ext_resource type="FontFile" uid="uid://ulruyehktvyh" path="res://font/boldpixels/BoldPixels.otf" id="3_7a4el"]
 [ext_resource type="Texture2D" uid="uid://b73pj7813d7vi" path="res://dice_socket2.png" id="4_kwhh3"]
@@ -174,10 +174,6 @@ text = "Gold: $0"
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="VSeparator3" type="Control" parent="MainLayout/InfoPanel/Panel/VBoxContainer"]
-custom_minimum_size = Vector2(0, 50)
-layout_mode = 2
-
 [node name="ViewDiceBagButton" type="Button" parent="MainLayout/InfoPanel/Panel/VBoxContainer"]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_7a4el")
@@ -192,6 +188,10 @@ text = "Dice Bag"
 [node name="SocketArea" type="VBoxContainer" parent="MainLayout"]
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="Spacer2" type="Control" parent="MainLayout/SocketArea"]
+layout_mode = 2
 mouse_filter = 2
 
 [node name="SocketContainer" type="HBoxContainer" parent="MainLayout/SocketArea"]

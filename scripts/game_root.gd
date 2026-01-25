@@ -8,7 +8,7 @@ class_name GameRoot
 @onready var floating_text_container = $EffectsLayer/FloatingTextContainer
 @onready var input_manager: InputManager = $InputManager
 
-const POS_GAME = Vector3(0, 15, 0) # 게임 플레이 카메라 위치
+const POS_GAME = Vector3(-6, 15, 0) # 게임 플레이 카메라 위치
 const POS_SHOP = Vector3(30, 20, 0) # 상점 카메라 위치
 
 const ROT_GAME = Vector3(-90, 0, 0)

@@ -1,9 +1,8 @@
-[gd_scene load_steps=8 format=3 uid="uid://msbgv4hxrhe6_shop_hud"]
+[gd_scene load_steps=7 format=3 uid="uid://c58gd6pl6utxq"]
 
-[ext_resource type="Script" path="res://scripts/components/shop_hud.gd" id="1_abcde"]
+[ext_resource type="Script" uid="uid://i83w7bbvcuip" path="res://scripts/components/shop_hud.gd" id="1_abcde"]
 [ext_resource type="Texture2D" uid="uid://b6ra7i5qkug47" path="res://score_panel.png" id="2_stk2i"]
 [ext_resource type="FontFile" uid="uid://ulruyehktvyh" path="res://font/boldpixels/BoldPixels.otf" id="3_7a4el"]
-[ext_resource type="Texture2D" uid="uid://b73pj7813d7vi" path="res://dice_socket2.png" id="4_kwhh3"]
 [ext_resource type="PackedScene" uid="uid://c7d6e5f4g3h2" path="res://scenes/components/joker_inventory.tscn" id="6_abcde"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_fplum"]

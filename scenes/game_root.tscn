@@ -2,8 +2,8 @@
 
 [ext_resource type="Script" uid="uid://6fx2lujkwb1o" path="res://scripts/game_root.gd" id="1_x82f4"]
 [ext_resource type="PackedScene" uid="uid://bciyvj2g1j1vj" path="res://scenes/rolling_world.tscn" id="2_2t21a"]
-[ext_resource type="PackedScene" path="res://scenes/components/game_hud.tscn" id="3_game_hud"]
-[ext_resource type="PackedScene" path="res://scenes/components/shop_hud.tscn" id="4_shop_hud"]
+[ext_resource type="PackedScene" uid="uid://b7dllnjo8iisv" path="res://scenes/components/game_hud.tscn" id="3_game_hud"]
+[ext_resource type="PackedScene" uid="uid://c58gd6pl6utxq" path="res://scenes/components/shop_hud.tscn" id="4_shop_hud"]
 [ext_resource type="Script" uid="uid://d2uxqjmsc884w" path="res://scripts/managers/input_manager.gd" id="5_input_mgr"]
 
 [node name="GameRoot" type="Node3D"]
@@ -30,7 +30,7 @@ far = 200.0
 [node name="PlayArea" type="Node3D" parent="3D_World"]
 
 [node name="ShopArea" type="Node3D" parent="3D_World"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.5982, 0, 0)
 
 [node name="PlayArea#RollingWorld" parent="." instance=ExtResource("2_2t21a")]
 
