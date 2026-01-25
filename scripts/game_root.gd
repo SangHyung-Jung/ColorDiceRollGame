@@ -9,10 +9,10 @@ class_name GameRoot
 @onready var input_manager: InputManager = $InputManager
 
 const POS_GAME = Vector3(0, 15, 0) # 게임 플레이 카메라 위치
-const POS_SHOP = Vector3(20, 15, 0) # 상점 카메라 위치
+const POS_SHOP = Vector3(30, 20, 0) # 상점 카메라 위치
 
 const ROT_GAME = Vector3(-90, 0, 0)
-const ROT_SHOP = Vector3(-45, 0, 0) # 상점은 비스듬히 보는 뷰 (예시)
+const ROT_SHOP = Vector3(-90, 0, 0) # 상점도 게임과 같은 탑다운 뷰 사용
 
 func _ready():
 	# Initial setup of game hud. This creates all the necessary manager nodes.

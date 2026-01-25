@@ -188,6 +188,7 @@ func pour() -> void:
 	tween.tween_property(self, "rotation_degrees:z", initial_rotation.z + 130, pour_duration)  # Z축 기울기
 	tween.parallel().tween_property(self, "rotation_degrees:y", initial_rotation.y - 20, pour_duration)  # Y축 약간 회전
 	tween.parallel().tween_property(self, "global_position:x", initial_position.x - 5, snap_x_duration)  # 좌측으로 이동
+	tween.parallel().tween_property(self, "global_position:y", initial_position.y - 2, pour_duration) # 아래로 살짝 내려서 잘림 방지
 	await tween.finished
 
 	_set_wall_collision(false)

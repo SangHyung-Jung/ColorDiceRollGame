@@ -29,10 +29,10 @@ projection = 1
 size = 18.0
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.999941, 0, 0, 0, 0.258891, 0.966446, 0, -0.966192, 0.258958, 0, 0, 0)
-light_energy = 0.75
+transform = Transform3D(1, 0, 0, 0, 0.0871558, 0.996195, 0, -0.996195, 0.0871558, 0, 18.98, 6.31304)
+light_energy = 0.5
 light_indirect_energy = 0.75
-light_volumetric_fog_energy = 0.75
+light_volumetric_fog_energy = 0.1
 shadow_enabled = true
 
 [node name="Floor" type="StaticBody3D" parent="."]
