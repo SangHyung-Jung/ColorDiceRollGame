@@ -1,10 +1,9 @@
-[gd_scene load_steps=8 format=3 uid="uid://msbgv4hxrhe6"]
+[gd_scene load_steps=8 format=3 uid="uid://msbgv4hxrhe6_shop_hud"]
 
-[ext_resource type="Script" uid="uid://botynvyj8y4lc" path="res://shop_screen.gd" id="1_ssyjo"]
+[ext_resource type="Script" path="res://scripts/components/shop_hud.gd" id="1_abcde"]
 [ext_resource type="Texture2D" uid="uid://b6ra7i5qkug47" path="res://score_panel.png" id="2_stk2i"]
 [ext_resource type="FontFile" uid="uid://ulruyehktvyh" path="res://font/boldpixels/BoldPixels.otf" id="3_7a4el"]
 [ext_resource type="Texture2D" uid="uid://b73pj7813d7vi" path="res://dice_socket2.png" id="4_kwhh3"]
-[ext_resource type="Texture2D" uid="uid://dtv5mtrg1vdg0" path="res://background_dice.png" id="5_wevgp"]
 [ext_resource type="PackedScene" uid="uid://c7d6e5f4g3h2" path="res://scenes/components/joker_inventory.tscn" id="6_abcde"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_fplum"]
@@ -12,26 +11,15 @@ texture = ExtResource("2_stk2i")
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_transparent"]
 
-[node name="MainScreen" type="Control"]
+[node name="ShopHUD" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_ssyjo")
-
-[node name="Background" type="TextureRect" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 448.0
-grow_horizontal = 2
-grow_vertical = 2
 mouse_filter = 2
-texture = ExtResource("5_wevgp")
-expand_mode = 1
+script = ExtResource("1_abcde")
 
 [node name="MainLayout" type="HBoxContainer" parent="."]
 layout_mode = 1

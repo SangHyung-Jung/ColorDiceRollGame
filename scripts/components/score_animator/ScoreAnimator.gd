@@ -5,14 +5,12 @@ signal animation_finished(points, nodes)
 
 # References to be set from MainScreen
 var world_3d: Node3D
-var rolling_area: SubViewportContainer
 
 # UI Node References
 var score_label: Label
 var multiplier_label: Label
 var turn_score_label: Label
 var floating_text_container: Control
-var screen_flash: ColorRect
 var main_layout: HBoxContainer
 var combo_name_label: Label
 var submit_button: Button
@@ -28,12 +26,10 @@ var _animation_running_score: int = 0
 
 func initialize(refs: Dictionary):
 	world_3d = refs.world_3d
-	rolling_area = refs.rolling_area
 	score_label = refs.score_label
 	multiplier_label = refs.multiplier_label
 	turn_score_label = refs.turn_score_label
 	floating_text_container = refs.floating_text_container
-	screen_flash = refs.screen_flash
 	main_layout = refs.main_layout
 	combo_name_label = refs.combo_name_label
 	submit_button = refs.submit_button
@@ -137,9 +133,9 @@ func play_animation(result: ComboRules.ComboResult, nodes: Array) -> void:
 	tween.tween_interval(0.4 / SCORE_ANIM_SPEED)
 
 	# Phase 2: 배수(Mult) 적용
-	var flash_tween = create_tween()
-	flash_tween.tween_property(screen_flash, "color", Color(1, 0, 0, 0.3), 0.1 / SCORE_ANIM_SPEED)
-	flash_tween.tween_property(screen_flash, "color", Color(1, 0, 0, 0), 0.3 / SCORE_ANIM_SPEED)
+	# var flash_tween = create_tween()
+	# flash_tween.tween_property(screen_flash, "color", Color(1, 0, 0, 0.3), 0.1 / SCORE_ANIM_SPEED)
+	# flash_tween.tween_property(screen_flash, "color", Color(1, 0, 0, 0), 0.3 / SCORE_ANIM_SPEED)
 
 	tween.tween_callback(func(): multiplier_label.pivot_offset = multiplier_label.size / 2)
 	tween.tween_property(multiplier_label, "scale", Vector2(1.5, 1.5), 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
@@ -167,8 +163,7 @@ func _create_floating_text(text: String, position_3d: Vector3, is_invested: bool
 	var camera = world_3d.get_node_or_null("Camera3D")
 	if not camera: return
 
-	var sub_viewport_pos = camera.unproject_position(position_3d)
-	var final_screen_pos = sub_viewport_pos + rolling_area.global_position
+	var screen_pos = camera.unproject_position(position_3d)
 
 	var label = Label.new()
 	label.text = text
@@ -185,9 +180,9 @@ func _create_floating_text(text: String, position_3d: Vector3, is_invested: bool
 	# Position text above or below based on whether the die is invested
 	var text_offset_y = 150
 	if is_invested:
-		label.global_position = final_screen_pos + Vector2(0, text_offset_y) # Move down for invested dice
+		label.global_position = screen_pos + Vector2(0, text_offset_y) # Move down for invested dice
 	else:
-		label.global_position = final_screen_pos - Vector2(0, text_offset_y) # Move up for rolled dice
+		label.global_position = screen_pos - Vector2(0, text_offset_y) # Move up for rolled dice
 
 	var tween = create_tween()
 	# "Pop" animation: appear instantly, short delay, then fade out quickly

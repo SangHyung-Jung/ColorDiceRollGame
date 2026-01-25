@@ -6,6 +6,7 @@ extends Node
 
 # === 입력 이벤트 시그널들 ===
 signal roll_started()  # 새 굴리기 시작 요청
+signal roll_released() # 굴리기 종료(마우스 떼기) 요청
 signal combo_selection_toggled(active: bool)  # 조합 선택 모드 토글
 
 # === 의존성 참조들 ===
@@ -31,15 +32,19 @@ func set_roll_in_progress(in_progress: bool) -> void:
 ## @param event: 처리할 입력 이벤트
 ## @return 이벤트를 소비했으면 true
 func handle_input(event: InputEvent) -> bool:
-	# 조합 선택 컴포넌트가 이벤트를 처리했는지 확인
+	# 조합 선택 컴포G펀트가 이벤트를 처리했는지 확인
 	if combo_select.process_input(event):
 		return true  # 이벤트 소비됨
 
-	# 마우스 좌클릭 처리 (새 롤 시작)
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		# 굴리기 진행 중이 아니면 새 굴리기 시작
-		if not _roll_in_progress:
-			roll_started.emit()  # 굴리기 시작 시그널 발생
+	# 마우스 좌클릭 처리
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			# 굴리기 진행 중이 아니면 새 굴리기 시작
+			if not _roll_in_progress:
+				roll_started.emit()  # 굴리기 시작 시그널 발생
+				return true
+		else: # 마우스를 뗐을 때
+			roll_released.emit() # 굴리기 종료 시그널 발생
 			return true
 
 	return false  # 이벤트 미소비

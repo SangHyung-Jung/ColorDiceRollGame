@@ -1,11 +1,12 @@
 extends Control
-class_name ShopScreen
+class_name ShopHUD
+signal go_to_game_requested
 
 # UI 노드 참조
 @onready var joker_grid_container: GridContainer = $MainLayout/GameArea/ScrollContainer/JokerGridContainer
 @onready var next_round_button: Button = $MainLayout/GameArea/ShopHeader/NextRoundButton
 @onready var gold_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/GoldLabel
-@onready var joker_inventory: HBoxContainer = %JokerInventory
+@onready var joker_inventory: HBoxContainer = $MainLayout/InfoPanel/Panel/VBoxContainer/JokerInventory
 
 # 리소스 로드
 const JokerShopItemScene = preload("res://scenes/components/joker_shop_item.tscn")
@@ -14,11 +15,13 @@ const JokerShopItemScene = preload("res://scenes/components/joker_shop_item.tscn
 func _ready() -> void:
 	# 다음 라운드 시작 버튼 시그널 연결
 	next_round_button.pressed.connect(_on_next_round_button_pressed)
-	
-	# 상점 아이템 채우기
+	# enter_shop_sequence() # Called by GameRoot when transitioning to shop
+
+
+
+func enter_shop_sequence() -> void:
+	# This function will be called by GameRoot when transitioning to shop
 	_populate_shop_items()
-	
-	# UI 업데이트
 	_update_gold_label()
 	joker_inventory.update_display(Main.owned_jokers)
 
@@ -45,7 +48,7 @@ func _populate_shop_items() -> void:
 ## '다음 라운드' 버튼을 누르면 다음 라운드 상태로 설정하고 메인 게임 화면으로 돌아갑니다.
 func _on_next_round_button_pressed() -> void:
 	StageManager.advance_to_next_round()
-	get_tree().change_scene_to_file("res://main_screen.tscn")
+	emit_signal("go_to_game_requested")
 
 ## 골드 UI를 업데이트합니다.
 func _update_gold_label() -> void:

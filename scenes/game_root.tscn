@@ -1,0 +1,55 @@
+[gd_scene load_steps=5 format=3 uid="uid://c6l3k87431e7u"]
+
+[ext_resource type="Script" path="res://scripts/game_root.gd" id="1_x82f4"]
+[ext_resource type="PackedScene" uid="uid://bciyvj2g1j1vj" path="res://scenes/rolling_world.tscn" id="2_2t21a"]
+[ext_resource type="PackedScene" uid="uid://dp66x6r12345" path="res://scenes/components/game_hud.tscn" id="3_game_hud"]
+[ext_resource type="PackedScene" uid="uid://msbgv4hxrhe6_shop_hud" path="res://scenes/components/shop_hud.tscn" id="4_shop_hud"]
+[ext_resource type="Script" path="res://scripts/managers/input_manager.gd" id="5_input_mgr"]
+
+[node name="GameRoot" type="Node3D"]
+script = ExtResource("1_x82f4")
+
+[node name="InputManager" type="Node" parent="."]
+script = ExtResource("5_input_mgr")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 8, 0)
+
+[node name="MainCamera" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.0871557, 0.996195, 0, -0.996195, 0.0871557, 0, 15, 0)
+projection = 1
+size = 20.0
+near = 0.1
+far = 200.0
+
+[node name="3D_World" type="Node3D" parent="."]
+
+[node name="PlayArea" type="Node3D" parent="3D_World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="RollingWorld" parent="PlayArea" instance=ExtResource("2_2t21a")]
+
+[node name="ShopArea" type="Node3D" parent="3D_World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 0)
+
+[node name="UI_Canvas" type="CanvasLayer" parent="."]
+
+[node name="GameHUD" parent="UI_Canvas" instance=ExtResource("3_game_hud")]
+
+[node name="ShopHUD" parent="UI_Canvas" instance=ExtResource("4_shop_hud")]
+visible = false
+
+[node name="EffectsLayer" type="CanvasLayer" parent="."]
+layer = 100
+
+[node name="FloatingTextContainer" type="Control" parent="EffectsLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
