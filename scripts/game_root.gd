@@ -36,16 +36,22 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func transition_to_shop():
-	# UI 즉시 전환 방지: 이동 시작 시 게임 UI 숨김
-	game_hud.visible = false 
 	input_manager.set_roll_in_progress(true) # Disable game input during transition
 	
+	# Animate SocketArea out
+	var socket_area = game_hud.get_node("MainLayout/SocketArea")
+	var ui_tween = create_tween()
+	ui_tween.tween_property(socket_area, "position:x", -1500, 1.5).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+
+	# Camera Tween
 	var tween = create_tween().set_parallel(true)
 	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
 	tween.tween_property(camera, "global_position", POS_SHOP, 1.5)
 	tween.tween_property(camera, "rotation_degrees", ROT_SHOP, 1.5)
 	
 	tween.chain().tween_callback(func():
+		game_hud.visible = false # Hide the whole thing after transition
+		socket_area.position.x = 0 # Reset for next time
 		shop_hud.visible = true
 		shop_hud.enter_shop_sequence() # 상점 진입 애니메이션/로직 실행
 		input_manager.set_roll_in_progress(false) # Re-enable input for shop (if any)
@@ -63,13 +69,23 @@ func transition_to_game(instant: bool = false):
 		input_manager.set_roll_in_progress(false) # Re-enable input for game
 		return
 
+	# Prepare GameHUD for transition
+	var socket_area = game_hud.get_node("MainLayout/SocketArea")
+	socket_area.position.x = -1500 # Start it off-screen
+	game_hud.visible = true
+
+	# Animate SocketArea in
+	var ui_tween = create_tween()
+	ui_tween.tween_property(socket_area, "position:x", 0, 1.5).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+
+	# Camera Tween
 	var tween = create_tween().set_parallel(true)
 	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
 	tween.tween_property(camera, "global_position", POS_GAME, 1.5)
 	tween.tween_property(camera, "rotation_degrees", ROT_GAME, 1.5)
 	
 	tween.chain().tween_callback(func():
-		game_hud.visible = true
+		# game_hud is already visible
 		game_hud.start_round_sequence() # 게임 라운드 시작 로직
 		input_manager.set_roll_in_progress(false) # Re-enable input for game
 	)

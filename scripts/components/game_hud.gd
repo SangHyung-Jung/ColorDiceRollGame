@@ -344,7 +344,6 @@ func _on_roll_finished() -> void:
 	_set_state(GameState.TURN_INTERACTION)
 	combo_select.enter()
 	dice_spawner.display_dice_results(game_manager.get_roll_results())
-	cup.hide()
 
 func _on_mouse_release() -> void:
 	if cup.has_method("stop_shaking"):
@@ -352,7 +351,6 @@ func _on_mouse_release() -> void:
 	dice_spawner.apply_dice_impulse()
 	if cup.has_method("pour"):
 		await cup.pour()
-		cup.hide()
 
 func _on_dice_roll_finished(value: int, dice_name: String) -> void:
 	game_manager.on_dice_roll_finished(value, dice_name)
@@ -528,7 +526,6 @@ func _on_turn_end_pressed() -> void:
 		dice_spawner.clear_dice_nodes()
 		# ★ 다음 롤을 미리 준비
 		cup.reset()
-		cup.show()
 		await _reset_roll()
 		# Reset the state to allow for a new roll
 		_set_state(GameState.AWAITING_ROLL_INPUT)
