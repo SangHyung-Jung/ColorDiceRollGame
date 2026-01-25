@@ -629,6 +629,7 @@ func _on_round_clear_popup_continue_pressed() -> void:
 
 func start_round_sequence() -> void:
 	# This function will be called by GameRoot when transitioning from shop to game
+	combo_select.exit()
 	_initialize_score_calc_ui()
 	joker_inventory.update_display(Main.owned_jokers)
 	_set_state(GameState.AWAITING_ROLL_INPUT)
