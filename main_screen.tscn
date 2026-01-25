@@ -185,11 +185,13 @@ theme_override_styles/normal = SubResource("StyleBoxEmpty_transparent")
 text = "Dice Bag"
 
 [node name="GameArea" type="Control" parent="MainLayout"]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 2
 
 [node name="SocketArea" type="VBoxContainer" parent="MainLayout/GameArea"]
+visible = false
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -197,7 +199,7 @@ anchor_right = 0.5
 offset_left = -450.0
 offset_top = 20.0
 offset_right = 450.0
-offset_bottom = 120.0
+offset_bottom = 124.0
 grow_horizontal = 2
 
 [node name="SocketContainer" type="HBoxContainer" parent="MainLayout/GameArea/SocketArea"]
