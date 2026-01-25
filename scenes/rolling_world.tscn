@@ -9,10 +9,10 @@ ambient_light_source = 3
 ambient_light_color = Color(0.5, 0.5, 0.5, 1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_zodac"]
-size = Vector3(48, 0.1, 36)
+size = Vector3(150, 0.1, 100)
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_zodac"]
-size = Vector2(48, 36)
+size = Vector2(150, 100)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_zodac"]
 albedo_texture = ExtResource("2_v3p1h")

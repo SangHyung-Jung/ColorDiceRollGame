@@ -102,7 +102,7 @@ func setup_dice(color: DiceColor, position_override: Vector3 = Vector3.ZERO) -> 
 	dice_model.set_meta("_edit_lock_", true)
 
 	# ★ 모델 스케일 (Blender 원본 2.0 → 게임 내 1.6)
-	var model_scale = 0.8
+	var model_scale = 1.0
 	dice_model.scale = Vector3(model_scale, model_scale, model_scale)
 	dice_model.position = Vector3.ZERO
 	dice_model.rotation_degrees = Vector3.ZERO
