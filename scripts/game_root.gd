@@ -49,9 +49,6 @@ func _process(_delta):
 
 func transition_to_shop():
 	input_manager.set_roll_in_progress(true) # Disable game input during transition
-	
-	# [수정됨] UI 수동 Tween 제거 (SocketArea 이동 코드 삭제)
-	# _process에서 자동으로 동기화되므로 별도의 UI 이동 코드가 필요 없습니다.
 
 	# Camera Tween
 	var tween = create_tween().set_parallel(true)
@@ -65,25 +62,6 @@ func transition_to_shop():
 		shop_hud.enter_shop_sequence() # 상점 진입 애니메이션/로직 실행
 		input_manager.set_roll_in_progress(false) # Re-enable input for shop (if any)
 	)
-	
-	## Animate SocketArea out
-	#var socket_area = game_hud.get_node("MainLayout/SocketArea")
-	#var ui_tween = create_tween()
-	#ui_tween.tween_property(socket_area, "position:x", -1500, 1.5).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
-#
-	## Camera Tween
-	#var tween = create_tween().set_parallel(true)
-	#tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
-	#tween.tween_property(camera, "global_position", POS_SHOP, 1.5)
-	#tween.tween_property(camera, "rotation_degrees", ROT_SHOP, 1.5)
-	#
-	#tween.chain().tween_callback(func():
-		#game_hud.visible = false # Hide the whole thing after transition
-		#socket_area.position.x = 0 # Reset for next time
-		#shop_hud.visible = true
-		#shop_hud.enter_shop_sequence() # 상점 진입 애니메이션/로직 실행
-		#input_manager.set_roll_in_progress(false) # Re-enable input for shop (if any)
-	#)
 
 func transition_to_game(instant: bool = false):
 	shop_hud.visible = false
@@ -98,13 +76,7 @@ func transition_to_game(instant: bool = false):
 		return
 
 	# Prepare GameHUD for transition
-	#var socket_area = game_hud.get_node("MainLayout/SocketArea")
-	#socket_area.position.x = -1500 # Start it off-screen
 	game_hud.visible = true
-
-	## Animate SocketArea in
-	#var ui_tween = create_tween()
-	#ui_tween.tween_property(socket_area, "position:x", 0, 1.5).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
 
 	# Camera Tween
 	var tween = create_tween().set_parallel(true)
