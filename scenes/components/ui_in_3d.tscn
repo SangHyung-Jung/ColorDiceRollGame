@@ -1,0 +1,27 @@
+[gd_scene load_steps=5 format=3 uid="uid://dps8wucy301w6"]
+
+[ext_resource type="Script" path="res://scenes/components/ui_in_3d.gd" id="1_abcde"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_unshaded"]
+shading_mode = 0
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_xyz"]
+viewport_path = NodePath("SubViewportContainer/SubViewport")
+
+[node name="UIin3D" type="Node3D"]
+script = ExtResource("1_abcde")
+
+[node name="Sprite3D" type="Sprite3D" parent="."]
+material_override = SubResource("StandardMaterial3D_unshaded")
+texture = SubResource("ViewportTexture_xyz")
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="."]
+custom_minimum_size = Vector2(1920, 1080)
+offset_right = 1920.0
+offset_bottom = 1080.0
+
+[node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
+transparent_bg = true
+handle_input_locally = false
+size = Vector2i(1920, 1080)
+render_target_update_mode = 4

@@ -87,7 +87,7 @@ func setup_game_hud(p_world_3d: Node3D, p_rolling_world_camera: Camera3D, p_floa
 	# _setup_game() is now called by start_round_sequence
 
 	await get_tree().process_frame
-	_update_socket_positions()
+	update_socket_positions()
 	
 	_update_ui_from_gamestate()
 	# No need for _on_rolling_area_resized() as SubViewport is removed
@@ -118,7 +118,7 @@ func _initialize_score_animator() -> void:
 	}
 	score_animator.initialize(refs)
 
-func _update_socket_positions() -> void:
+func update_socket_positions() -> void:
 	var current_socket_container = get_node("MainLayout/SocketArea/SocketContainer")
 	if current_socket_container == null:
 		push_error("SocketContainer not found at path: MainLayout/SocketArea/SocketContainer")
@@ -255,7 +255,7 @@ func _invest_initial_dice() -> void:
 		return
 # 소켓 위치가 아직 계산되지 않았을 수 있으므로 확인
 	if socket_positions.is_empty():
-		await _update_socket_positions()
+		await update_socket_positions()
 		
 	var dice_colors = dice_spawner.create_dice_colors_from_bag(game_manager.bag, 5)
 
