@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://b7dllnjo8iisv" path="res://scenes/components/game_hud.tscn" id="3_game_hud"]
 [ext_resource type="PackedScene" uid="uid://c58gd6pl6utxq" path="res://scenes/components/shop_hud.tscn" id="4_shop_hud"]
 [ext_resource type="PackedScene" uid="uid://cx6g0fsvk6f7u" path="res://scenes/components/start_screen.tscn" id="6_start_screen"]
+[ext_resource type="PackedScene" uid="uid://e4u7j62s742j" path="res://scenes/components/joker_dictionary.tscn" id="7_joker_dictionary"]
 [ext_resource type="Script" uid="uid://d2uxqjmsc884w" path="res://scripts/managers/input_manager.gd" id="5_input_mgr"]
 
 [node name="GameRoot" type="Node3D"]
@@ -20,7 +21,7 @@ transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 
 visible = false
 
 [node name="MainCamera" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 35, 0)
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, -40, 20, 0)
 projection = 1
 size = 25.0
 near = 0.1
@@ -42,6 +43,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.5982, 0, 0)
 [node name="ShopHUD" parent="UI_Canvas" instance=ExtResource("4_shop_hud")]
 visible = false
 [node name="StartScreen" parent="UI_Canvas" instance=ExtResource("6_start_screen")]
+visible = false
+[node name="JokerDictionary" parent="UI_Canvas" instance=ExtResource("7_joker_dictionary")]
 visible = false
 
 [node name="EffectsLayer" type="CanvasLayer" parent="."]

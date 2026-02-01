@@ -12,6 +12,7 @@ grow_vertical = 2
 script = ExtResource("1_4qf4o")
 
 [node name="ColorRect" type="ColorRect" parent="."]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -50,5 +51,6 @@ text = "Start Game"
 layout_mode = 2
 text = "Quit"
 
-[connection signal="pressed" from="VBoxContainer/StartButton" to="." method="_on_start_button_pressed"]
-[connection signal="pressed" from="VBoxContainer/QuitButton" to="." method="_on_quit_button_pressed"]
+[node name="JokerDictionaryButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Joker Dictionary"

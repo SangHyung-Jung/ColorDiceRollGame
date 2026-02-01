@@ -5,6 +5,7 @@ class_name GameRoot
 @onready var game_hud = $UI_Canvas/GameHUD
 @onready var shop_hud = $UI_Canvas/ShopHUD
 @onready var start_screen = $UI_Canvas/StartScreen
+@onready var joker_dictionary = $UI_Canvas/JokerDictionary
 @onready var world_3d = $"3D_World"
 @onready var floating_text_container = $EffectsLayer/FloatingTextContainer
 @onready var input_manager: InputManager = $InputManager
@@ -18,6 +19,8 @@ const ROT_GAME = Vector3(-90, 0, 0)
 const ROT_SHOP = Vector3(-90, 0, 0) # 상점도 게임과 같은 탑다운 뷰 사용
 # [추가] 시작 화면도 탑다운 뷰 유지 (필요하면 각도 변경 가능)
 const ROT_START = Vector3(-90, 0, 0)
+const POS_DICTIONARY = Vector3(-80, 20, 0)
+const ROT_DICTIONARY = Vector3(-90, 0, 0)
 
 func _ready():
 	# Initial setup of game hud. This creates all the necessary manager nodes.
@@ -38,9 +41,14 @@ func _ready():
 	# [추가] 시작 화면 시그널 연결
 	if start_screen:
 		start_screen.start_game_requested.connect(transition_to_game)
+		start_screen.joker_dictionary_requested.connect(transition_to_dictionary)
+	
+	# [추가] 조커 사전 시그널 연결
+	if joker_dictionary:
+		joker_dictionary.back_requested.connect(transition_to_start)
 
 	# 시작 화면 진입 (즉시 이동)
-	transition_to_start()
+	transition_to_start(true)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -55,18 +63,54 @@ func _process(_delta):
 		game_hud.position = game_world_pos_on_screen - screen_center
 
 # [추가] 시작 화면으로 전환하는 함수
-func transition_to_start():
+func transition_to_start(instant: bool = false):
 	input_manager.set_roll_in_progress(true) # 시작 화면에서는 주사위 조작 금지
 
-	# 카메라 즉시 이동
-	camera.global_position = POS_START
-	camera.rotation_degrees = ROT_START
+	if instant:
+		# UI 상태 설정
+		game_hud.visible = false
+		shop_hud.visible = false
+		if start_screen:
+			start_screen.visible = true
+		if joker_dictionary:
+			joker_dictionary.visible = false
+		input_manager.set_roll_in_progress(false)
+		return
 
-	# UI 상태 설정
-	game_hud.visible = false
-	shop_hud.visible = false
-	if start_screen:
-		start_screen.visible = true
+	# Camera Tween
+	var tween = create_tween().set_parallel(true)
+	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	tween.tween_property(camera, "global_position", POS_START, 1.5)
+	tween.tween_property(camera, "rotation_degrees", ROT_START, 1.5)
+
+	tween.chain().tween_callback(func():
+		# UI 상태 설정
+		game_hud.visible = false
+		shop_hud.visible = false
+		if start_screen:
+			start_screen.visible = true
+		if joker_dictionary:
+			joker_dictionary.visible = false
+		input_manager.set_roll_in_progress(false) # Re-enable input if needed for start screen
+	)
+
+func transition_to_dictionary():
+	input_manager.set_roll_in_progress(true) # Disable dice input for dictionary screen
+
+	# Camera Tween
+	var tween = create_tween().set_parallel(true)
+	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	tween.tween_property(camera, "global_position", POS_DICTIONARY, 1.5)
+	tween.tween_property(camera, "rotation_degrees", ROT_DICTIONARY, 1.5)
+
+	tween.chain().tween_callback(func():
+		game_hud.visible = false
+		shop_hud.visible = false
+		if start_screen: start_screen.visible = false
+		if joker_dictionary:
+			joker_dictionary.visible = true
+		input_manager.set_roll_in_progress(false) # Re-enable input if needed for dictionary (e.g., scrolling)
+	)
 
 func transition_to_shop():
 	input_manager.set_roll_in_progress(true) # Disable game input during transition
@@ -80,6 +124,7 @@ func transition_to_shop():
 	tween.chain().tween_callback(func():
 		game_hud.visible = false
 		if start_screen: start_screen.visible = false # 혹시 켜져있으면 끄기
+		if joker_dictionary: joker_dictionary.visible = false
 		shop_hud.visible = true
 		shop_hud.enter_shop_sequence() # 상점 진입 애니메이션/로직 실행
 		input_manager.set_roll_in_progress(false) # Re-enable input for shop (if any)
@@ -90,6 +135,8 @@ func transition_to_game(instant: bool = false):
 	shop_hud.visible = false
 	if start_screen:
 		start_screen.visible = false # 시작 화면 숨김
+	if joker_dictionary:
+		joker_dictionary.visible = false
 	input_manager.set_roll_in_progress(true) # Disable shop input during transition
 	
 	if instant:

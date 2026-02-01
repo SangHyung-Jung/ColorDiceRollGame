@@ -144,16 +144,3 @@ layout_mode = 2
 theme_override_fonts/font = ExtResource("3_7a4el")
 theme_override_font_sizes/font_size = 40
 text = "Reroll"
-
-[node name="ScrollContainer" type="ScrollContainer" parent="MainLayout/GameArea"]
-layout_mode = 2
-size_flags_vertical = 3
-horizontal_scroll_mode = 0
-vertical_scroll_mode = 2
-
-[node name="JokerGridContainer" type="GridContainer" parent="MainLayout/GameArea/ScrollContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/h_separation = 20
-theme_override_constants/v_separation = 20
-columns = 4

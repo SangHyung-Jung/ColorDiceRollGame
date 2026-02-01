@@ -1,0 +1,42 @@
+[gd_scene load_steps=2 format=3 uid="uid://dp6b2n6i2t7f2"]
+
+[ext_resource type="Script" path="res://scripts/components/joker_display_item.gd" id="1_41x4a"]
+
+[node name="JokerDisplayItem" type="HBoxContainer"]
+custom_minimum_size = Vector2(0, 150)
+script = ExtResource("1_41x4a")
+
+[node name="JokerImage" type="TextureRect" parent="."]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NameLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Joker Name (English Name)"
+autowrap_mode = 2
+
+[node name="DescriptionLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Joker Description"
+autowrap_mode = 2
+
+[node name="UnlockConditionLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Unlock Condition"
+autowrap_mode = 2
+
+[node name="TierLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Tier"
+autowrap_mode = 2
+
+[node name="PriceLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Price"
+autowrap_mode = 2
