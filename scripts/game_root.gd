@@ -67,6 +67,8 @@ func transition_to_start(instant: bool = false):
 	input_manager.set_roll_in_progress(true) # 시작 화면에서는 주사위 조작 금지
 
 	if instant:
+		camera.global_position = POS_START
+		camera.rotation_degrees = ROT_START
 		# UI 상태 설정
 		game_hud.visible = false
 		shop_hud.visible = false
