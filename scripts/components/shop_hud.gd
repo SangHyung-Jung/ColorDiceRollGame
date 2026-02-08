@@ -29,13 +29,12 @@ func _ready() -> void:
 	next_round_button.pressed.connect(_on_next_round_button_pressed)
 	reroll_button.pressed.connect(enter_shop_sequence)
 	
-	# Connect buy buttons
 	$MainLayout/GameArea/BuyPanel/JokerOptions/Option1/BuyButton1.pressed.connect(func(): _on_buy_joker_pressed(0))
 	$MainLayout/GameArea/BuyPanel/JokerOptions/Option2/BuyButton2.pressed.connect(func(): _on_buy_joker_pressed(1))
 	$MainLayout/GameArea/BuyPanel/JokerOptions/Option3/BuyButton3.pressed.connect(func(): _on_buy_joker_pressed(2))
 
 func _gui_input(event: InputEvent) -> void:
-	if is_rolling: return
+	if is_rolling or buy_panel.visible: return # Don't allow input if dice are rolling or results are shown
 	
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
@@ -45,28 +44,18 @@ func _gui_input(event: InputEvent) -> void:
 				_release_and_pour()
 
 func enter_shop_sequence() -> void:
-	# This function will be called by GameRoot when transitioning to shop
 	_update_gold_label()
 	joker_inventory.update_display(Main.owned_jokers)
-	
-	# 1. 기존 주사위 및 컵 제거
 	clear_shop_objects()
-	
-	# 2. 새 컵과 주사위 3개 생성
 	_setup_shop_scene()
-	
-	# 3. UI 초기화
 	buy_panel.visible = false
 	is_rolling = false
 	is_shaking = false
 
 func _setup_shop_scene():
-	# 컵 생성 및 배치
 	cup = CupScene.instantiate()
 	cup.position = GameConstants.CUP_POSITION
 	shop_area.add_child(cup)
-	
-	# 주사위 생성
 	spawn_shop_dice(3)
 
 func clear_shop_objects():
@@ -83,7 +72,6 @@ func spawn_shop_dice(count: int):
 	if not shop_dice_scene:
 		push_error("ShopDice scene is not set in the inspector!")
 		return
-	
 	if not is_instance_valid(cup):
 		push_error("Cup is not valid during spawn_shop_dice!")
 		return
@@ -93,7 +81,6 @@ func spawn_shop_dice(count: int):
 
 	for i in range(count):
 		var dice = shop_dice_scene.instantiate() as ShopDice
-		
 		var world_node = get_tree().root.get_node("GameRoot/3D_World")
 		if not world_node:
 			dice.queue_free()
@@ -107,7 +94,7 @@ func spawn_shop_dice(count: int):
 		
 		var random_jokers = JokerManager.get_random_jokers(6)
 		if random_jokers == null or random_jokers.size() < 6:
-			push_error("Not enough jokers in JokerManager to create a shop dice!")
+			push_error("Not enough jokers in JokerManager!")
 			dice.queue_free()
 			current_shop_dice.pop_back()
 			continue
@@ -117,7 +104,6 @@ func spawn_shop_dice(count: int):
 
 func _start_shaking():
 	if is_rolling or not is_instance_valid(cup): return
-	
 	is_shaking = true
 	if cup.has_method("start_shaking"):
 		cup.start_shaking()
@@ -130,10 +116,8 @@ func _release_and_pour() -> void:
 	
 	if cup.has_method("stop_shaking"):
 		await cup.stop_shaking()
-
 	if cup.has_method("pour"):
 		await cup.pour()
-	
 	if cup.has_method("_set_ceiling_collision"):
 		cup._set_ceiling_collision(false)
 	
@@ -163,22 +147,48 @@ func check_dice_stopped():
 
 	var all_stopped = true
 	for dice in current_shop_dice:
-		if dice.sleeping == false:
+		if not dice.sleeping:
 			all_stopped = false
 			break
 	
 	if all_stopped:
 		is_rolling = false
-		on_roll_finished()
+		_align_and_present_results()
 
-func on_roll_finished():
+func _align_and_present_results() -> void:
 	var available_jokers = []
 	for dice in current_shop_dice:
 		var top_joker = dice.get_top_joker()
 		if top_joker:
 			available_jokers.append(top_joker)
 	
+	if available_jokers.size() != current_shop_dice.size():
+		print("Error: Could not determine top joker for all dice.")
+		# Fallback to just displaying what we have
+		display_purchase_options(available_jokers)
+		return
+
+	# Freeze dice and align them
+	var tweens = []
+	var center_x = shop_area.global_position.x
+	var start_x = center_x - (current_shop_dice.size() - 1) * 1.5
+	
+	for i in range(current_shop_dice.size()):
+		var dice = current_shop_dice[i]
+		dice.freeze = true
+		
+		var target_pos = Vector3(start_x + i * GameConstants.DICE_SPACING, shop_area.global_position.y + GameConstants.DISPLAY_Y, shop_area.global_position.z)
+		var tween: Tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		tween.tween_property(dice, "global_position", target_pos, GameConstants.MOVE_DURATION)
+		tweens.append(tween)
+
+	# Wait for all tweens to finish
+	for tween in tweens:
+		await tween.finished
+		
+	# Now display the UI
 	display_purchase_options(available_jokers)
+
 
 func display_purchase_options(jokers: Array):
 	available_jokers_to_buy = jokers
@@ -199,9 +209,7 @@ func display_purchase_options(jokers: Array):
 			option_root.visible = false
 
 func _on_buy_joker_pressed(index: int):
-	if index >= available_jokers_to_buy.size():
-		return
-	
+	if index >= available_jokers_to_buy.size(): return
 	var joker_to_buy = available_jokers_to_buy[index]
 	var price = joker_to_buy["Price"]
 	
@@ -226,5 +234,4 @@ func _update_gold_label() -> void:
 func _on_item_purchased() -> void:
 	_update_gold_label()
 	joker_inventory.update_display(Main.owned_jokers)
-	
 	display_purchase_options(available_jokers_to_buy)
