@@ -8,17 +8,17 @@ id,korean_name,english_name,image_path,description,unlock_condition,Tier,Price
 7,맥주 피처,beer pitcher,res://assets/joker_images/beer pitcher.png,합 20 이상 시 점수 +200,합≥20 족보 2회,Common,4
 8,보드카 샷잔,vodka,res://assets/joker_images/vodka.png,홀수 주사위 1개당 점수 +40,홀수 조합 5회,Common,3
 9,마티니,martini,res://assets/joker_images/martini.png,1 포함 족보 점수 +150,1 포함 족보 3회,Common,3
-10,맨해튼,N/A,N/A,6 포함 족보 점수 +150,6 포함 족보 3회,Common,3
-11,시가,N/A,N/A,라운드 시작 시 점수 +250 획득,기본,Common,4
+10,맨해튼,manhattan,res://assets/joker_images/manhattan.png,6 포함 족보 점수 +150,6 포함 족보 3회,Common,3
+11,시가,cigar,res://assets/joker_images/cigar.png,라운드 시작 시 점수 +250 획득,기본,Common,4
 12,시가 케이스,cigar case,res://assets/joker_images/cigar case.png,남은 턴이 2회 이하일 때 배율 +12,기본,Uncommon,6
-13,재떨이,N/A,N/A,이번 라운드에 버린 주사위 1개당 점수 +20,주사위 50개 버림,Common,3
-14,금장 라이터,N/A,N/A,족보 성공 시 점수 +120,족보 20회 성공,Common,4
-15,지포 라이터,N/A,N/A,5 포함 시 점수 +100,5 포함 족보 5회,Common,3
-16,담배갑,N/A,N/A,투페어 성공 시 점수 +150,투페어 3회,Common,3
-17,파이프,N/A,N/A,풀하우스 성공 시 점수 +300,풀하우스 1회,Common,4
-18,파이프 담배통,N/A,N/A,싱글 컬러 스트레이트 성공 시 점수 +400,싱글 스트레이트 1회,Uncommon,5
-19,성냥갑,N/A,N/A,런' 족보 성공 시 점수 +100,첫 실패,Common,3
-20,은색 재떨이,N/A,N/A,셋' 족보 성공 시 점수 +100,누적 실패 3회,Common,3
+13,재떨이,ashtray,res://assets/joker_images/ashtray.png,이번 라운드에 버린 주사위 1개당 점수 +20,주사위 50개 버림,Common,3
+14,금장 라이터,golden lighter,res://assets/joker_images/golden lighter.png,족보 성공 시 점수 +120,족보 20회 성공,Common,4
+15,지포 라이터,zippo lighter,res://assets/joker_images/zippo lighter.png,5 포함 시 점수 +100,5 포함 족보 5회,Common,3
+16,담배갑,cigarette,res://assets/joker_images/cigarette.png,투페어 성공 시 점수 +150,투페어 3회,Common,3
+17,파이프,smoking pipe,res://assets/joker_images/smoking pipe.png,풀하우스 성공 시 점수 +300,풀하우스 1회,Common,4
+18,파이프 담배통,pipe tobacco,res://assets/joker_images/pipe tobacco.png,싱글 컬러 스트레이트 성공 시 점수 +400,싱글 스트레이트 1회,Uncommon,5
+19,성냥갑,matches,res://assets/joker_images/matches.png,런' 족보 성공 시 점수 +100,첫 실패,Common,3
+20,은색 재떨이,silver ashtray,res://assets/joker_images/silver ashtray.png,셋' 족보 성공 시 점수 +100,누적 실패 3회,Common,3
 21,포커 카드 덱,poker deck,res://assets/joker_images/poker deck.png,모든 족보 기본 배율 +6,기본,Uncommon,7
 22,카드 슈,card shoe,res://assets/joker_images/card shoe.png,셋(트리플) 성공 시 점수 +150,기본,Common,4
 23,다이스 컵,dice cup,res://assets/joker_images/dice cup.png,"[액티브] 매 턴 1회 주사위 1개 리롤 (눈 유지, 색상 랜덤)",족보 10회 성공,Uncommon,6
@@ -53,7 +53,7 @@ id,korean_name,english_name,image_path,description,unlock_condition,Tier,Price
 52,칵테일 냅킨,cocktail napkin,res://assets/joker_images/cocktail napkin.png,라운드당 1회 상점 리롤 무료,족보 10회 성공,Uncommon,6
 53,테이블 벨,service bell,res://assets/joker_images/service bell.png,라운드 성공 시 +$2 골드,라운드 클리어 2회,Uncommon,7
 54,음료 코스터,drink coaster,res://assets/joker_images/drink coaster.png,짝수 주사위 1개당 점수 +20,짝수 조합 5회,Common,3
-55,카드 절단기,N/A,N/A,첫 턴 시작 시 점수 +100,5판 플레이,Common,3
+55,카드 절단기,card crusher,res://assets/joker_images/card crusher.png,첫 턴 시작 시 점수 +100,5판 플레이,Common,3
 56,계산기,calculator,res://assets/joker_images/calculator.png,주사위 합이 '짝수'라면 배율 +12,기본,Uncommon,6
 57,게임 펜슬,game pencil,res://assets/joker_images/game pencil.png,족보 성공 시 다음 족보 점수 +80,족보 15회 성공,Common,3
 58,점수 기록지,score sheet,res://assets/joker_images/score sheet.png,누적 100점마다 점수 +50 (라운드 내 유지),점수 300 이상,Uncommon,5
@@ -82,7 +82,7 @@ id,korean_name,english_name,image_path,description,unlock_condition,Tier,Price
 81,작은 권총,small pistol,res://assets/joker_images/small pistol.png,남은 턴이 단 1회일 때 최종 점수 X 2.0,라운드 실패,Legendary,14
 82,주머니칼,pocket knife,res://assets/joker_images/pocket knife.png,상점 아이템 1개 무료 잠금 가능,스몰 스트레이트 1회,Common,3
 83,열쇠 카드,key card,res://assets/joker_images/key card.png,특정 색 족보 무조건 성공 (색상 요구조건 무시),싱글 컬러 3회,Rare,9
-84,카드 속임수 기구,N/A,N/A,라운드 목표 점수 -15%,라운드 3 도달,Legendary,15
+84,카드 속임수 기구,card trick tool,res://assets/joker_images/card trick tool.png,라운드 목표 점수 -15%,라운드 3 도달,Legendary,15
 85,도박사 책자,gambler's secret,res://assets/joker_images/gambler's secret.png,싱글컬러 시 숫자가 1개 끊겨도 스트레이트 인정,점수 1000 이상,Legendary,15
 86,수첩,notebook,res://assets/joker_images/notebook.png,풀하우스 성공 시 배율 +7,누적 실패 3회,Uncommon,5
 87,지도 조각,map piece,res://assets/joker_images/map piece.png,4-카인드 배율 +20,4카 1회 성공,Rare,9
@@ -92,7 +92,7 @@ id,korean_name,english_name,image_path,description,unlock_condition,Tier,Price
 91,크리스털 볼,crystal ball,res://assets/joker_images/crystal ball.png,다음 라운드 첫 족보 점수 +500,라운드 2 도달,Common,4
 92,타로 카드,cards of fate,res://assets/joker_images/cards of fate.png,매 라운드 무작위 족보 점수 +200,기본,Common,4
 93,마술사의 모자,magician's hat,res://assets/joker_images/magician's hat.png,정확히 4개의 주사위로 족보 제출 시 배율 +20,야트 2회,Rare,9
-94,주술 부적,N/A,N/A,같은 색 3개 이상 시 점수 +250,같은 색 3개 2회,Common,4
+94,주술 부적,voodoo charm,res://assets/joker_images/voodoo charm.png,같은 색 3개 이상 시 점수 +250,같은 색 3개 2회,Common,4
 95,해골 장식,skull decor,res://assets/joker_images/skull decor.png,필드의 빈 칸 1개당 배율 +2,라운드 실패,Uncommon,6
 96,미니 오르골,mini music box,res://assets/joker_images/mini music box.png,투자'만 하고 종료 시 다음 턴 배율 +8,5판 플레이,Uncommon,6
 97,장난감 다이스,toy dice,res://assets/joker_images/toy dice.png,주사위 합계 점수 +200,합≥25 족보 3회,Common,3
@@ -131,8 +131,8 @@ id,korean_name,english_name,image_path,description,unlock_condition,Tier,Price
 130,딜러 수첩,dealer's note,res://assets/joker_images/dealer's note.png,남은 턴 1회당 배율 +1 영구 누적,투자 10회,Legendary,13
 131,성장하는 룰렛,roulette of growth,res://assets/joker_images/roulette of growth.png,라운드 4부터 족보 성공 시마다 점수 +100 증가,라운드 4 도달,Rare,9
 132,미니 슬롯기,mini slot,res://assets/joker_images/mini slot.png,같은 숫자 족보마다 배율 +1 증가,같은 숫자 10회,Rare,10
-133,라운드 북,N/A,N/A,라운드 종료 시마다 점수 +200 증가,라운드 5 진입,Rare,8
-134,배당 기록지,N/A,N/A,족보 성공 시마다 점수 +40 증가,족보 30회 성공,Rare,9
+133,라운드 북,round book,res://assets/joker_images/round book.png,라운드 종료 시마다 점수 +200 증가,라운드 5 진입,Rare,8
+134,배당 기록지,dividend record,res://assets/joker_images/dividend record.png,족보 성공 시마다 점수 +40 증가,족보 30회 성공,Rare,9
 135,카지노 마스터칩,master chip,res://assets/joker_images/master chip.png,모든 족보 배율 +15,라운드 5 클리어,Legendary,12
 136,벽걸이 달력,calendar,res://assets/joker_images/calendar.png,매 라운드 시작 시 점수 +100 증가,10판 플레이,Rare,8
 137,노트북,laptop,res://assets/joker_images/laptop.png,스트레이트 성공 시마다 배율 +1 증가,점수 1000 이상,Rare,10
