@@ -44,7 +44,7 @@
 	],
 	"meshes":[
 		{
-			"name":"Cube.001",
+			"name":"Cube",
 			"primitives":[
 				{
 					"attributes":{
@@ -71,29 +71,29 @@
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":654,
+			"count":650,
 			"max":[
-				1.0026298761367798,
-				1.0021101236343384,
-				1.001845359802246
+				1.0011732578277588,
+				1.0012067556381226,
+				1.0006828308105469
 			],
 			"min":[
-				-1.0026298761367798,
-				-1.0021101236343384,
-				-1.001845359802246
+				-1.0011732578277588,
+				-1.0012067556381226,
+				-1.0006828308105469
 			],
 			"type":"VEC3"
 		},
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":654,
+			"count":650,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":654,
+			"count":650,
 			"type":"VEC2"
 		},
 		{
@@ -107,14 +107,14 @@
 			"componentType":5126,
 			"count":504,
 			"max":[
-				0.9821032285690308,
-				0.9823148250579834,
-				0.9826309084892273
+				0.9843310117721558,
+				0.9837297201156616,
+				0.981957197189331
 			],
 			"min":[
-				-0.9828966856002808,
-				-0.9826851487159729,
-				-0.9823690056800842
+				-0.9806689023971558,
+				-0.9812703132629395,
+				-0.9830427169799805
 			],
 			"type":"VEC3"
 		},
@@ -140,56 +140,56 @@
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":7848,
+			"byteLength":7800,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":7848,
-			"byteOffset":7848,
+			"byteLength":7800,
+			"byteOffset":7800,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":5232,
-			"byteOffset":15696,
+			"byteLength":5200,
+			"byteOffset":15600,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":2328,
-			"byteOffset":20928,
+			"byteOffset":20800,
 			"target":34963
 		},
 		{
 			"buffer":0,
 			"byteLength":6048,
-			"byteOffset":23256,
+			"byteOffset":23128,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":6048,
-			"byteOffset":29304,
+			"byteOffset":29176,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":4032,
-			"byteOffset":35352,
+			"byteOffset":35224,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":1512,
-			"byteOffset":39384,
+			"byteOffset":39256,
 			"target":34963
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":40896,
+			"byteLength":40768,
 			"uri":"0_dice_red.bin"
 		}
 	]

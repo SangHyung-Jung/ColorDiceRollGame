@@ -16,6 +16,23 @@ const DICE_GLTF_SCENES = {
 	DiceColor.BLUE: preload("res://assets/models/0_dice_blue.gltf"),
 	DiceColor.GREEN: preload("res://assets/models/0_dice_green.gltf")
 
+	#DiceColor.WHITE: preload("res://assets/models/glass_prism_dice.gltf"),
+	#DiceColor.BLACK: preload("res://assets/models/glass_prism_dice.gltf"),
+	#DiceColor.RED: preload("res://assets/models/glass_prism_dice.gltf"),
+	#DiceColor.BLUE: preload("res://assets/models/glass_prism_dice.gltf"),
+	#DiceColor.GREEN: preload("res://assets/models/glass_prism_dice.gltf"),
+
+	#DiceColor.WHITE: preload("res://assets/models/4_growing_dice_white.gltf"),
+	#DiceColor.BLACK: preload("res://assets/models/4_growing_dice_black.gltf"),
+	#DiceColor.RED: preload("res://assets/models/4_growing_dice_red.gltf"),
+	#DiceColor.BLUE: preload("res://assets/models/4_growing_dice_blue.gltf"),
+	#DiceColor.GREEN: preload("res://assets/models/4_growing_dice_green.gltf")
+	#DiceColor.WHITE: preload("res://assets/models/0_dice_cracked_white.glb"),
+	#DiceColor.BLACK: preload("res://assets/models/0_dice_cracked_black.glb"),
+	#DiceColor.RED: preload("res://assets/models/0_dice_cracked_red.glb"),
+	#DiceColor.BLUE: preload("res://assets/models/0_dice_cracked_blue.glb"),
+	#DiceColor.GREEN: preload("res://assets/models/0_dice_cracked_green.glb")
+
 	#DiceColor.WHITE: preload("res://assets/models/1_plus_dice_white.gltf"),
 	#DiceColor.BLACK: preload("res://assets/models/1_plus_dice_black.gltf"),
 	#DiceColor.RED: preload("res://assets/models/1_plus_dice_red.gltf"),
@@ -25,7 +42,7 @@ const DICE_GLTF_SCENES = {
 	#DiceColor.WHITE: preload("res://assets/models/2_gold_dice_white.gltf"),
 	#DiceColor.BLACK: preload("res://assets/models/2_gold_dice_black.gltf"),
 	#DiceColor.RED: preload("res://assets/models/2_gold_dice_red.gltf"),
-	#DiceColor.BLUE: preload("res://assets/models/2_gold_dice_blue.gltf"),
+	#DiceColor.BLUE: preload("res://assets/models/2_gold_dice_blue.gltf")
 	#DiceColor.GREEN: preload("res://assets/models/2_gold_dice_green.gltf")
 
 	#DiceColor.WHITE: preload("res://assets/models/3_multiply_dice_white.gltf"),
@@ -35,11 +52,11 @@ const DICE_GLTF_SCENES = {
 	#DiceColor.GREEN: preload("res://assets/models/3_multiply_dice_green.gltf")
 
 	#DiceColor.WHITE: preload("res://assets/models/4_faceless_dice_white.gltf"),
+	#DiceColor.WHITE: preload("res://assets/models/0_dice_energy_black.gltf"),
 	#DiceColor.BLACK: preload("res://assets/models/4_faceless_dice_black.gltf"),
 	#DiceColor.RED: preload("res://assets/models/5_lucky_dice_777.gltf"),
 	#DiceColor.BLUE: preload("res://assets/models/5_lucky_dice_777.gltf"),
 	#DiceColor.GREEN: preload("res://assets/models/5_lucky_dice_777.gltf")	
-
 }
 
 const COLOR_VALUES = {
@@ -115,9 +132,8 @@ func setup_dice(color: DiceColor, position_override: Vector3 = Vector3.ZERO) -> 
 	if mesh:
 		var mat = mesh.get_active_material(0)
 		if mat:
-			mesh.set_surface_override_material(0, mat.duplicate())
-	
-	# 새 모델 추가
+				mesh.set_surface_override_material(0, mat.duplicate())
+	## 새 모델 추가
 	add_child(dice_model)
 	
 	# 모델 관련 설정
