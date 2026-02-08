@@ -1,11 +1,9 @@
 [gd_scene load_steps=4 format=3 uid="uid://dpsk2v0i8nxxg"]
 
 [ext_resource type="Script" path="res://scripts/shop_dice.gd" id="1_abcde"]
+[ext_resource type="PackedScene" uid="uid://c6gwenp8k2wsa" path="res://assets/models/4_faceless_dice_white.gltf" id="2_model"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_1"]
-size = Vector3(2, 2, 2)
-
-[sub_resource type="BoxMesh" id="BoxMesh_1"]
 size = Vector3(2, 2, 2)
 
 [node name="ShopDice" type="RigidBody3D"]
@@ -14,8 +12,7 @@ script = ExtResource("1_abcde")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("BoxShape3D_1")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-mesh = SubResource("BoxMesh_1")
+[node name="DiceModel" parent="." instance=ExtResource("2_model")]
 
 [node name="Faces" type="Node3D" parent="."]
 

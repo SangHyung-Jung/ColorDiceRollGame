@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://c58gd6pl6utxq" path="res://scenes/components/shop_hud.tscn" id="4_shop_hud"]
 [ext_resource type="Script" uid="uid://d2uxqjmsc884w" path="res://scripts/managers/input_manager.gd" id="5_input_mgr"]
 [ext_resource type="PackedScene" uid="uid://b8s5n5l3tbglo" path="res://scenes/components/start_screen.tscn" id="6_start_screen"]
-[ext_resource type="PackedScene" path="res://scenes/shop_dice.tscn" id="6_ylec3"]
+[ext_resource type="PackedScene" uid="uid://dpsk2v0i8nxxg" path="res://scenes/shop_dice.tscn" id="6_ylec3"]
 [ext_resource type="PackedScene" uid="uid://e4u7j62s742j" path="res://scenes/components/joker_dictionary.tscn" id="7_joker_dictionary"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_Floor"]
