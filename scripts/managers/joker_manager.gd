@@ -55,3 +55,19 @@ func get_joker_by_id(id: int) -> Dictionary:
 ## 조커의 판매 가격을 계산합니다 (구매가의 50%, 올림).
 func get_sell_price(buy_price: int) -> int:
 	return int(ceil(float(buy_price) * 0.5))
+
+func get_random_jokers(count: int) -> Array:
+	var selected_jokers = []
+	if joker_data.is_empty():
+		return []
+
+	# Make a copy to avoid modifying the original array
+	var shuffled_jokers = joker_data.duplicate()
+	shuffled_jokers.shuffle()
+	
+	# Get the requested number of jokers
+	var num_to_get = min(count, shuffled_jokers.size())
+	for i in range(num_to_get):
+		selected_jokers.append(shuffled_jokers[i])
+		
+	return selected_jokers

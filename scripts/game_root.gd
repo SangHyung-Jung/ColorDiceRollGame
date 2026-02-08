@@ -11,7 +11,7 @@ class_name GameRoot
 @onready var input_manager: InputManager = $InputManager
 
 const POS_GAME = Vector3(-6, 15, 0) # 게임 플레이 카메라 위치
-const POS_SHOP = Vector3(30, 20, 0) # 상점 카메라 위치
+const POS_SHOP = Vector3(45.5982, 20, 0) # 상점 카메라 위치
 # [추가] 시작 화면 카메라 위치 (게임 화면 왼쪽 멀리)
 const POS_START = Vector3(-40, 20, 0) 
 
@@ -21,6 +21,8 @@ const ROT_SHOP = Vector3(-90, 0, 0) # 상점도 게임과 같은 탑다운 뷰 �
 const ROT_START = Vector3(-90, 0, 0)
 const POS_DICTIONARY = Vector3(-80, 20, 0)
 const ROT_DICTIONARY = Vector3(-90, 0, 0)
+
+var is_in_game_view: bool = false
 
 func _ready():
 	# Initial setup of game hud. This creates all the necessary manager nodes.
@@ -37,11 +39,13 @@ func _ready():
 	# UI에서 발생하는 시그널 연결
 	game_hud.connect("go_to_shop_requested", Callable(self, "transition_to_shop"))
 	shop_hud.connect("go_to_game_requested", Callable(self, "transition_to_game"))
+	shop_hud.joker_purchased.connect(_on_joker_purchased)
 
 	# [추가] 시작 화면 시그널 연결
 	if start_screen:
 		start_screen.start_game_requested.connect(transition_to_game)
 		start_screen.joker_dictionary_requested.connect(transition_to_dictionary)
+		start_screen.shop_requested.connect(transition_to_shop)
 	
 	# [추가] 조커 사전 시그널 연결
 	if joker_dictionary:
@@ -51,8 +55,14 @@ func _ready():
 	transition_to_start(true)
 
 
+func _on_joker_purchased():
+	if game_hud:
+		game_hud.update_joker_dice_display()
+
+
 func _unhandled_input(event: InputEvent) -> void:
-	input_manager.handle_input(event)
+	if is_in_game_view:
+		input_manager.handle_input(event)
 
 func _process(_delta):
 	# GameHUD UI 위치 보정 (기존 로직 유지)
@@ -64,6 +74,7 @@ func _process(_delta):
 
 # [추가] 시작 화면으로 전환하는 함수
 func transition_to_start(instant: bool = false):
+	is_in_game_view = false
 	input_manager.set_roll_in_progress(true) # 시작 화면에서는 주사위 조작 금지
 
 	if instant:
@@ -97,6 +108,7 @@ func transition_to_start(instant: bool = false):
 	)
 
 func transition_to_dictionary():
+	is_in_game_view = false
 	input_manager.set_roll_in_progress(true) # Disable dice input for dictionary screen
 
 	# Camera Tween
@@ -115,6 +127,7 @@ func transition_to_dictionary():
 	)
 
 func transition_to_shop():
+	is_in_game_view = false
 	input_manager.set_roll_in_progress(true) # Disable game input during transition
 
 	# Camera Tween
@@ -133,6 +146,7 @@ func transition_to_shop():
 	)
 
 func transition_to_game(instant: bool = false):
+	is_in_game_view = true
 	# UI 정리
 	shop_hud.visible = false
 	if start_screen:

@@ -47,6 +47,10 @@ vertical_alignment = 1
 layout_mode = 2
 text = "Start Game"
 
+[node name="ShopButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Shop"
+
 [node name="QuitButton" type="Button" parent="VBoxContainer"]
 layout_mode = 2
 text = "Quit"

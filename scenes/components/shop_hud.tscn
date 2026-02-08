@@ -144,3 +144,58 @@ layout_mode = 2
 theme_override_fonts/font = ExtResource("3_7a4el")
 theme_override_font_sizes/font_size = 40
 text = "Reroll"
+
+[node name="RollButton" type="Button" parent="MainLayout/GameArea"]
+custom_minimum_size = Vector2(200, 80)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_fonts/font = ExtResource("3_7a4el")
+theme_override_font_sizes/font_size = 50
+text = "Roll Dice"
+
+[node name="BuyPanel" type="PanelContainer" parent="MainLayout/GameArea"]
+visible = false
+layout_mode = 2
+
+[node name="JokerOptions" type="HBoxContainer" parent="MainLayout/GameArea/BuyPanel"]
+layout_mode = 2
+alignment = 1
+
+[node name="Option1" type="VBoxContainer" parent="MainLayout/GameArea/BuyPanel/JokerOptions"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="JokerName1" type="Label" parent="MainLayout/GameArea/BuyPanel/JokerOptions/Option1"]
+layout_mode = 2
+text = "Joker 1"
+horizontal_alignment = 1
+
+[node name="BuyButton1" type="Button" parent="MainLayout/GameArea/BuyPanel/JokerOptions/Option1"]
+layout_mode = 2
+text = "Buy"
+
+[node name="Option2" type="VBoxContainer" parent="MainLayout/GameArea/BuyPanel/JokerOptions"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="JokerName2" type="Label" parent="MainLayout/GameArea/BuyPanel/JokerOptions/Option2"]
+layout_mode = 2
+text = "Joker 2"
+horizontal_alignment = 1
+
+[node name="BuyButton2" type="Button" parent="MainLayout/GameArea/BuyPanel/JokerOptions/Option2"]
+layout_mode = 2
+text = "Buy"
+
+[node name="Option3" type="VBoxContainer" parent="MainLayout/GameArea/BuyPanel/JokerOptions"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="JokerName3" type="Label" parent="MainLayout/GameArea/BuyPanel/JokerOptions/Option3"]
+layout_mode = 2
+text = "Joker 3"
+horizontal_alignment = 1
+
+[node name="BuyButton3" type="Button" parent="MainLayout/GameArea/BuyPanel/JokerOptions/Option3"]
+layout_mode = 2
+text = "Buy"

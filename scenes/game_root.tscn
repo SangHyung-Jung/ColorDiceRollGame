@@ -1,12 +1,19 @@
-[gd_scene load_steps=6 format=3 uid="uid://cyi2riaqbby4h"]
+[gd_scene load_steps=11 format=3 uid="uid://cyi2riaqbby4h"]
 
 [ext_resource type="Script" uid="uid://6fx2lujkwb1o" path="res://scripts/game_root.gd" id="1_x82f4"]
 [ext_resource type="PackedScene" uid="uid://bciyvj2g1j1vj" path="res://scenes/rolling_world.tscn" id="2_2t21a"]
 [ext_resource type="PackedScene" uid="uid://b7dllnjo8iisv" path="res://scenes/components/game_hud.tscn" id="3_game_hud"]
 [ext_resource type="PackedScene" uid="uid://c58gd6pl6utxq" path="res://scenes/components/shop_hud.tscn" id="4_shop_hud"]
-[ext_resource type="PackedScene" uid="uid://cx6g0fsvk6f7u" path="res://scenes/components/start_screen.tscn" id="6_start_screen"]
-[ext_resource type="PackedScene" uid="uid://e4u7j62s742j" path="res://scenes/components/joker_dictionary.tscn" id="7_joker_dictionary"]
 [ext_resource type="Script" uid="uid://d2uxqjmsc884w" path="res://scripts/managers/input_manager.gd" id="5_input_mgr"]
+[ext_resource type="PackedScene" uid="uid://b8s5n5l3tbglo" path="res://scenes/components/start_screen.tscn" id="6_start_screen"]
+[ext_resource type="PackedScene" path="res://scenes/shop_dice.tscn" id="6_ylec3"]
+[ext_resource type="PackedScene" uid="uid://e4u7j62s742j" path="res://scenes/components/joker_dictionary.tscn" id="7_joker_dictionary"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_Floor"]
+size = Vector3(10, 0.1, 10)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_Wall"]
+size = Vector3(10, 2, 0.1)
 
 [node name="GameRoot" type="Node3D"]
 script = ExtResource("1_x82f4")
@@ -34,6 +41,30 @@ far = 200.0
 [node name="ShopArea" type="Node3D" parent="3D_World"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.5982, 0, 0)
 
+[node name="SpawnPoint" type="Marker3D" parent="3D_World/ShopArea"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 0)
+
+[node name="ShopTray" type="StaticBody3D" parent="3D_World/ShopArea"]
+
+[node name="Floor" type="CollisionShape3D" parent="3D_World/ShopArea/ShopTray"]
+shape = SubResource("BoxShape3D_Floor")
+
+[node name="Wall1" type="CollisionShape3D" parent="3D_World/ShopArea/ShopTray"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 5)
+shape = SubResource("BoxShape3D_Wall")
+
+[node name="Wall2" type="CollisionShape3D" parent="3D_World/ShopArea/ShopTray"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -5)
+shape = SubResource("BoxShape3D_Wall")
+
+[node name="Wall3" type="CollisionShape3D" parent="3D_World/ShopArea/ShopTray"]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 5, 1, 0)
+shape = SubResource("BoxShape3D_Wall")
+
+[node name="Wall4" type="CollisionShape3D" parent="3D_World/ShopArea/ShopTray"]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -5, 1, 0)
+shape = SubResource("BoxShape3D_Wall")
+
 [node name="PlayArea#RollingWorld" parent="." instance=ExtResource("2_2t21a")]
 
 [node name="UI_Canvas" type="CanvasLayer" parent="."]
@@ -42,8 +73,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.5982, 0, 0)
 
 [node name="ShopHUD" parent="UI_Canvas" instance=ExtResource("4_shop_hud")]
 visible = false
+shop_dice_scene = ExtResource("6_ylec3")
+
 [node name="StartScreen" parent="UI_Canvas" instance=ExtResource("6_start_screen")]
 visible = false
+
 [node name="JokerDictionary" parent="UI_Canvas" instance=ExtResource("7_joker_dictionary")]
 visible = false
 
