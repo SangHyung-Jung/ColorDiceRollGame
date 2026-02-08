@@ -1,4 +1,4 @@
-extends RigidBody3D
+extends Dice
 class_name ShopDice
 
 @onready var faces = [
@@ -12,28 +12,17 @@ var face_vectors = [
 	Vector3.BACK, Vector3.RIGHT, Vector3.LEFT
 ]
 
+# ShopDice의 face_vectors 인덱스를 Dice.sides의 정수 키로 매핑
+const JOKER_FACE_TO_DICE_FACE_MAP = {
+	0: 1,  # Face1 (UP) maps to Dice face 1
+	1: 6,  # Face2 (DOWN) maps to Dice face 6
+	2: 3,  # Face3 (FORWARD) maps to Dice face 3
+	3: 4,  # Face4 (BACK) maps to Dice face 4
+	4: 5,  # Face5 (RIGHT) maps to Dice face 5
+	5: 2   # Face6 (LEFT) maps to Dice face 2
+}
+
 var assigned_jokers = [] # 이 주사위에 할당된 6개의 조커 데이터
-
-func _init() -> void:
-	continuous_cd = true
-	contact_monitor = true
-	max_contacts_reported = 5
-	can_sleep = true # Shop dice CAN sleep
-	gravity_scale = 10
-	mass = 1.5
-	
-	center_of_mass_mode = RigidBody3D.CENTER_OF_MASS_MODE_CUSTOM
-	center_of_mass = Vector3(
-		randf_range(-0.05, 0.05),
-		randf_range(-0.05, 0.05),
-		randf_range(-0.05, 0.05)
-	)
-
-	physics_material_override = PhysicsMaterial.new()
-	physics_material_override.absorbent = false
-	physics_material_override.bounce = 0.3
-	physics_material_override.friction = 0.8
-
 
 func setup_jokers(jokers_list: Array):
 	assigned_jokers = jokers_list
@@ -52,7 +41,8 @@ func setup_jokers(jokers_list: Array):
 		else:
 			print("Warning: Texture not found at: ", texture_path)
 		
-		sprite.pixel_size = 0.005
+		# 이미지 크기 증가
+		sprite.pixel_size = 0.008
 
 # 굴림이 멈췄을 때 윗면의 조커 반환
 func get_top_joker():
@@ -71,26 +61,19 @@ func get_top_joker():
 	else:
 		return null
 
-# --- Physics Methods copied from Dice.gd ---
+# 주사위를 굴린 후 특정 조커 이미지가 위를 향하도록 정렬
+func align_to_top_joker(joker_data: Dictionary) -> void:
+	var index_of_joker = assigned_jokers.find(joker_data)
+	if index_of_joker == -1:
+		push_error("Joker data not found in assigned jokers for alignment!")
+		return
 
-func setup_physics_for_spawning() -> void:
-	gravity_scale = 40
-	linear_damp = 0.1
-	angular_damp = 0.1
+	var dice_face_value = JOKER_FACE_TO_DICE_FACE_MAP[index_of_joker]
+	show_face(dice_face_value) # Call inherited show_face
 
-	if physics_material_override:
-		physics_material_override.friction = 0.5
-		physics_material_override.bounce = 0.3
-
-func apply_outside_cup_physics() -> void:
-	gravity_scale = 20
-	linear_damp = 0.7
-	angular_damp = 0.7
-
-	if physics_material_override:
-		physics_material_override.friction = 0.8
-		physics_material_override.bounce = 0.2
-
-func apply_impulse_force(impulse: Vector3, torque: Vector3) -> void:
-	apply_central_impulse(impulse)
-	apply_torque_impulse(torque)
+# Override the parent's _calculate_face_value as it's not needed
+# and we don't want it to run by mistake.
+func _calculate_face_value() -> int:
+	# For ShopDice, the "value" is determined by get_top_joker(), not by face numbers.
+	# We return a dummy value. The actual joker data is retrieved separately.
+	return -1

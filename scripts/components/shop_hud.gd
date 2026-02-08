@@ -21,8 +21,8 @@ const GameConstants = preload("res://scripts/utils/constants.gd")
 # Shop State
 var cup: Node3D
 var current_shop_dice = []
-var is_rolling = false
 var is_shaking = false
+var finished_dice_count = 0
 var available_jokers_to_buy = []
 
 func _ready() -> void:
@@ -34,7 +34,14 @@ func _ready() -> void:
 	$MainLayout/GameArea/BuyPanel/JokerOptions/Option3/BuyButton3.pressed.connect(func(): _on_buy_joker_pressed(2))
 
 func _gui_input(event: InputEvent) -> void:
-	if is_rolling or buy_panel.visible: return # Don't allow input if dice are rolling or results are shown
+	# A die is rolling if its internal state machine is active.
+	var a_die_is_rolling = false
+	for dice in current_shop_dice:
+		if dice.rolling:
+			a_die_is_rolling = true
+			break
+			
+	if a_die_is_rolling or buy_panel.visible: return
 	
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
@@ -49,8 +56,8 @@ func enter_shop_sequence() -> void:
 	clear_shop_objects()
 	_setup_shop_scene()
 	buy_panel.visible = false
-	is_rolling = false
 	is_shaking = false
+	finished_dice_count = 0
 
 func _setup_shop_scene():
 	cup = CupScene.instantiate()
@@ -89,12 +96,14 @@ func spawn_shop_dice(count: int):
 		world_node.add_child(dice)
 		current_shop_dice.append(dice)
 		
+		# Connect to the die's own finish signal
+		dice.roll_finished.connect(_on_shop_dice_roll_finished)
+		
 		var offset = Vector3(randf_range(-0.5, 0.5), randf_range(-1.0, 1.0), randf_range(-0.5, 0.5))
 		dice.global_position = cup.global_position + offset
 		
 		var random_jokers = JokerManager.get_random_jokers(6)
 		if random_jokers == null or random_jokers.size() < 6:
-			push_error("Not enough jokers in JokerManager!")
 			dice.queue_free()
 			current_shop_dice.pop_back()
 			continue
@@ -103,15 +112,14 @@ func spawn_shop_dice(count: int):
 		dice.setup_physics_for_spawning()
 
 func _start_shaking():
-	if is_rolling or not is_instance_valid(cup): return
+	if not is_instance_valid(cup): return
 	is_shaking = true
 	if cup.has_method("start_shaking"):
 		cup.start_shaking()
 
 func _release_and_pour() -> void:
-	if is_rolling or not is_instance_valid(cup): return
+	if not is_instance_valid(cup): return
 	
-	is_rolling = true
 	is_shaking = false
 	
 	if cup.has_method("stop_shaking"):
@@ -124,35 +132,14 @@ func _release_and_pour() -> void:
 	for dice in current_shop_dice:
 		dice.apply_outside_cup_physics()
 		
-		var impulse = Vector3(
-			randf_range(GameConstants.DICE_IMPULSE_RANGE.x, GameConstants.DICE_IMPULSE_RANGE.y),
-			randf_range(GameConstants.DICE_IMPULSE_Y_RANGE.x, GameConstants.DICE_IMPULSE_Y_RANGE.y),
-			randf_range(GameConstants.DICE_IMPULSE_Z_RANGE.x, GameConstants.DICE_IMPULSE_Z_RANGE.y)
-		)
-		var torque = Vector3(
-			randf_range(GameConstants.DICE_TORQUE_RANGE.x, GameConstants.DICE_TORQUE_RANGE.y),
-			randf_range(GameConstants.DICE_TORQUE_RANGE.x, GameConstants.DICE_TORQUE_RANGE.y),
-			randf_range(GameConstants.DICE_TORQUE_RANGE.x, GameConstants.DICE_TORQUE_RANGE.y)
-		)
+		var impulse = Vector3(randf_range(-5, 5), randf_range(5, 10), randf_range(-5, 5))
+		var torque = Vector3(randf_range(-20, 20), randf_range(-20, 20), randf_range(-20, 20))
 		dice.apply_impulse_force(impulse, torque)
+		dice.start_rolling() # Activate the internal state machine
 
-func _process(delta):
-	if is_rolling:
-		check_dice_stopped()
-
-func check_dice_stopped():
-	if current_shop_dice.is_empty():
-		is_rolling = false
-		return
-
-	var all_stopped = true
-	for dice in current_shop_dice:
-		if not dice.sleeping:
-			all_stopped = false
-			break
-	
-	if all_stopped:
-		is_rolling = false
+func _on_shop_dice_roll_finished(value: int, dice_name: String):
+	finished_dice_count += 1
+	if finished_dice_count == current_shop_dice.size():
 		_align_and_present_results()
 
 func _align_and_present_results() -> void:
@@ -163,32 +150,51 @@ func _align_and_present_results() -> void:
 			available_jokers.append(top_joker)
 	
 	if available_jokers.size() != current_shop_dice.size():
-		print("Error: Could not determine top joker for all dice.")
-		# Fallback to just displaying what we have
 		display_purchase_options(available_jokers)
 		return
 
-	# Freeze dice and align them
 	var tweens = []
 	var center_x = shop_area.global_position.x
-	var start_x = center_x - (current_shop_dice.size() - 1) * 1.5
+	var start_x = center_x - (current_shop_dice.size() - 1) * (GameConstants.DICE_SPACING / 2.0)
 	
+	# 1. Prepare all dice for tweening
+	for dice in current_shop_dice:
+		# Temporarily store the top joker for rotation
+		var top_joker_for_alignment = dice.get_top_joker()
+		if top_joker_for_alignment:
+			dice.align_to_top_joker(top_joker_for_alignment)
+
+		# Disable the parent's physics process to prevent interference
+		dice.set_physics_process(false)
+		# Set to kinematic to allow tweening without physics interference
+		dice.freeze_mode = RigidBody3D.FREEZE_MODE_KINEMATIC
+		# Stop all movement
+		dice.linear_velocity = Vector3.ZERO
+		dice.angular_velocity = Vector3.ZERO
+		# Disable collision to prevent them from hitting each other during the tween
+		dice.set_collision_enabled(false)
+
+	# 2. Create and run tweens for each die
 	for i in range(current_shop_dice.size()):
 		var dice = current_shop_dice[i]
-		dice.freeze = true
 		
 		var target_pos = Vector3(start_x + i * GameConstants.DICE_SPACING, shop_area.global_position.y + GameConstants.DISPLAY_Y, shop_area.global_position.z)
 		var tween: Tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 		tween.tween_property(dice, "global_position", target_pos, GameConstants.MOVE_DURATION)
 		tweens.append(tween)
 
-	# Wait for all tweens to finish
+	# 3. Wait for all tweens to finish
 	for tween in tweens:
 		await tween.finished
+	
+	# 4. Re-enable collision and physics process now that they are in place
+	for dice in current_shop_dice:
+		if is_instance_valid(dice):
+			dice.set_collision_enabled(true)
+			dice.set_physics_process(true)
 		
-	# Now display the UI
+	# 5. Now display the UI
 	display_purchase_options(available_jokers)
-
 
 func display_purchase_options(jokers: Array):
 	available_jokers_to_buy = jokers
