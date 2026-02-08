@@ -21,13 +21,20 @@ var _has_invested_in_turn: bool = false
 @onready var turns_left_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/TurnsLeftLabel
 @onready var invests_left_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/InvestsLeftLabel
 @onready var gold_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/GoldLabel
+# [추가] 조커 시스템 관련 변수
+const MAX_JOKER_SLOTS = 5 # 최대 조커 배치 개수 (필요에 따라 조정)
+var joker_socket_positions: Array[Vector3] = []
+var joker_dice_nodes: Array[Node3D] = []
+
+# [추가] 조커 소켓 컨테이너 참조 (경로는 에디터 설정에 맞춰주세요)
+@onready var joker_socket_container: Control = $MainLayout/JokerSocketContainer
 @onready var joker_inventory: HBoxContainer = $MainLayout/InfoPanel/Panel/VBoxContainer/JokerInventory
 @onready var view_dice_bag_button: Button = $MainLayout/InfoPanel/Panel/VBoxContainer/ViewDiceBagButton
-@onready var submit_button: Button = $MainLayout/SocketArea/InteractionUI/HBoxContainer/TextureRect/SubmitButton
-@onready var invest_button: Button = $MainLayout/SocketArea/InteractionUI/HBoxContainer/TextureRect2/InvestButton
-@onready var turn_end_button: Button = $MainLayout/SocketArea/InteractionUI/HBoxContainer/TextureRect3/TurnEndButton
-@onready var sort_by_color_button: Button = $MainLayout/SocketArea/SortButtonsContainer/TextureRect/SortByColorButton
-@onready var sort_by_number_button: Button = $MainLayout/SocketArea/SortButtonsContainer/TextureRect2/SortByNumberButton
+@onready var submit_button: Button = $MainLayout/JokerSocketContainer/InteractionUI/HBoxContainer/TextureRect/SubmitButton
+@onready var invest_button: Button = $MainLayout/JokerSocketContainer/InteractionUI/HBoxContainer/TextureRect2/InvestButton
+@onready var turn_end_button: Button = $MainLayout/JokerSocketContainer/InteractionUI/HBoxContainer/TextureRect3/TurnEndButton
+@onready var sort_by_color_button: Button = $MainLayout/JokerSocketContainer/SortButtonsContainer/TextureRect/SortByColorButton
+@onready var sort_by_number_button: Button = $MainLayout/JokerSocketContainer/SortButtonsContainer/TextureRect2/SortByNumberButton
 
 # === 스코어 애니메이션 UI 노드 ===
 @onready var combo_name_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/ScoreCalcBox/ComboNameLabel
@@ -87,14 +94,14 @@ func setup_game_hud(p_world_3d: Node3D, p_rolling_world_camera: Camera3D, p_floa
 	# _setup_game() is now called by start_round_sequence
 
 	await get_tree().process_frame
-	update_socket_positions()
+	update_socket_positions()     # 기존 투자 소켓 업데이트
+	update_joker_socket_positions() # [추가] 조커 소켓 3D 좌표 계산
 	
 	_update_ui_from_gamestate()
 	# No need for _on_rolling_area_resized() as SubViewport is removed
 	
-	joker_inventory.update_display(Main.owned_jokers)
-	
-	_set_state(GameState.AWAITING_ROLL_INPUT)
+	# joker_inventory.update_display(Main.owned_jokers) # [변경] 기존 2D 인벤토리 대신 3D 표시 함수 호출
+	update_joker_dice_display() # [추가] 보유 조커를 3D 주사위로 표시
 
 
 func _initialize_score_animator() -> void:
@@ -119,7 +126,7 @@ func _initialize_score_animator() -> void:
 	score_animator.initialize(refs)
 
 func update_socket_positions() -> void:
-	var current_socket_container = get_node("MainLayout/SocketArea/SocketContainer")
+	var current_socket_container = get_node("MainLayout/JokerSocketContainer/SocketContainer")
 	if current_socket_container == null:
 		push_error("SocketContainer not found at path: MainLayout/SocketArea/SocketContainer")
 		return
@@ -166,7 +173,7 @@ func update_socket_positions() -> void:
 				dice.global_position = socket_positions[i]
 				
 func _setup_sockets():
-	var sc = get_node("MainLayout/SocketArea/SocketContainer")
+	var sc = get_node("MainLayout/JokerSocketContainer/SocketContainer")
 	if sc == null:
 		push_error("SocketContainer not found in _setup_sockets")
 		return
@@ -564,6 +571,92 @@ func _reposition_invested_dice() -> void:
 		# Use a tween for smooth movement
 		var tween = create_tween()
 		tween.tween_property(dice_node, "global_position", target_pos, 0.3)			.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+
+# [추가] 조커 소켓의 2D UI 위치를 3D 월드 좌표로 변환하는 함수
+func update_joker_socket_positions() -> void:
+	if joker_socket_container == null:
+		return
+
+	# UI 슬롯이 비어있다면 미리 채워줌 (위치 계산용)
+	if joker_socket_container.get_child_count() == 0:
+		for i in range(MAX_JOKER_SLOTS):
+			var socket_ui = TextureRect.new()
+			# const SocketTexture = preload("res://dice_socket.png") - Already defined at the top
+			socket_ui.texture = SocketTexture # 기존 소켓 텍스처 재사용
+			socket_ui.custom_minimum_size = Vector2(80, 80) # 크기 조정
+			socket_ui.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			socket_ui.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			socket_ui.modulate = Color(1, 1, 1, 0.5) # 약간 투명하게
+			joker_socket_container.add_child(socket_ui)
+		await get_tree().process_frame # UI 레이아웃 적용 대기
+
+	var camera = rolling_world_camera
+	if not camera: return
+
+	joker_socket_positions.clear()
+	var plane_y = 0.6 # 투자 주사위와 같은 높이 또는 약간 다르게 설정
+
+	for socket_ui in joker_socket_container.get_children():
+		var rect = socket_ui.get_global_rect()
+		var screen_pos = rect.get_center()
+
+		var ray_origin = camera.project_ray_origin(screen_pos)
+		var ray_normal = camera.project_ray_normal(screen_pos)
+
+		if ray_normal.y < -0.001:
+			var t = (ray_origin.y - plane_y) / -ray_normal.y
+			var world_pos = ray_origin + ray_normal * t
+			joker_socket_positions.append(world_pos)
+		else:
+			joker_socket_positions.append(Vector3.ZERO)
+
+	# 이미 떠있는 조커 주사위들의 위치도 갱신
+	_reposition_joker_dice()
+
+# [추가] 보유한 조커 목록(Main.owned_jokers)을 기반으로 3D 주사위 생성 및 배치
+func update_joker_dice_display() -> void:
+	# 기존 조커 주사위 제거
+	for dice in joker_dice_nodes:
+		if is_instance_valid(dice):
+			dice.queue_free()
+	joker_dice_nodes.clear()
+
+	var owned_jokers = Main.owned_jokers # Main에서 보유 조커 리스트 가져옴
+
+	for i in range(owned_jokers.size()):
+		if i >= joker_socket_positions.size():
+			break # 소켓 수보다 많으면 중단 (혹은 페이지 처리)
+
+		var joker_data = owned_jokers[i]
+		var target_pos = joker_socket_positions[i]
+
+		# 조커 주사위 생성 (ColoredDice 활용)
+		var dice_node = ColoredDice.new()
+		world_3d.add_child(dice_node)
+
+		# 흰색 베이스로 생성
+		dice_node.setup_dice(ColoredDice.DiceColor.WHITE)
+
+		# 조커 이미지 적용 (CSV 데이터에 'image_path' 키가 있다고 가정)
+		if joker_data.has("image_path"):
+			dice_node.set_joker_texture(joker_data["image_path"])
+
+		# 물리 고정 및 위치 설정
+		dice_node.freeze = true
+		dice_node.global_position = target_pos
+		dice_node.rotation_degrees = Vector3(0, 180, 0) # 정면을 보게 회전 (필요시 조정)
+
+		joker_dice_nodes.append(dice_node)
+
+# [추가] 조커 주사위 위치 재조정 (화면 크기 변경 대응 등)
+func _reposition_joker_dice() -> void:
+	for i in range(joker_dice_nodes.size()):
+		if i < joker_socket_positions.size():
+			var dice = joker_dice_nodes[i]
+			if is_instance_valid(dice):
+				# Tween으로 부드럽게 이동
+				var tween = create_tween()
+				tween.tween_property(dice, "global_position", joker_socket_positions[i], 0.3).set_trans(Tween.TRANS_SINE)
 
 # ============================================================================
 # 상태 관리

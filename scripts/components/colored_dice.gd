@@ -58,6 +58,30 @@ const COLOR_NAMES = {
 	DiceColor.GREEN: "green"
 }
 
+# [추가] 조커 텍스처를 입히는 함수
+func set_joker_texture(texture_path: String) -> void:
+	if texture_path == "" or not ResourceLoader.exists(texture_path):
+		print("Invalid joker texture path: ", texture_path)
+		return
+
+	var joker_texture = load(texture_path)
+	var mesh = get_mesh() # 부모 클래스인 Dice 혹은 ColoredDice의 헬퍼 함수 활용
+
+	if mesh:
+		# 기존 재질을 복제하거나 새 재질 생성
+		var mat = StandardMaterial3D.new()
+		mat.albedo_texture = joker_texture
+
+		# 조커 이미지가 주사위 전면에 잘 보이도록 UV 매핑 방식 조정 (필요 시)
+		# 일반적인 박스 매핑 사용
+		mat.uv1_triplanar = true 
+
+		# 0번 서피스(주사위 몸체)에 재질 적용
+		mesh.set_surface_override_material(0, mat)
+
+		# 조커 주사위는 보통 흰색 베이스가 깔끔하므로 초기화
+		dice_color = Color.WHITE
+
 var current_dice_color: DiceColor = DiceColor.WHITE
 
 func _init() -> void:
