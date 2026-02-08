@@ -69,8 +69,7 @@ func align_to_top_joker(joker_data: Dictionary) -> void:
 		return
 
 	var dice_face_value = JOKER_FACE_TO_DICE_FACE_MAP[index_of_joker]
-	show_face(dice_face_value) # Call inherited show_face
-
+	await show_face(dice_face_value) # Call inherited show_face and wait
 # Override the parent's _calculate_face_value as it's not needed
 # and we don't want it to run by mistake.
 func _calculate_face_value() -> int:

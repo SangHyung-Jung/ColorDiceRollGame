@@ -158,11 +158,13 @@ func _align_and_present_results() -> void:
 	var start_x = center_x - (current_shop_dice.size() - 1) * (GameConstants.DICE_SPACING / 2.0)
 	
 	# 1. Prepare all dice for tweening
-	for dice in current_shop_dice:
-		# Temporarily store the top joker for rotation
-		var top_joker_for_alignment = dice.get_top_joker()
+	for i in range(current_shop_dice.size()):
+		var dice = current_shop_dice[i]
+		var top_joker_for_alignment = available_jokers[i]
+
+		# Set rotation first and wait for it to apply
 		if top_joker_for_alignment:
-			dice.align_to_top_joker(top_joker_for_alignment)
+			await dice.align_to_top_joker(top_joker_for_alignment)
 
 		# Disable the parent's physics process to prevent interference
 		dice.set_physics_process(false)
