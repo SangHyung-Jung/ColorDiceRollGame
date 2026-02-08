@@ -5,27 +5,28 @@ signal joker_purchased
 
 # Scene Resources
 @export var shop_dice_scene: PackedScene
+const CupScene = preload("res://cup.tscn")
+const GameConstants = preload("res://scripts/utils/constants.gd")
 
 # UI Node References
 @onready var next_round_button: Button = $MainLayout/GameArea/ShopHeader/NextRoundButton
 @onready var reroll_button: Button = $MainLayout/GameArea/ShopHeader/RerollButton
 @onready var gold_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/GoldLabel
 @onready var joker_inventory: HBoxContainer = $MainLayout/InfoPanel/Panel/VBoxContainer/JokerInventory
-@onready var roll_button: Button = $MainLayout/GameArea/RollButton
 @onready var buy_panel: PanelContainer = $MainLayout/GameArea/BuyPanel
 
 # 3D Node References
-@onready var dice_spawn_point = $"../../3D_World/ShopArea/SpawnPoint"
+@onready var shop_area = $"../../3D_World/ShopArea"
 
 # Shop State
+var cup: Node3D
 var current_shop_dice = []
 var is_rolling = false
+var is_shaking = false
 var available_jokers_to_buy = []
-
 
 func _ready() -> void:
 	next_round_button.pressed.connect(_on_next_round_button_pressed)
-	roll_button.pressed.connect(roll_dice)
 	reroll_button.pressed.connect(enter_shop_sequence)
 	
 	# Connect buy buttons
@@ -33,78 +34,123 @@ func _ready() -> void:
 	$MainLayout/GameArea/BuyPanel/JokerOptions/Option2/BuyButton2.pressed.connect(func(): _on_buy_joker_pressed(1))
 	$MainLayout/GameArea/BuyPanel/JokerOptions/Option3/BuyButton3.pressed.connect(func(): _on_buy_joker_pressed(2))
 
+func _gui_input(event: InputEvent) -> void:
+	if is_rolling: return
+	
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			_start_shaking()
+		else:
+			if is_shaking:
+				_release_and_pour()
 
 func enter_shop_sequence() -> void:
 	# This function will be called by GameRoot when transitioning to shop
 	_update_gold_label()
 	joker_inventory.update_display(Main.owned_jokers)
 	
-	# 1. 기존 주사위 제거
-	clear_shop_dice()
+	# 1. 기존 주사위 및 컵 제거
+	clear_shop_objects()
 	
-	# 2. 새 주사위 3개 생성
-	spawn_shop_dice(3)
+	# 2. 새 컵과 주사위 3개 생성
+	_setup_shop_scene()
 	
-	# 3. 굴리기 시작 버튼 활성화 등 UI 처리
-	roll_button.visible = true
+	# 3. UI 초기화
 	buy_panel.visible = false
+	is_rolling = false
+	is_shaking = false
 
-func clear_shop_dice():
+func _setup_shop_scene():
+	# 컵 생성 및 배치
+	cup = CupScene.instantiate()
+	cup.position = GameConstants.CUP_POSITION
+	shop_area.add_child(cup)
+	
+	# 주사위 생성
+	spawn_shop_dice(3)
+
+func clear_shop_objects():
 	for dice in current_shop_dice:
 		if is_instance_valid(dice):
 			dice.queue_free()
 	current_shop_dice.clear()
+	
+	if is_instance_valid(cup):
+		cup.queue_free()
+		cup = null
 
 func spawn_shop_dice(count: int):
 	if not shop_dice_scene:
 		push_error("ShopDice scene is not set in the inspector!")
 		return
-		
+	
+	if not is_instance_valid(cup):
+		push_error("Cup is not valid during spawn_shop_dice!")
+		return
+
+	if cup.has_method("_set_ceiling_collision"):
+		cup._set_ceiling_collision(true)
+
 	for i in range(count):
 		var dice = shop_dice_scene.instantiate() as ShopDice
 		
-		# GameRoot의 3D_World에 추가해야 물리 효과 적용됨
 		var world_node = get_tree().root.get_node("GameRoot/3D_World")
 		if not world_node:
 			dice.queue_free()
 			continue
 
-		# Add to tree BEFORE calling setup, so @onready vars are initialized.
 		world_node.add_child(dice)
 		current_shop_dice.append(dice)
 		
-		# 랜덤 위치 약간 섞어서 생성
-		var offset = Vector3(randf_range(-2, 2), 0, randf_range(-2, 2))
-		dice.position = dice_spawn_point.global_position + offset
+		var offset = Vector3(randf_range(-0.5, 0.5), randf_range(-1.0, 1.0), randf_range(-0.5, 0.5))
+		dice.global_position = cup.global_position + offset
 		
-		# 조커 데이터 6개 뽑아서 주사위에 주입
 		var random_jokers = JokerManager.get_random_jokers(6)
 		if random_jokers == null or random_jokers.size() < 6:
 			push_error("Not enough jokers in JokerManager to create a shop dice!")
-			dice.queue_free() # Already in tree, so queue_free is correct
-			current_shop_dice.pop_back() # Remove from our array
+			dice.queue_free()
+			current_shop_dice.pop_back()
 			continue
 			
 		dice.setup_jokers(random_jokers)
-		dice.freeze = true
+		dice.setup_physics_for_spawning()
 
-func roll_dice():
-	if not shop_dice_scene:
-		roll_button.text = "Assign Scene!"
-		push_error("ShopDice scene is not set in the inspector!")
-		return
-	if is_rolling: return
+func _start_shaking():
+	if is_rolling or not is_instance_valid(cup): return
+	
+	is_shaking = true
+	if cup.has_method("start_shaking"):
+		cup.start_shaking()
+
+func _release_and_pour() -> void:
+	if is_rolling or not is_instance_valid(cup): return
 	
 	is_rolling = true
-	roll_button.disabled = true
+	is_shaking = false
+	
+	if cup.has_method("stop_shaking"):
+		await cup.stop_shaking()
+
+	if cup.has_method("pour"):
+		await cup.pour()
+	
+	if cup.has_method("_set_ceiling_collision"):
+		cup._set_ceiling_collision(false)
 	
 	for dice in current_shop_dice:
-		dice.freeze = false
-		dice.sleeping = false # Wake up the dice
-		# 무작위 힘과 회전력 가하기
-		var force = Vector3(randf_range(-1, 1), 5, randf_range(-1, 1)).normalized()
-		dice.apply_central_impulse(force * randf_range(8, 12))
-		dice.apply_torque(Vector3(randf(), randf(), randf()).normalized() * randf_range(20, 40))
+		dice.apply_outside_cup_physics()
+		
+		var impulse = Vector3(
+			randf_range(GameConstants.DICE_IMPULSE_RANGE.x, GameConstants.DICE_IMPULSE_RANGE.y),
+			randf_range(GameConstants.DICE_IMPULSE_Y_RANGE.x, GameConstants.DICE_IMPULSE_Y_RANGE.y),
+			randf_range(GameConstants.DICE_IMPULSE_Z_RANGE.x, GameConstants.DICE_IMPULSE_Z_RANGE.y)
+		)
+		var torque = Vector3(
+			randf_range(GameConstants.DICE_TORQUE_RANGE.x, GameConstants.DICE_TORQUE_RANGE.y),
+			randf_range(GameConstants.DICE_TORQUE_RANGE.x, GameConstants.DICE_TORQUE_RANGE.y),
+			randf_range(GameConstants.DICE_TORQUE_RANGE.x, GameConstants.DICE_TORQUE_RANGE.y)
+		)
+		dice.apply_impulse_force(impulse, torque)
 
 func _process(delta):
 	if is_rolling:
@@ -123,11 +169,9 @@ func check_dice_stopped():
 	
 	if all_stopped:
 		is_rolling = false
-		roll_button.disabled = false
 		on_roll_finished()
 
 func on_roll_finished():
-	# 결과 확인 및 구매 UI 표시
 	var available_jokers = []
 	for dice in current_shop_dice:
 		var top_joker = dice.get_top_joker()
@@ -167,25 +211,20 @@ func _on_buy_joker_pressed(index: int):
 		emit_signal("joker_purchased")
 		_on_item_purchased()
 		
-		# Disable button after purchase
 		var buy_button = $MainLayout/GameArea/BuyPanel/JokerOptions.get_child(index).get_node("BuyButton" + str(index+1))
 		buy_button.disabled = true
 		buy_button.text = "Purchased"
 
-## '다음 라운드' 버튼을 누르면 다음 라운드 상태로 설정하고 메인 게임 화면으로 돌아갑니다.
 func _on_next_round_button_pressed() -> void:
+	clear_shop_objects()
 	StageManager.advance_to_next_round()
 	emit_signal("go_to_game_requested")
 
-## 골드 UI를 업데이트합니다.
 func _update_gold_label() -> void:
 	gold_label.text = "Gold: $%d" % Main.gold
 
-## 아이템 구매 시 호출될 함수
 func _on_item_purchased() -> void:
-	# Update gold and joker displays
 	_update_gold_label()
 	joker_inventory.update_display(Main.owned_jokers)
 	
-	# Re-evaluate buy button states
 	display_purchase_options(available_jokers_to_buy)

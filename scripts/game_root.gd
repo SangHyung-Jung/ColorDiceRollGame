@@ -11,7 +11,7 @@ class_name GameRoot
 @onready var input_manager: InputManager = $InputManager
 
 const POS_GAME = Vector3(-6, 15, 0) # 게임 플레이 카메라 위치
-const POS_SHOP = Vector3(45.5982, 20, 0) # 상점 카메라 위치
+const POS_SHOP = Vector3(55.6, 20, 0) # 상점 카메라 위치
 # [추가] 시작 화면 카메라 위치 (게임 화면 왼쪽 멀리)
 const POS_START = Vector3(-40, 20, 0) 
 
