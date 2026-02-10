@@ -162,7 +162,9 @@ func transition_to_game(instant: bool = false):
 
 		# [추가] 즉시 이동 시에도 위치 갱신 필요
 		game_hud.update_socket_positions() 
-		
+		# [추가] 조커 소켓 및 주사위 업데이트
+		await game_hud.update_joker_socket_positions()
+		game_hud.update_joker_dice_display()
 		game_hud.start_round_sequence() # 게임 라운드 시작 로직
 		input_manager.set_roll_in_progress(false) # Re-enable input for game
 		return
@@ -179,6 +181,9 @@ func transition_to_game(instant: bool = false):
 	tween.chain().tween_callback(func():
 		# [핵심] 카메라가 도착했으므로, 이제 현재 카메라 기준으로 소켓 위치를 다시 계산하라고 명령
 		game_hud.update_socket_positions()
+		# [추가] 조커 소켓 및 주사위 업데이트
+		await game_hud.update_joker_socket_positions()
+		game_hud.update_joker_dice_display()
 
 		# game_hud is already visible
 		game_hud.start_round_sequence() # 게임 라운드 시작 로직

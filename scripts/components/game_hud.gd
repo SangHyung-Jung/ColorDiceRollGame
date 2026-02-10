@@ -94,13 +94,9 @@ func setup_game_hud(p_world_3d: Node3D, p_rolling_world_camera: Camera3D, p_floa
 
 	await get_tree().process_frame
 	update_socket_positions()     # 기존 투자 소켓 업데이트
-	update_joker_socket_positions() # [추가] 조커 소켓 3D 좌표 계산
 	
 	_update_ui_from_gamestate()
-	# No need for _on_rolling_area_resized() as SubViewport is removed
-	
-	# joker_inventory.update_display(Main.owned_jokers) # [변경] 기존 2D 인벤토리 대신 3D 표시 함수 호출
-	update_joker_dice_display() # [추가] 보유 조커를 3D 주사위로 표시
+
 
 
 func _initialize_score_animator() -> void:

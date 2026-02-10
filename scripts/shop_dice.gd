@@ -76,3 +76,5 @@ func _calculate_face_value() -> int:
 	# For ShopDice, the "value" is determined by get_top_joker(), not by face numbers.
 	# We return a dummy value. The actual joker data is retrieved separately.
 	return -1
+
+
