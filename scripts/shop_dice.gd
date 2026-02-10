@@ -38,6 +38,7 @@ func setup_jokers(jokers_list: Array):
 		var texture_path = "res://assets/joker_images/" + joker["english_name"] + ".png"
 		if ResourceLoader.exists(texture_path):
 			sprite.texture = load(texture_path)
+			sprite.scale = Vector3(1, -1, 1) # [추가] 이미지 상하 반전
 		else:
 			print("Warning: Texture not found at: ", texture_path)
 		
