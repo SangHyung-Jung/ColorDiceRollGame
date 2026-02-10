@@ -21,7 +21,7 @@
 	"materials":[
 		{
 			"doubleSided":true,
-			"name":"Dice_Body_Red",
+			"name":"Dice_Body_Red.001",
 			"pbrMetallicRoughness":{
 				"baseColorFactor":[
 					1,
@@ -35,7 +35,7 @@
 		},
 		{
 			"doubleSided":true,
-			"name":"Pip_Material_Red",
+			"name":"Pip_Material_Red.001",
 			"pbrMetallicRoughness":{
 				"metallicFactor":0,
 				"roughnessFactor":0.4000000059604645
@@ -44,7 +44,7 @@
 	],
 	"meshes":[
 		{
-			"name":"Cube",
+			"name":"Cube.216",
 			"primitives":[
 				{
 					"attributes":{

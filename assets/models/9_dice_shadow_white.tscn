@@ -1,0 +1,49 @@
+[gd_scene load_steps=8 format=3 uid="uid://2xt73x88e47o"]
+
+[ext_resource type="PackedScene" uid="uid://vbxstbdy25bg" path="res://assets/models/0_dice_white.gltf" id="1_n0md8"]
+[ext_resource type="Texture2D" uid="uid://dl63gciqovxux" path="res://assets/particles/PNG (Transparent)/fire_02.png" id="2_4je55"]
+
+[sub_resource type="Curve" id="Curve_n0md8"]
+_limits = [0.0, 100.0, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_n0md8"]
+curve = SubResource("Curve_n0md8")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_4u82c"]
+emission_shape = 3
+emission_box_extents = Vector3(1, 1, 1)
+inherit_velocity_ratio = 1.0
+direction = Vector3(0, 0, 0)
+spread = 10.0
+flatness = 0.1
+gravity = Vector3(0, -0.4, 0)
+damping_min = 2.0
+damping_max = 3.0
+damping_curve = SubResource("CurveTexture_n0md8")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4u82c"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+albedo_color = Color(0.301961, 0.0862745, 0.788235, 1)
+albedo_texture = ExtResource("2_4je55")
+billboard_mode = 1
+
+[sub_resource type="QuadMesh" id="QuadMesh_agip5"]
+material = SubResource("StandardMaterial3D_4u82c")
+size = Vector2(3, 3)
+
+[node name="BiceBlackWithParticle" type="Node3D"]
+
+[node name="0_dice_white" parent="." instance=ExtResource("1_n0md8")]
+
+[node name="shadow2" type="GPUParticles3D" parent="."]
+amount = 30
+lifetime = 0.5
+explosiveness = 0.5
+randomness = 0.5
+fixed_fps = 120
+process_material = SubResource("ParticleProcessMaterial_4u82c")
+draw_pass_1 = SubResource("QuadMesh_agip5")

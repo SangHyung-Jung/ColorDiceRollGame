@@ -10,8 +10,14 @@ enum DiceColor {
 }
 
 const DICE_GLTF_SCENES = {
-	DiceColor.WHITE: preload("res://assets/models/0_dice_white.gltf"),
-	DiceColor.BLACK: preload("res://assets/models/0_dice_black.gltf"),
+	DiceColor.WHITE: preload("res://assets/models/9_dice_shadow_white.tscn"),
+	DiceColor.BLACK: preload("res://assets/models/9_dice_shadow_black.tscn"),
+	#DiceColor.RED: preload("res://assets/models/9_dice_shadow_red.tscn"),
+	#DiceColor.BLUE: preload("res://assets/models/9_dice_shadow_blue.tscn"),
+	#DiceColor.GREEN: preload("res://assets/models/9_dice_shadow_green.tscn")
+
+	#DiceColor.WHITE: preload("res://assets/models/0_dice_white.gltf"),
+	#DiceColor.BLACK: preload("res://assets/models/0_dice_black.gltf"),
 	DiceColor.RED: preload("res://assets/models/0_dice_red.gltf"),
 	DiceColor.BLUE: preload("res://assets/models/0_dice_blue.gltf"),
 	DiceColor.GREEN: preload("res://assets/models/0_dice_green.gltf")
@@ -113,26 +119,39 @@ func _init() -> void:
 func setup_dice(color: DiceColor, position_override: Vector3 = Vector3.ZERO) -> void:
 	current_dice_color = color
 	dice_color = COLOR_VALUES[color]
-
+	
 	# 위치 먼저 설정
 	if position_override != Vector3.ZERO:
 		global_position = position_override
 		original_position = position_override
-
+	
 	# 기존의 모든 자식 노드(메시, 콜라이더 등)를 제거하여 깨끗한 상태에서 시작
 	for child in get_children():
 		child.queue_free()
-
-	# GLTF 모델 로드 및 설정
-	var gltf_scene = DICE_GLTF_SCENES[color]
-	var dice_model = gltf_scene.instantiate()
-
+	
+	# ==========================================
+	# ★ TSCN/GLTF 둘 다 대응
+	# ==========================================
+	var dice_scene = DICE_GLTF_SCENES[color]
+	var dice_model = dice_scene.instantiate()
+	
+	# TSCN인지 GLTF인지 자동 감지
+	var is_tscn = _is_tscn_structure(dice_model)
+	
+	# 메시가 있는 실제 노드 찾기
+	var mesh_parent = dice_model
+	if is_tscn:
+		# TSCN 구조: DiceShadow* → D6_Dice_* → ...
+		mesh_parent = _find_gltf_node_in_tscn(dice_model)
+	# GLTF 구조: D6_Dice_* (루트가 바로 GLTF)
+	
 	# 각 주사위 인스턴스가 고유한 재질을 갖도록 처리
-	var mesh = _find_mesh_recursive(dice_model)
+	var mesh = _find_mesh_recursive(mesh_parent)
 	if mesh:
 		var mat = mesh.get_active_material(0)
 		if mat:
-				mesh.set_surface_override_material(0, mat.duplicate())
+			mesh.set_surface_override_material(0, mat.duplicate())
+	
 	## 새 모델 추가
 	add_child(dice_model)
 	
@@ -140,13 +159,13 @@ func setup_dice(color: DiceColor, position_override: Vector3 = Vector3.ZERO) -> 
 	dice_model.owner = null
 	dice_model.scene_file_path = ""
 	dice_model.set_meta("_edit_lock_", true)
-
-	# ★ 모델 스케일 (Blender 원본 2.0 → 게임 내 1.6)
+	
+	# ★ 모델 스케일 (Blender 원본 2.0 → 게임 내 1.0)
 	var model_scale = 1.0
 	dice_model.scale = Vector3(model_scale, model_scale, model_scale)
 	dice_model.position = Vector3.ZERO
 	dice_model.rotation_degrees = Vector3.ZERO
-
+	
 	# 충돌 박스 설정
 	collider = CollisionShape3D.new()
 	collider.name = "CollisionShape3D"
@@ -159,11 +178,11 @@ func setup_dice(color: DiceColor, position_override: Vector3 = Vector3.ZERO) -> 
 	var blender_dice_size = 2.0
 	
 	# 게임 내 실제 시각적 크기
-	var actual_visual_size = blender_dice_size * model_scale  # 2.0 * 0.8 = 1.6
+	var actual_visual_size = blender_dice_size * model_scale  # 2.0 * 1.0 = 2.0
 	
 	# 충돌 박스: 시각적 크기의 95% (5% 마진)
 	var collision_margin = 0.95
-	var collision_box_size = actual_visual_size * collision_margin  # 1.6 * 0.95 = 1.52
+	var collision_box_size = actual_visual_size * collision_margin  # 2.0 * 0.95 = 1.9
 	
 	box_shape.size = Vector3(
 		collision_box_size,
@@ -171,11 +190,19 @@ func setup_dice(color: DiceColor, position_override: Vector3 = Vector3.ZERO) -> 
 		collision_box_size
 	)
 	collider.shape = box_shape
-
-	# 이름 설정
 	
+	# 이름 설정
 	dice_name = COLOR_NAMES[color] + "_dice_" + str(randi())
 	name = dice_name
+	
+	# ==========================================
+	# ★ TSCN이면 파티클 활성화
+	# ==========================================
+	if is_tscn:
+		_activate_particles(dice_model)
+		print("✅ Shadow dice (TSCN) loaded: ", name)
+	else:
+		print("✅ Basic dice (GLTF) loaded: ", name)
 
 func get_dice_color_name() -> String:
 	return COLOR_NAMES[current_dice_color]
@@ -220,3 +247,25 @@ func _find_mesh_recursive(node: Node) -> MeshInstance3D:
 		if mesh:
 			return mesh
 	return null
+
+func _is_tscn_structure(node: Node) -> bool:
+	if node.name.begins_with("D6_Dice"):
+		return false
+	for child in node.get_children():
+		if child.name.begins_with("D6_Dice"):
+			return true
+	return false
+
+func _find_gltf_node_in_tscn(tscn_root: Node) -> Node:
+	for child in tscn_root.get_children():
+		if child.name.begins_with("D6_Dice"):
+			return child
+	push_warning("Could not find GLTF node in TSCN, using root")
+	return tscn_root
+
+func _activate_particles(node: Node) -> void:
+	if node is GPUParticles3D:
+		node.emitting = true
+		print("  ✅ Particle activated: ", node.name)
+	for child in node.get_children():
+		_activate_particles(child)

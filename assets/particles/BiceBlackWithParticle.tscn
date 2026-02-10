@@ -1,0 +1,52 @@
+[gd_scene load_steps=8 format=3 uid="uid://b33odvxkohipw"]
+
+[ext_resource type="PackedScene" uid="uid://syux2rgwbesq" path="res://assets/models/0_dice_black.gltf" id="1_ojovi"]
+[ext_resource type="Texture2D" uid="uid://dl63gciqovxux" path="res://assets/particles/PNG (Transparent)/fire_02.png" id="3_ipimy"]
+
+[sub_resource type="Curve" id="Curve_dsipd"]
+_limits = [0.0, 100.0, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_ldgob"]
+curve = SubResource("Curve_dsipd")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_v6c12"]
+lifetime_randomness = 0.5
+emission_shape_scale = Vector3(1.5, 1.5, 1.5)
+emission_shape = 3
+emission_box_extents = Vector3(1, 1, 1)
+inherit_velocity_ratio = 1.0
+direction = Vector3(1, 1, 0)
+spread = 40.0
+flatness = 0.1
+initial_velocity_min = 0.4
+initial_velocity_max = 0.6
+gravity = Vector3(0, -0.4, 0)
+damping_min = 0.5
+damping_max = 1.0
+damping_curve = SubResource("CurveTexture_ldgob")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ale5r"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+albedo_color = Color(0.301961, 0.0862745, 0.788235, 1)
+albedo_texture = ExtResource("3_ipimy")
+billboard_mode = 1
+
+[sub_resource type="QuadMesh" id="QuadMesh_uoirg"]
+material = SubResource("StandardMaterial3D_ale5r")
+size = Vector2(3, 3)
+
+[node name="BiceBlackWithParticle" type="Node3D"]
+
+[node name="0_dice_black" parent="." instance=ExtResource("1_ojovi")]
+transform = Transform3D(0.634156, 0.739235, 0.226665, -0.672488, 0.671992, -0.31014, -0.381583, 0.0442471, 0.923275, 0, 0, 0)
+
+[node name="shadow2" type="GPUParticles3D" parent="."]
+amount = 30
+explosiveness = 0.5
+randomness = 0.5
+process_material = SubResource("ParticleProcessMaterial_v6c12")
+draw_pass_1 = SubResource("QuadMesh_uoirg")
