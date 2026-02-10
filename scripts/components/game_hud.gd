@@ -58,6 +58,7 @@ const CupScene := preload("res://cup.tscn")
 const DiceBagPopupScene = preload("res://scripts/components/dice_bag_popup.tscn")
 const RoundClearPopupScene = preload("res://scenes/popups/round_clear_popup.tscn")
 const ScoreAnimatorScene = preload("res://scripts/components/score_animator/ScoreAnimator.gd")
+const ShopDiceScene = preload("res://scenes/shop_dice.tscn") # [추가] ShopDice 씬 프리로드
 const SocketTexture = preload("res://dice_socket.png")
 
 # === 투자 시스템 변수 ===
@@ -626,16 +627,16 @@ func update_joker_dice_display() -> void:
 		print("DEBUG: Joker data being processed: ", joker_data) # <--- ADD THIS LINE
 		var target_pos = joker_socket_positions[i]
 
-		# 조커 주사위 생성 (ColoredDice 활용)
-		var dice_node = ColoredDice.new()
+		# 조커 주사위 생성 (ShopDice 활용)
+		var dice_node = ShopDiceScene.instantiate()
 		world_3d.add_child(dice_node)
 
-		# 흰색 베이스로 생성
-		dice_node.setup_dice(ColoredDice.DiceColor.WHITE)
-
-		# 조커 이미지 적용 (CSV 데이터에 'image_path' 키가 있다고 가정)
+		# 조커 이미지 적용
 		if joker_data.has("image_path"):
-			dice_node.set_joker_texture(joker_data["image_path"])
+			var repeated_jokers_list = []
+			for _k in range(6): # Repeat the same joker data 6 times for all faces
+				repeated_jokers_list.append(joker_data)
+			dice_node.setup_jokers(repeated_jokers_list)
 
 		# 물리 고정 및 위치 설정
 		dice_node.freeze = true

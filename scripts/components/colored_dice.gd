@@ -82,23 +82,32 @@ func set_joker_texture(texture_path: String) -> void:
 		print("Invalid joker texture path: ", texture_path)
 		return
 
+	# Remove any existing joker Sprite3D to prevent duplicates
+	for child in get_children():
+		if child is Sprite3D and child.name == "JokerSprite":
+			child.queue_free()
+			break
+
 	var joker_texture = load(texture_path)
-	var mesh = get_mesh() # 부모 클래스인 Dice 혹은 ColoredDice의 헬퍼 함수 활용
-
-	if mesh:
-		# 기존 재질을 복제하거나 새 재질 생성
-		var mat = StandardMaterial3D.new()
-		mat.albedo_texture = joker_texture
-
-		# 조커 이미지가 주사위 전면에 잘 보이도록 UV 매핑 방식 조정 (필요 시)
-		# 일반적인 박스 매핑 사용
-		mat.uv1_triplanar = true 
-
-		# 0번 서피스(주사위 몸체)에 재질 적용
-		mesh.set_surface_override_material(0, mat)
-
-		# 조커 주사위는 보통 흰색 베이스가 깔끔하므로 초기화
-		dice_color = Color.WHITE
+	var sprite = Sprite3D.new()
+	sprite.name = "JokerSprite" # Give it a unique name
+	sprite.texture = joker_texture
+	sprite.pixel_size = 0.005 # Adjust size as needed, similar to ShopDice
+	sprite.billboard = false # Don't billboard, we want it fixed on a face
+	
+	# Position the sprite on one of the dice faces (e.g., top face, relative to dice center)
+	# Assuming a dice size of 2 units (from blender_dice_size in setup_dice)
+	# and model_scale = 1.0 (actual_visual_size = 2.0)
+	# So, a face is at approx +Y 1.0 unit from center.
+	sprite.transform.origin = Vector3(0, 1.0, 0) 
+	sprite.transform = sprite.transform.rotated(Vector3(1, 0, 0), deg_to_rad(-90)) # Rotate to face upwards (if texture is horizontal)
+	
+	add_child(sprite)
+	sprite.owner = self # Ensure it's part of the scene
+	
+	# Set dice_color to WHITE as it's a joker dice
+	dice_color = Color.WHITE
+	current_dice_color = DiceColor.WHITE # Ensure the internal color state is also white
 
 var current_dice_color: DiceColor = DiceColor.WHITE
 
