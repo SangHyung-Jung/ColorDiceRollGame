@@ -27,14 +27,13 @@ var joker_socket_positions: Array[Vector3] = []
 var joker_dice_nodes: Array[Node3D] = []
 
 # [추가] 조커 소켓 컨테이너 참조 (경로는 에디터 설정에 맞춰주세요)
-@onready var joker_socket_container: Control = $MainLayout/JokerSocketContainer
-@onready var joker_inventory: HBoxContainer = $MainLayout/InfoPanel/Panel/VBoxContainer/JokerInventory
+@onready var joker_socket_container: HBoxContainer = $MainLayout/PlayAreaContainer/JokerSlotContainer
 @onready var view_dice_bag_button: Button = $MainLayout/InfoPanel/Panel/VBoxContainer/ViewDiceBagButton
-@onready var submit_button: Button = $MainLayout/JokerSocketContainer/InteractionUI/HBoxContainer/TextureRect/SubmitButton
-@onready var invest_button: Button = $MainLayout/JokerSocketContainer/InteractionUI/HBoxContainer/TextureRect2/InvestButton
-@onready var turn_end_button: Button = $MainLayout/JokerSocketContainer/InteractionUI/HBoxContainer/TextureRect3/TurnEndButton
-@onready var sort_by_color_button: Button = $MainLayout/JokerSocketContainer/SortButtonsContainer/TextureRect/SortByColorButton
-@onready var sort_by_number_button: Button = $MainLayout/JokerSocketContainer/SortButtonsContainer/TextureRect2/SortByNumberButton
+@onready var submit_button: Button = $MainLayout/PlayAreaContainer/InteractionUI/HBoxContainer/TextureRect/SubmitButton
+@onready var invest_button: Button = $MainLayout/PlayAreaContainer/InteractionUI/HBoxContainer/TextureRect2/InvestButton
+@onready var turn_end_button: Button = $MainLayout/PlayAreaContainer/InteractionUI/HBoxContainer/TextureRect3/TurnEndButton
+@onready var sort_by_color_button: Button = $MainLayout/PlayAreaContainer/SortButtonsContainer/TextureRect/SortByColorButton
+@onready var sort_by_number_button: Button = $MainLayout/PlayAreaContainer/SortButtonsContainer/TextureRect2/SortByNumberButton
 
 # === 스코어 애니메이션 UI 노드 ===
 @onready var combo_name_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/ScoreCalcBox/ComboNameLabel
@@ -126,7 +125,7 @@ func _initialize_score_animator() -> void:
 	score_animator.initialize(refs)
 
 func update_socket_positions() -> void:
-	var current_socket_container = get_node("MainLayout/JokerSocketContainer/SocketContainer")
+	var current_socket_container = get_node("MainLayout/PlayAreaContainer/SocketContainer")
 	if current_socket_container == null:
 		push_error("SocketContainer not found at path: MainLayout/SocketArea/SocketContainer")
 		return
@@ -173,7 +172,7 @@ func update_socket_positions() -> void:
 				dice.global_position = socket_positions[i]
 				
 func _setup_sockets():
-	var sc = get_node("MainLayout/JokerSocketContainer/SocketContainer")
+	var sc = get_node("MainLayout/PlayAreaContainer/SocketContainer")
 	if sc == null:
 		push_error("SocketContainer not found in _setup_sockets")
 		return
@@ -582,7 +581,7 @@ func update_joker_socket_positions() -> void:
 		for i in range(MAX_JOKER_SLOTS):
 			var socket_ui = TextureRect.new()
 			# const SocketTexture = preload("res://dice_socket.png") - Already defined at the top
-			socket_ui.texture = SocketTexture # 기존 소켓 텍스처 재사용
+			socket_ui.texture = preload("res://dice_socket2.png") # 기존 소켓 텍스처 재사용
 			socket_ui.custom_minimum_size = Vector2(80, 80) # 크기 조정
 			socket_ui.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			socket_ui.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -628,6 +627,7 @@ func update_joker_dice_display() -> void:
 			break # 소켓 수보다 많으면 중단 (혹은 페이지 처리)
 
 		var joker_data = owned_jokers[i]
+		print("DEBUG: Joker data being processed: ", joker_data) # <--- ADD THIS LINE
 		var target_pos = joker_socket_positions[i]
 
 		# 조커 주사위 생성 (ColoredDice 활용)
@@ -721,7 +721,7 @@ func start_round_sequence() -> void:
 	# This function will be called by GameRoot when transitioning from shop to game
 	combo_select.exit()
 	_initialize_score_calc_ui()
-	joker_inventory.update_display(Main.owned_jokers)
+
 	_set_state(GameState.AWAITING_ROLL_INPUT)
 	_update_ui_from_gamestate()
 	await _setup_game()

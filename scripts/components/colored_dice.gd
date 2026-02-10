@@ -77,6 +77,7 @@ const COLOR_NAMES = {
 
 # [추가] 조커 텍스처를 입히는 함수
 func set_joker_texture(texture_path: String) -> void:
+	print("set_joker_texture called with path: ", texture_path)
 	if texture_path == "" or not ResourceLoader.exists(texture_path):
 		print("Invalid joker texture path: ", texture_path)
 		return
