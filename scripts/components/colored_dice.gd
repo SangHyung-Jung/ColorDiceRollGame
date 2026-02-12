@@ -18,7 +18,7 @@ const DICE_GLTF_SCENES = {
 
 	#DiceColor.WHITE: preload("res://assets/models/0_dice_white.gltf"),
 	#DiceColor.BLACK: preload("res://assets/models/0_dice_black.gltf"),
-	DiceColor.RED: preload("res://assets/models/0_dice_red.gltf"),
+	DiceColor.RED: preload("res://assets/models/8_dice_prism.gltf"),
 	DiceColor.BLUE: preload("res://assets/models/0_dice_blue.gltf"),
 	DiceColor.GREEN: preload("res://assets/models/0_dice_green.gltf")
 

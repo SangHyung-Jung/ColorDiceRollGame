@@ -21,7 +21,7 @@
 	"materials":[
 		{
 			"doubleSided":true,
-			"name":"Dice_Body_White.001",
+			"name":"Dice_Body_White.002",
 			"pbrMetallicRoughness":{
 				"metallicFactor":0.10000000149011612,
 				"roughnessFactor":0.30000001192092896
@@ -29,7 +29,7 @@
 		},
 		{
 			"doubleSided":true,
-			"name":"Pip_Material_White.001",
+			"name":"Pip_Material_White.002",
 			"pbrMetallicRoughness":{
 				"baseColorFactor":[
 					0,
@@ -44,7 +44,7 @@
 	],
 	"meshes":[
 		{
-			"name":"Cube.345",
+			"name":"Cube.129",
 			"primitives":[
 				{
 					"attributes":{
@@ -71,29 +71,29 @@
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":654,
+			"count":638,
 			"max":[
-				1.001428246498108,
-				1.0027272701263428,
-				1.0024688243865967
+				1.0012714862823486,
+				1.0032565593719482,
+				1.0019856691360474
 			],
 			"min":[
-				-1.001428246498108,
-				-1.0027272701263428,
-				-1.0024688243865967
+				-1.0012714862823486,
+				-1.0032565593719482,
+				-1.0019856691360474
 			],
 			"type":"VEC3"
 		},
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":654,
+			"count":638,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":654,
+			"count":638,
 			"type":"VEC2"
 		},
 		{
@@ -107,14 +107,14 @@
 			"componentType":5126,
 			"count":504,
 			"max":[
-				0.9823476076126099,
-				0.982221245765686,
-				0.9825795292854309
+				0.985823392868042,
+				0.9825927019119263,
+				0.9823802709579468
 			],
 			"min":[
-				-0.9826523065567017,
-				-0.9827787280082703,
-				-0.9824203848838806
+				-0.9791765213012695,
+				-0.98240727186203,
+				-0.9826196432113647
 			],
 			"type":"VEC3"
 		},
@@ -140,56 +140,56 @@
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":7848,
+			"byteLength":7656,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":7848,
-			"byteOffset":7848,
+			"byteLength":7656,
+			"byteOffset":7656,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":5232,
-			"byteOffset":15696,
+			"byteLength":5104,
+			"byteOffset":15312,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":2328,
-			"byteOffset":20928,
+			"byteOffset":20416,
 			"target":34963
 		},
 		{
 			"buffer":0,
 			"byteLength":6048,
-			"byteOffset":23256,
+			"byteOffset":22744,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":6048,
-			"byteOffset":29304,
+			"byteOffset":28792,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":4032,
-			"byteOffset":35352,
+			"byteOffset":34840,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":1512,
-			"byteOffset":39384,
+			"byteOffset":38872,
 			"target":34963
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":40896,
+			"byteLength":40384,
 			"uri":"0_dice_white.bin"
 		}
 	]
