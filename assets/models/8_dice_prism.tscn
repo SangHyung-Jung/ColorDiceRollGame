@@ -1,6 +1,6 @@
 [gd_scene load_steps=12 format=3 uid="uid://c1xsmp6c0smd8"]
 
-[ext_resource type="PackedScene" uid="uid://d3sq1rvslo42h" path="res://assets/models/8_dice_prism.gltf" id="1_p1yv5"]
+[ext_resource type="PackedScene" uid="uid://ssprctmtrkpp" path="res://assets/models/glass_prism_dice.gltf" id="1_p1yv5"]
 [ext_resource type="Texture2D" uid="uid://1k5tnialwdkw" path="res://assets/particles/PNG (Black background)/star_08.png" id="2_p1yv5"]
 
 [sub_resource type="Gradient" id="Gradient_co5y4"]
@@ -57,7 +57,7 @@ size = Vector2(0.3, 0.3)
 
 [node name="BiceBlackWithParticle" type="Node3D"]
 
-[node name="glass_prism_dice" parent="." instance=ExtResource("1_p1yv5")]
+[node name="glass_prism_dice2" parent="." instance=ExtResource("1_p1yv5")]
 
 [node name="rainbow" type="GPUParticles3D" parent="."]
 amount = 20

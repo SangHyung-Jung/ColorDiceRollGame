@@ -5,10 +5,8 @@
 
 [sub_resource type="Environment" id="Environment_zodac"]
 background_mode = 2
-background_energy_multiplier = 2.0
 ambient_light_source = 3
 ambient_light_color = Color(1, 1, 1, 1)
-ambient_light_energy = 2.0
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_zodac"]
 size = Vector3(150, 0.1, 100)
@@ -30,12 +28,29 @@ transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 30,
 projection = 1
 size = 18.0
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 31.6784, 1.97233, 6.313)
-light_energy = 0.0
+[node name="DirectionalLight3D4" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 1.74846e-07, 0, -1.74846e-07, 1, 60.2946, 0.461288, -31.4282)
+light_energy = 0.1
 light_indirect_energy = 0.3
 light_volumetric_fog_energy = 0.0
-shadow_enabled = true
+
+[node name="DirectionalLight3D3" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1.31134e-07, -1, 0, 1, 1.31134e-07, -48.981, 6.70416, -29.1602)
+light_energy = 0.1
+light_indirect_energy = 0.3
+light_volumetric_fog_energy = 0.0
+
+[node name="DirectionalLight3D2" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -1, -8.74228e-08, 0, 8.74228e-08, -1, 59.9245, 7.88377, 31.3235)
+light_energy = 0.1
+light_indirect_energy = 0.3
+light_volumetric_fog_energy = 0.0
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -50.8732, 1.65109, 27.4078)
+light_energy = 0.1
+light_indirect_energy = 0.3
+light_volumetric_fog_energy = 0.0
 
 [node name="Floor" type="StaticBody3D" parent="."]
 
