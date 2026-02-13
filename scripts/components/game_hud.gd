@@ -233,9 +233,11 @@ func _setup_scene() -> void:
 	cup.position = GameConstants.CUP_POSITION
 	cup.scale = Vector3(1, 1, 1)
 	world_3d.add_child(cup)
+	await get_tree().process_frame      # physics 반영까지 대기
+	cup.update_initial_transform()      # 확정된 위치 저장
 	
 func _setup_game() -> void:
-	_setup_scene()
+	await _setup_scene()
 	game_manager.initialize()
 	game_manager.setup_cup(cup)
 	dice_spawner.initialize(cup, world_3d)

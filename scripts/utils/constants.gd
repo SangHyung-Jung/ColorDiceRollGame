@@ -52,7 +52,7 @@ const DICE_IMPULSE_Y_RANGE := Vector2(800, 1200)  # 주사위 쏟을 때 Y축 �
 const DICE_IMPULSE_Z_RANGE := Vector2(-1000, 1000)  # 주사위 쏟을 때 Z축 힘의 범위 (추가)
 const DICE_TORQUE_RANGE := Vector2(-40, 40)  # 주사위 회전력 범위 (추가)
 const DICE_SPAWN_VELOCITY := 15.0  # 생성 시 초기 하향 속도
-const DICE_SETTLEMENT_TIME := 0.5  # 주사위가 컵 바닥에 정착하는 데 필요한 시간 (초)
+const DICE_SETTLEMENT_TIME := 1  # 주사위가 컵 바닥에 정착하는 데 필요한 시간 (초)
 
 # === 애니메이션 타이밍 ===
 const MOVE_DURATION := 0.5  # 주사위 결과 정렬 시 이동 시간

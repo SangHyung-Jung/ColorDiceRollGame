@@ -53,9 +53,6 @@ func _ready() -> void:
 	_shake_sound_timer.timeout.connect(_on_shake_sound_timer_timeout)
 	add_child(_shake_sound_timer)
 
-	# 원래 위치와 회전각 저장 (애니메이션 후 복귀용)
-	initial_position = global_position
-	initial_rotation = rotation_degrees
 	# 컵의 물리 바디에 CCD 적용
 	var physics_body = $PhysicsBody
 	if physics_body is AnimatableBody3D:
@@ -72,6 +69,11 @@ func _ready() -> void:
 	# 주사위가 컵 안팎으로 이동할 때의 이벤트 연결
 	inside_area.body_entered.connect(_on_body_entered_cup)
 	inside_area.body_exited.connect(_on_body_exited_cup)
+
+## 외부에서 호출하여 현재 위치를 초기 위치로 확정
+func update_initial_transform() -> void:
+	initial_position = global_position
+	initial_rotation = rotation_degrees
 
 ## 천장 충돌 활성화/비활성화
 func _set_ceiling_collision(enabled: bool) -> void:
