@@ -74,6 +74,7 @@ func setup_physics_for_spawning() -> void:
 
 # ★ 2. 컵 '내부' 흔들기용 물리: 원본 GitHub 값으로 복원
 func apply_inside_cup_physics() -> void:
+	print("컵 내부 물리")
 	gravity_scale = 15
 	linear_damp = 0.8
 	angular_damp = 0
@@ -84,8 +85,9 @@ func apply_inside_cup_physics() -> void:
 
 # ★ 3. 컵 '외부' 테이블용 물리: 원본 GitHub 값으로 복원
 func apply_outside_cup_physics() -> void:
+	print("컵 외부 물리!!!!!! 컵 외부 물리!!!!!! 컵 외부 물리!!!!!! 컵 외부 물리!!!!!!")
 	gravity_scale = 20
-	linear_damp = 0.1  # 저항을 낮춰서 멀리 퍼지도록
+	linear_damp = 0.8  # 저항을 낮춰서 멀리 퍼지도록
 	angular_damp = 0.2  # 회전 저항을 낮춰서 더 구르도록
 
 	if physics_material_override:

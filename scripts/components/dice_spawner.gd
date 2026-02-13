@@ -107,7 +107,9 @@ func display_dice_results(roll_results: Dictionary) -> void:
 	var start_x = center_x - (dice_nodes.size() - 1) * 1.5
 	var move_duration = GameConstants.MOVE_DURATION
 	
-	var tweens: Array[Tween] = []  # 모든 tween을 저장
+	# 단일 트윈으로 모든 주사위의 움직임을 병렬 처리하여 안정성 확보
+	var master_tween: Tween = create_tween().set_parallel()
+	master_tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 	for i in range(dice_nodes.size()):
 		var dice = dice_nodes[i]
@@ -133,16 +135,12 @@ func display_dice_results(roll_results: Dictionary) -> void:
 		dice.collision_mask = 0
 
 		var target_pos = Vector3(start_x + i * GameConstants.DICE_SPACING, GameConstants.DISPLAY_Y, 0.0)
-		var tween: Tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-
-		# 위치만 이동 (회전은 유지)
-		tween.parallel().tween_property(dice, "global_position", target_pos, move_duration)
 		
-		tweens.append(tween)  # tween 저장
+		# 마스터 트윈에 각 주사위의 위치 이동 애니메이션을 추가
+		master_tween.tween_property(dice, "global_position", target_pos, move_duration)
 
-	# ★ 모든 tween이 완료될 때까지 대기
-	for tween in tweens:
-		await tween.finished
+	# ★ 모든 병렬 애니메이션이 완료될 때까지 한 번만 대기
+	await master_tween.finished
 	
 	# ★ 모든 이동이 완료된 후 충돌 복원
 	print("=== 주사위 정렬 완료, 충돌 복원 시작 ===")

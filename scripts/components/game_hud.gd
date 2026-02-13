@@ -504,12 +504,25 @@ func _invest_dice(nodes: Array):
 
 		if current_results.has(dice_node.name):
 			dice_node.set_meta("value", current_results[dice_node.name])
-		dice_node.freeze = true
+		dice_node.freeze_mode = RigidBody3D.FREEZE_MODE_KINEMATIC
+		dice_node.collision_layer = 0
+		dice_node.collision_mask = 0
 		dice_node.linear_velocity = Vector3.ZERO
 		dice_node.angular_velocity = Vector3.ZERO
 		
 		var tween = create_tween()
-		tween.tween_property(dice_node, "global_position", target_pos, 0.4)			.set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
+		
+		# 1. 주사위 위치 이동 애니메이션 설정
+		var prop_tween = tween.tween_property(dice_node, "global_position", target_pos, 0.4)
+		prop_tween.set_trans(Tween.TRANS_QUINT)
+		prop_tween.set_ease(Tween.EASE_OUT)
+
+		# 2. 이동이 끝난 후 충돌 속성 복원
+		tween.tween_callback(func():
+			if is_instance_valid(dice_node):
+				dice_node.collision_layer = 1
+				dice_node.collision_mask = 1
+		)
 		
 		invested_dice_nodes.append(dice_node)
 		
