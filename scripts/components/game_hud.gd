@@ -231,7 +231,7 @@ func _initialize_managers() -> void:
 func _setup_scene() -> void:
 	cup = CupScene.instantiate()
 	cup.position = GameConstants.CUP_POSITION
-	cup.scale = Vector3(1, 1, 1)
+	#cup.scale = Vector3(1, 1, 1)
 	world_3d.add_child(cup)
 	await get_tree().process_frame      # physics 반영까지 대기
 	cup.update_initial_transform()      # 확정된 위치 저장

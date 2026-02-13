@@ -76,12 +76,12 @@ func setup_physics_for_spawning() -> void:
 func apply_inside_cup_physics() -> void:
 	print("🎲 ", name, " -> 컵 내부 흔들기 물리 적용 (중력 40, 저항 0.5, 반발 0.6)")
 	gravity_scale = 15
-	linear_damp = 0
+	linear_damp = 0.8
 	angular_damp = 0
 
 	if physics_material_override:
-		physics_material_override.friction = 0.4
-		physics_material_override.bounce = 1  # ★ 활발하게 튕기도록
+		physics_material_override.friction = 0.3
+		physics_material_override.bounce = 0.6  # ★ 활발하게 튕기도록
 
 # ★ 3. 컵 '외부' 테이블용 물리: 원본 GitHub 값으로 복원
 func apply_outside_cup_physics() -> void:
@@ -99,11 +99,25 @@ func start_rolling() -> void:
 	roll_time = 0.0
 
 	# 초기 각속도를 랜덤하게 설정하여 물리적으로 회전하도록
-	angular_velocity = Vector3(
-		randf_range(-10, 10),
-		randf_range(-10, 10),
-		randf_range(-10, 10)
-	)
+	var x_angular: float
+	if randf() < 0.5: # 50% 확률로 음수 범위
+		x_angular = randf_range(-25.0, -10.0)
+	else: # 50% 확률로 양수 범위
+		x_angular = randf_range(10.0, 25.0)
+
+	var y_angular: float
+	if randf() < 0.5:
+		y_angular = randf_range(-25.0, -10.0)
+	else:
+		y_angular = randf_range(10.0, 25.0)
+
+	var z_angular: float
+	if randf() < 0.5:
+		z_angular = randf_range(-25.0, -10.0)
+	else:
+		z_angular = randf_range(10.0, 25.0)
+
+	angular_velocity = Vector3(x_angular, y_angular, z_angular)
 
 	print("🎲 ", name, " start_rolling - angular_velocity 설정: ", angular_velocity)
 
