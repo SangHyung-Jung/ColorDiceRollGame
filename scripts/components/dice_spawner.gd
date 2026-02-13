@@ -98,6 +98,7 @@ func apply_dice_impulse() -> void:
 			randf_range(GameConstants.DICE_TORQUE_RANGE.x, GameConstants.DICE_TORQUE_RANGE.y)
 		)
 
+		print("DiceSpawner: Applying impulse %s to dice %s" % [impulse, dice.name])
 		dice.apply_impulse_force(impulse, torque)
 		dice.start_rolling()
 

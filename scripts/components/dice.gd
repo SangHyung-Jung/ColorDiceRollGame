@@ -10,7 +10,7 @@ const DICE_SIZE := 1.2
 const ANGULAR_VELOCITY_THRESHOLD := 1.0
 const LINEAR_VELOCITY_THRESHOLD := 0.3
 const MAX_VELOCITY := 50.0
-const MAX_DISTANCE_FROM_ORIGIN := 30.0
+const MAX_DISTANCE_FROM_ORIGIN := 100.0
 const FACE_ANGLE := 90.0
 const MAX_ROLL_TIME := 10.0  # 최대 10초 후 강제 정지
 
@@ -74,7 +74,6 @@ func setup_physics_for_spawning() -> void:
 
 # ★ 2. 컵 '내부' 흔들기용 물리: 원본 GitHub 값으로 복원
 func apply_inside_cup_physics() -> void:
-	print("🎲 ", name, " -> 컵 내부 흔들기 물리 적용 (중력 40, 저항 0.5, 반발 0.6)")
 	gravity_scale = 15
 	linear_damp = 0.8
 	angular_damp = 0
@@ -85,14 +84,13 @@ func apply_inside_cup_physics() -> void:
 
 # ★ 3. 컵 '외부' 테이블용 물리: 원본 GitHub 값으로 복원
 func apply_outside_cup_physics() -> void:
-	print("🎲 ", name, " -> 테이블 물리 적용 (중력 40, 저항 2.0)")
 	gravity_scale = 20
-	linear_damp = 0.7  # 저항을 높여서 빠르게 정착
-	angular_damp = 0.7  # 회전 저항을 높여서 빠르게 멈춤
+	linear_damp = 0.1  # 저항을 낮춰서 멀리 퍼지도록
+	angular_damp = 0.2  # 회전 저항을 낮춰서 더 구르도록
 
 	if physics_material_override:
-		physics_material_override.friction = 0.8
-		physics_material_override.bounce = 0.2
+		physics_material_override.friction = 0.3
+		physics_material_override.bounce = 0.5
 
 func start_rolling() -> void:
 	rolling = true
