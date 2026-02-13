@@ -41,10 +41,11 @@ func reset_and_spawn_all_dice(dice_colors: Array[Color]) -> void:
 		dice.scene_file_path = ""
 
 		var spawn_pos = cup_ref.global_position + Vector3(
-			randf_range(-0.5, 0.5),
-			4.0,
-			randf_range(-0.5, 0.5)
+			randf_range(-0.3, 0.3),
+			1.5,                        # Y=11.5, ceiling(12.7) 안쪽
+			randf_range(-0.3, 0.3)
 		)
+		await get_tree().create_timer(0.1).timeout  # 0.25초 간격
 
 		dice.setup_dice(dice_color, spawn_pos)
 		dice.setup_physics_for_spawning()

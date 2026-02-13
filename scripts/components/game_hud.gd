@@ -235,7 +235,8 @@ func _setup_scene() -> void:
 	world_3d.add_child(cup)
 	await get_tree().process_frame      # physics 반영까지 대기
 	cup.update_initial_transform()      # 확정된 위치 저장
-	
+	cup._set_ceiling_collision(false)   # ← 추가: 에디터 초기값 무력화, 처음부터 OFF 확정
+
 func _setup_game() -> void:
 	await _setup_scene()
 	game_manager.initialize()
