@@ -17,30 +17,9 @@ func _get_dice_color_from_godot_color(color: Color) -> ColoredDice.DiceColor:
 	return ColoredDice.color_from_godot_color(color)
 
 func reset_and_spawn_all_dice(dice_colors: Array[Color]) -> void:
-	print("=== 새로운 주사위 리셋 시작 ===")
-	print("재활용 주사위: ", dice_nodes.size())
-	print("새 생성 주사위: ", dice_colors.size())
+	print("=== 새로운 주사위 스폰 시작 ===")
+	print("생성할 주사위 수: ", dice_colors.size())
 
-	# 1단계: 기존 주사위들을 컵 위로 이동
-	for i in range(dice_nodes.size()):
-		var dice = dice_nodes[i]
-		print("재활용 주사위 ", i, " (", dice.name, ") 리셋")
-
-		# 시그널 중복 연결 방지 - 재활용 주사위는 이미 연결되어 있음
-		# 따라서 여기서는 연결하지 않음
-
-		dice.reset_position(cup_ref.global_position + Vector3(
-			randf_range(-0.5, 0.5),
-			4.0,
-			randf_range(-0.5, 0.5)
-		))
-
-		# 재활용 주사위도 스폰 물리 적용
-		dice.setup_physics_for_spawning()
-
-		await get_tree().process_frame
-
-	# 2단계: 새 주사위들 생성
 	for i in range(dice_colors.size()):
 		var color = dice_colors[i]
 		print("새 주사위 ", i, " 생성, 색상: ", color)
@@ -55,13 +34,10 @@ func reset_and_spawn_all_dice(dice_colors: Array[Color]) -> void:
 				target_parent = get_parent()
 		target_parent.add_child(dice)
 
-		# 동적 생성된 노드는 씬에 저장되지 않도록 설정
 		dice.owner = null
 		dice.set_meta("_editor_description_", "Runtime Generated Dice - Do Not Save")
 		dice.set_meta("_edit_lock_", true)
 		dice.add_to_group("runtime_dice", true)
-
-		# 추가 보호: 씬 트리에서 완전히 분리
 		dice.scene_file_path = ""
 
 		var spawn_pos = cup_ref.global_position + Vector3(
@@ -72,21 +48,17 @@ func reset_and_spawn_all_dice(dice_colors: Array[Color]) -> void:
 
 		dice.setup_dice(dice_color, spawn_pos)
 		dice.setup_physics_for_spawning()
-
 		dice_nodes.append(dice)
 
-		# 중복 연결 방지
 		if not dice.roll_finished.is_connected(_on_dice_roll_finished):
 			dice.roll_finished.connect(_on_dice_roll_finished)
 
 		await get_tree().process_frame
 
 	print("=== 모든 주사위 배치 완료 - 정착 대기 시작 ===")
-
 	await wait_for_dice_settlement()
-
-	print("=== 주사위 리셋 완료 ===")
-
+	print("=== 주사위 스폰 완료 ===")
+	
 
 func _on_dice_roll_finished(value: int, dice_name: String) -> void:
 	dice_roll_finished.emit(value, dice_name)

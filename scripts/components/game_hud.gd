@@ -233,17 +233,14 @@ func _setup_scene() -> void:
 	cup.position = GameConstants.CUP_POSITION
 	cup.scale = Vector3(1, 1, 1)
 	world_3d.add_child(cup)
-
+	
 func _setup_game() -> void:
 	_setup_scene()
 	game_manager.initialize()
 	game_manager.setup_cup(cup)
-	# input_manager.initialize(combo_select, rolling_world_camera) # Removed, now in GameRoot
 	dice_spawner.initialize(cup, world_3d)
 	await _invest_initial_dice()
-	cup._set_ceiling_collision(false)
-	await _spawn_initial_dice()
-	cup._set_ceiling_collision(true)
+	await _reset_roll()  # _spawn_initial_dice() 대신 통일
 
 func start_roll_animation() -> void:
 	# This function will be connected to InputManager.roll_started
@@ -254,7 +251,6 @@ func handle_roll_release() -> void:
 	if current_state == GameState.ROLL_IN_PROGRESS:
 		_on_mouse_release()
 		_set_state(GameState.DICE_SETTLING)
-
 
 func _invest_initial_dice() -> void:
 	if not game_manager.can_draw_dice(5):
@@ -454,9 +450,12 @@ func _reset_roll() -> void:
 			game_manager.end_challenge_due_to_empty_bag()
 			return
 		var new_dice_colors = dice_spawner.create_dice_colors_from_bag(game_manager.bag, need)
+		cup._set_ceiling_collision(false)          # 스폰 중 OFF
 		await dice_spawner.reset_and_spawn_all_dice(new_dice_colors)
+		cup._set_ceiling_collision(true)           # 스폰 완료 후 ON
+	else:
+		cup._set_ceiling_collision(true)
 	game_manager.dice_in_cup_count = dice_spawner.get_dice_count()
-
 
 func _on_invest_pressed() -> void:
 	if not combo_select.active:
@@ -531,8 +530,6 @@ func _on_turn_end_pressed() -> void:
 		for d in remaining_dice:
 			d.queue_free()
 		dice_spawner.clear_dice_nodes()
-		# ★ 다음 롤을 미리 준비
-		cup.reset()
 		await _reset_roll()
 		# Reset the state to allow for a new roll
 		_set_state(GameState.AWAITING_ROLL_INPUT)
