@@ -180,8 +180,27 @@ func clear_dice_nodes() -> void:
 
 func wait_for_dice_settlement() -> void:
 	print("=== 주사위 정착 대기 시작 ===")
-	print("대기 시간: ", GameConstants.DICE_SETTLEMENT_TIME, "초")
-	
-	await get_tree().create_timer(GameConstants.DICE_SETTLEMENT_TIME).timeout
-	
-	print("=== 주사위 정착 완료 ===")
+
+	# 최소 대기 (물리 엔진이 첫 처리를 할 시간 확보)
+	await get_tree().create_timer(0.5).timeout
+
+	# 실제 속도 기반 정착 확인
+	var max_wait := 3.0
+	var elapsed := 0.0
+	var check_interval := 0.1
+
+	while elapsed < max_wait:
+		await get_tree().create_timer(check_interval).timeout
+		elapsed += check_interval
+
+		var all_settled := true
+		for dice in dice_nodes:
+			if is_instance_valid(dice):
+				if dice.linear_velocity.length() > 0.05:
+					all_settled = false
+					break
+
+		if all_settled:
+			break
+
+	print("=== 주사위 정착 완료 (경과: %.1f초) ===" % (0.5 + elapsed))

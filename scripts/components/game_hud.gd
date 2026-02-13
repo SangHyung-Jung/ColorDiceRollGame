@@ -452,11 +452,7 @@ func _reset_roll() -> void:
 			game_manager.end_challenge_due_to_empty_bag()
 			return
 		var new_dice_colors = dice_spawner.create_dice_colors_from_bag(game_manager.bag, need)
-		cup._set_ceiling_collision(false)          # 스폰 중 OFF
 		await dice_spawner.reset_and_spawn_all_dice(new_dice_colors)
-		cup._set_ceiling_collision(true)           # 스폰 완료 후 ON
-	else:
-		cup._set_ceiling_collision(true)
 	game_manager.dice_in_cup_count = dice_spawner.get_dice_count()
 
 func _on_invest_pressed() -> void:

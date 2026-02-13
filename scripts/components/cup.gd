@@ -210,7 +210,7 @@ func pour() -> void:
 func reset() -> void:
 	global_position = initial_position
 	rotation_degrees = initial_rotation
-	# ceiling 제어는 호출자(_reset_roll)가 책임지므로 여기선 외벽만
+	_set_ceiling_collision(false)   # ← 추가: 스폰 준비, 흔들기 전까지 OFF
 	_set_wall_collision(true)
 
 ## 흔들기 중에 컵 내부 주사위들에 힘을 가해 더 활발하게 움직이게 함
