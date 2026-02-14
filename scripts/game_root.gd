@@ -30,6 +30,10 @@ var is_in_game_view: bool = false
 
 func _ready():
 	# Initial setup of game hud. This creates all the necessary manager nodes.
+	# 사운드 미리 로드
+	SoundManager.preload_sound("die_on_cup", "res://assets/audio/dice-throw-3.ogg")
+	SoundManager.preload_sound("die_on_die", "res://assets/audio/dice-throw-1.ogg")
+
 	game_hud.setup_game_hud(world_3d, camera, floating_text_container)
 	
 	# Initialize InputManager now that game_hud (and its combo_select) is ready.
