@@ -41,17 +41,9 @@ const DIAGONAL_VECTOR := Vector3(1.15, 1.0, -1.15)
 ## 컵 초기화 - 위치 저장 및 시그널 연결
 func _ready() -> void:
 	# 사운드 매니저를 통해 컵 흔들기 사운드를 미리 로드합니다.
-	#SoundManager.preload_sound("cup_shake", "res://assets/audio/dice-shake-3.ogg")
-	#SoundManager.preload_sound("pour_sound", "res://assets/audio/dice-throw-1.ogg")
-	SoundManager.preload_sound("cup_shake", "res://assets/audio/dice_rolling.wav")
-	SoundManager.preload_sound("pour_sound", "res://assets/audio/dice_shoot.wav")
 
 	# 사운드 재생을 위한 타이머를 생성하고 설정합니다.
-	_shake_sound_timer = Timer.new()
-	_shake_sound_timer.name = "ShakeSoundTimer"
-	_shake_sound_timer.wait_time = 0.35  # 0.35초마다 사운드를 재생
-	_shake_sound_timer.timeout.connect(_on_shake_sound_timer_timeout)
-	add_child(_shake_sound_timer)
+
 
 	# 컵의 물리 바디에 CCD 적용
 	var physics_body = $PhysicsBody
@@ -134,10 +126,7 @@ func start_shaking() -> void:
 	if is_shaking:
 		return  # 이미 흔들기 중
 	
-	# 사운드 타이머 시작
-	_shake_sound_timer.start()
-	# 첫 사운드는 즉시 재생
-	_on_shake_sound_timer_timeout()
+
 
 	is_shaking = true
 	shake_time = 0.0  # 시간 초기화
@@ -151,9 +140,7 @@ func stop_shaking() -> void:
 		return  # 이미 중지된 상태
 	is_shaking = false
 
-	# 사운드 타이머 중지 및 재생 중인 소리 즉시 정지
-	_shake_sound_timer.stop()
-	SoundManager.stop(SoundManager.CHANNEL_SFX)
+
 
 	# 원위치로 돌아가는 부드러운 애니메이션
 	var return_tween: Tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
@@ -179,7 +166,7 @@ func _on_body_exited_cup(body: Node3D) -> void:
 ## 컵 쏟기 애니메이션 (비동기)
 ## 컵을 기울여서 주사위들을 밖으로 쏟는 동작
 func pour() -> void:
-	SoundManager.play("pour_sound")
+	#SoundManager.play("pour_sound")
 	# ★ 천장과 외벽 충돌 모두 비활성화 - 주사위가 자유롭게 나갈 수 있도록
 	_set_ceiling_collision(false)
 
@@ -257,7 +244,3 @@ func _apply_shake_forces_to_dice() -> void:
 					))
 
 # --- 사운드 관련 함수 ---
-
-## 흔들기 사운드 타이머가 만료될 때마다 호출됩니다.
-func _on_shake_sound_timer_timeout():
-	SoundManager.play("cup_shake")
