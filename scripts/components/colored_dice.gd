@@ -35,11 +35,7 @@ func get_model_path(type_index: int, color: DiceColor) -> String:
 		2: return "res://assets/models/2_dollar_dice_" + color_name + ".gltf"
 		3: return "res://assets/models/3_multiply_dice_" + color_name + ".gltf"
 		4: return "res://assets/models/4_faceless_dice_" + color_name + ".gltf"
-		5: 
-			# 5번은 특수 (레드만 따로 있고 나머지는 공용일 수 있음, 확인 필요)
-			if color == DiceColor.RED:
-				return "res://assets/models/5_lucky_dice_777_red.gltf"
-			return "res://assets/models/5_lucky_dice_777.gltf"
+		5: return "res://assets/models/5_lucky_dice_777_red.gltf" # [수정] 항상 레드 모델만 사용
 		6: return "res://assets/models/6_growing_dice_" + color_name + ".gltf"
 		7: return "res://assets/models/7_ugly_dice_" + color_name + ".gltf"
 		8: return "res://assets/models/8_dice_prism.tscn"
