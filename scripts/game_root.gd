@@ -22,8 +22,8 @@ const ROT_SHOP = Vector3(-90, 0, 0) # 상점도 게임과 같은 탑다운 뷰 �
 const ROT_START = Vector3(-90, 0, 0)
 const POS_DICTIONARY = Vector3(-80, 20, 0)
 const ROT_DICTIONARY = Vector3(-90, 0, 0)
-# [추가] 조명 설정 화면 카메라 위치
-const POS_LIGHT_CONFIG = Vector3(-120, 20, 0)
+# [수정] 시작 화면(-40, 20, 0)의 위쪽(Z축 -25)에 위치하도록 설정
+const POS_LIGHT_CONFIG = Vector3(-40, 25, -25) 
 const ROT_LIGHT_CONFIG = Vector3(-90, 0, 0)
 
 var is_in_game_view: bool = false

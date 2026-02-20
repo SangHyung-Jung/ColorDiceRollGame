@@ -65,12 +65,13 @@ func _setup_dice_previews():
 	for i in range(9):
 		var dice = ColoredDice.new()
 		config_area.add_child(dice)
-		# 3x3 격자 형태로 배치하여 한눈에 들어오게 함 (가려짐 방지)
+		# 3x3 격자 형태로 배치 (간격을 조금 좁힘)
 		var row = i / 3
 		var col = i % 3
-		var spawn_pos = config_area.global_position + Vector3(col * 5 - 5, 0, row * 5 - 5)
+		var spawn_pos = config_area.global_position + Vector3(col * 4 - 4, 0, row * 4 - 4)
 		
-		dice.setup_dice(ColoredDice.DiceColor.WHITE, spawn_pos, i)
+		# [수정] 주사위 색상을 파란색으로 변경
+		dice.setup_dice(ColoredDice.DiceColor.BLUE, spawn_pos, i)
 		dice.freeze = true
 		
 		var light = PinpointLightScene.instantiate()
@@ -78,11 +79,10 @@ func _setup_dice_previews():
 		light.target_node = dice
 
 func _on_slider_changed(value: float, key: String):
-	# 현재 선택된 주사위의 설정만 변경
+	# 현재 선택된 주사위의 설정만 변경 (메모리)
 	Main.dice_light_configs[selected_dice_type][key] = value
 	_update_value_label(key, value)
-	# 파일로 영구 저장
-	Main.save_light_configs()
+	# (저장 함수 호출 삭제)
 
 func _update_value_label(key: String, value: float):
 	var label = get_node_or_null("Controls/" + key.capitalize() + "/ValueLabel")
