@@ -516,6 +516,9 @@ func _invest_dice(nodes: Array):
 
 		if current_results.has(dice_node.name):
 			dice_node.set_meta("value", current_results[dice_node.name])
+		
+		# 물리 고정 (이동 중 회전 방지)
+		dice_node.freeze = true
 		dice_node.freeze_mode = RigidBody3D.FREEZE_MODE_KINEMATIC
 		dice_node.set_collision_enabled(false)
 		dice_node.linear_velocity = Vector3.ZERO
@@ -591,6 +594,9 @@ func _reposition_invested_dice() -> void:
 		if not is_instance_valid(dice_node):
 			continue
 			
+		# 물리 고정 상태 재확인 (눈 바뀌는 것 방지)
+		dice_node.freeze = true
+		
 		var target_pos = socket_positions[i]
 		
 		# Use a tween for smooth movement

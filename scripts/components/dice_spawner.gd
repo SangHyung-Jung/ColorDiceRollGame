@@ -144,7 +144,8 @@ func display_dice_results(roll_results: Dictionary) -> void:
 		# 주사위를 해당 면으로 회전 (물리 멈추기 전에 먼저 설정)
 		dice.show_face(result_value)
 
-		# 물리 정지
+		# 물리 정지 (freeze를 켜서 더 이상 물리 연산이 회전에 영향을 주지 않게 함)
+		dice.freeze = true
 		dice.freeze_mode = RigidBody3D.FREEZE_MODE_KINEMATIC
 		dice.linear_velocity = Vector3.ZERO
 		dice.angular_velocity = Vector3.ZERO
