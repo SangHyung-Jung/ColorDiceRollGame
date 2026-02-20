@@ -60,7 +60,16 @@ const RoundClearPopupScene = preload("res://scenes/popups/round_clear_popup.tscn
 const ScoreAnimatorScene = preload("res://scripts/components/score_animator/ScoreAnimator.gd")
 const ShopDiceScene = preload("res://scenes/shop_dice.tscn") # [추가] ShopDice 씬 프리로드
 const SocketTexture = preload("res://dice_socket.png")
-const PinpointLightScene = preload("res://scenes/effects/pinpoint_light.tscn") # [추가]
+const PinpointLightScene = preload("res://scenes/effects/pinpoint_light.tscn")
+
+# [추가] 색상별 조명 씬 프리로드
+const LIGHT_SCENES = {
+	ColoredDice.DiceColor.WHITE: preload("res://scenes/effects/colors/pinpoint_light_white.tscn"),
+	ColoredDice.DiceColor.BLACK: preload("res://scenes/effects/colors/pinpoint_light_black.tscn"),
+	ColoredDice.DiceColor.RED:   preload("res://scenes/effects/colors/pinpoint_light_red.tscn"),
+	ColoredDice.DiceColor.GREEN: preload("res://scenes/effects/colors/pinpoint_light_green.tscn"),
+	ColoredDice.DiceColor.BLUE:  preload("res://scenes/effects/colors/pinpoint_light_blue.tscn")
+}
 
 # === 투자 시스템 변수 ===
 const MAX_INVESTED_DICE = 10
@@ -279,8 +288,9 @@ func _invest_initial_dice() -> void:
 			dice_node.global_position = socket_positions[i]
 			invested_dice_nodes.append(dice_node)
 			
-			# [수정] 조명을 3D 월드에 추가하고 주사위를 추적하게 함
-			var pinpoint_light = PinpointLightScene.instantiate()
+			# [수정] 해당 색상의 전용 조명 씬 선택
+			var light_scene = LIGHT_SCENES.get(dice_node.current_dice_color, PinpointLightScene)
+			var pinpoint_light = light_scene.instantiate()
 			world_3d.add_child(pinpoint_light)
 			pinpoint_light.target_node = dice_node
 		else:
@@ -507,8 +517,7 @@ func _invest_dice(nodes: Array):
 		if current_results.has(dice_node.name):
 			dice_node.set_meta("value", current_results[dice_node.name])
 		dice_node.freeze_mode = RigidBody3D.FREEZE_MODE_KINEMATIC
-		dice_node.collision_layer = 0
-		dice_node.collision_mask = 0
+		dice_node.set_collision_enabled(false)
 		dice_node.linear_velocity = Vector3.ZERO
 		dice_node.angular_velocity = Vector3.ZERO
 		
@@ -522,14 +531,14 @@ func _invest_dice(nodes: Array):
 		# 2. 이동이 끝난 후 충돌 속성 복원
 		tween.tween_callback(func():
 			if is_instance_valid(dice_node):
-				dice_node.collision_layer = 1
-				dice_node.collision_mask = 1
+				dice_node.set_collision_enabled(true)
 		)
 		
 		invested_dice_nodes.append(dice_node)
 		
-		# [수정] 조명을 주사위의 자식이 아닌 3D 월드에 직접 추가하고 대상을 추적하게 함
-		var pinpoint_light = PinpointLightScene.instantiate()
+		# [수정] 해당 색상의 전용 조명 씬 선택 및 인스턴스화
+		var light_scene = LIGHT_SCENES.get(dice_node.current_dice_color, PinpointLightScene)
+		var pinpoint_light = light_scene.instantiate()
 		world_3d.add_child(pinpoint_light)
 		pinpoint_light.target_node = dice_node
 		

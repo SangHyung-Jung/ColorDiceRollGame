@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://c2k2k2k2k2k2k"]
+
+[ext_resource type="Script" uid="uid://cfayt68r3368x" path="res://scripts/effects/light_follower.gd" id="1_script"]
+
+[node name="PinpointLightBlack" type="OmniLight3D"]
+light_color = Color(0.5, 0.2, 1, 1)
+light_energy = 1.5
+shadow_enabled = true
+omni_range = 4.5
+omni_attenuation = 1.5
+script = ExtResource("1_script")
