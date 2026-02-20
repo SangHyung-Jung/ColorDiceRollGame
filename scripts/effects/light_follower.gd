@@ -1,7 +1,7 @@
 extends OmniLight3D
 
 var target_node: Node3D
-var offset := Vector3(0, 2.5, 0)
+var offset := Vector3(0, 1.3, 0)
 
 @export var shake_speed := 1.5
 @export var shake_amount := 0.1

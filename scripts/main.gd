@@ -11,8 +11,8 @@ var gold: int = 0 # 플레이어 재화
 var owned_jokers: Array = [] # 플레이어가 소유한 조커 목록
 
 # 주사위 종류 관련 변수
-#var owned_dice_types: Array = [0] 
 var owned_dice_types: Array = [0,1,2,3,4,5,6,7,8] 
+#var owned_dice_types: Array = [0] 
 
 const ALL_DICE_INFO = {
 	0: {"name": "Basic Dice", "description": "The standard dice.", "price": 0},
@@ -29,63 +29,20 @@ const ALL_DICE_INFO = {
 # ============================================================================
 # ⭐ [개발자용] 주사위별 조명 최종 설정 (여기서 값을 수정하고 배포하세요)
 # ============================================================================
+# shake_speed, shake_amount를 0으로 설정하여 멈춤
+# attenuation을 3.0으로 높여 중앙에 집중시킴
 var dice_light_configs: Dictionary = {
-	0: {"energy": 1.0,
-		"range": 2.0,
-		"attenuation": 5.0,
-		"shake_speed": 2.5,
-		"shake_amount": 0.1,
-		"color": Color(1, 1, 1)
-		},
-	1: {"energy": 1.0,
-		"range": 2.0,
-		"attenuation": 5.0,
-		"shake_speed": 2.5,
-		"shake_amount": 0.1,
-		"color": Color(1, 1, 1)},
-	2: {"energy": 1.0,
-		"range": 2.0,
-		"attenuation": 5.0,
-		"shake_speed": 2.5,
-		"shake_amount": 0.1,
-		"color": Color(1, 1, 1)},
-	3: {"energy": 1.0,
-		"range": 2.0,
-		"attenuation": 5.0,
-		"shake_speed": 2.5,
-		"shake_amount": 0.1,
-		"color": Color(1, 1, 1)},
-	4: {"energy": 1.0,
-		"range": 2.0,
-		"attenuation": 5.0,
-		"shake_speed": 2.5,
-		"shake_amount": 0.1,
-		"color": Color(1, 1, 1)},
-	5: {"energy": 6.0,
-		"range": 3.0,
-		"attenuation": 2.0,
-		"shake_speed": 2.5,
-		"shake_amount": 0.1,
-		"color": Color(1, 1, 1)},
-	6: {"energy": 1.0,
-		"range": 2.0,
-		"attenuation": 5.0,
-		"shake_speed": 2.5,
-		"shake_amount": 0.1,
-		"color": Color(1, 1, 1)},
-	7: {"energy": 1.0,
-		"range": 2.0,
-		"attenuation": 5.0,
-		"shake_speed": 2.5,
-		"shake_amount": 0.1,
-		"color": Color(1, 1, 1)},
-	8: {"energy": 1.0,
-		"range": 2.0,
-		"attenuation": 5.0,
-		"shake_speed": 2.5,
-		"shake_amount": 0.1,
-		"color": Color(1, 1, 1)}
+	0: {"energy": 0.1, "range": 2.5, "attenuation": 0.0, "shake_speed": 0.0, "shake_amount": 0.0, "color": Color(1, 1, 1)},
+	1: {"energy": 0.1, "range": 2.5, "attenuation": 0.0, "shake_speed": 0.0, "shake_amount": 0.0, "color": Color(1, 1, 1)},
+	2: {"energy": 0.1, "range": 2.5, "attenuation": 0.0, "shake_speed": 0.0, "shake_amount": 0.0, "color": Color(1, 1, 1)},
+	3: {"energy": 0.1, "range": 2.5, "attenuation": 0.0, "shake_speed": 0.0, "shake_amount": 0.0, "color": Color(1, 1, 1)},
+	4: {"energy": 0.1, "range": 2.5, "attenuation": 0.0, "shake_speed": 0.0, "shake_amount": 0.0, "color": Color(1, 1, 1)},
+	5: {"energy": 1.0, "range": 1.5, "attenuation": 0.0, "shake_speed": 0.0, "shake_amount": 0.0, "color": Color(1, 1, 1)},
+	6: {"energy": 0.1, "range": 2.5, "attenuation": 0.0, "shake_speed": 0.0, "shake_amount": 0.0, "color": Color(1, 1, 1)},
+	7: {"energy": 0.1, "range": 2.5, "attenuation": 0.0, "shake_speed": 0.0, "shake_amount": 0.0, "color": Color(1, 1, 1)},
+	8: {"energy": 0.1, "range": 2.5, "attenuation": 0.0, "shake_speed": 0.0, "shake_amount": 0.0, "color": Color(1, 1, 1)}
 }
+
 func _ready() -> void:
 	# Temporary: Add a sample joker for testing
 	if owned_jokers.is_empty():

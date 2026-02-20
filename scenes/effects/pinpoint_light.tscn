@@ -3,11 +3,9 @@
 [ext_resource type="Script" uid="uid://cfayt68r3368x" path="res://scripts/effects/light_follower.gd" id="1_script"]
 
 [node name="PinpointLight" type="OmniLight3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.24, 0, 0)
 light_energy = 3.0
-light_specular = 1.0
+light_specular = 16.0
 shadow_enabled = true
 shadow_bias = 0.0
-omni_range = 3.001
-omni_attenuation = 2.534
+shadow_normal_bias = 1.132
 script = ExtResource("1_script")
