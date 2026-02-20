@@ -272,17 +272,10 @@ func _force_stop() -> void:
 	roll_finished.emit(result, name)
 
 func set_collision_enabled(enabled: bool):
-	if collider:
-		if enabled:
-			# collider의 collision_layer와 collision_mask는 Dice 클래스의 속성이 아니라
-			# CollisionShape3D 노드의 속성입니다.
-			# Dice 클래스에서 collider는 인스턴스 변수입니다.
-			# 해당 collider 인스턴스가 유효한지 확인하고 접근해야 합니다.
-			collider.collision_layer = 1
-			collider.collision_mask = 1
-		else:
-			collider.collision_layer = 0
-			collider.collision_mask = 0
+	if enabled:
+		# collision_layer와 collision_mask는 RigidBody3D(self)의 속성입니다.
+		collision_layer = 1
+		collision_mask = 1
 	else:
-		# collider가 아직 초기화되지 않았거나 누락된 경우를 대비한 경고
-		push_warning("Collider not found for Dice: ", name, ". Cannot set collision.")
+		collision_layer = 0
+		collision_mask = 0

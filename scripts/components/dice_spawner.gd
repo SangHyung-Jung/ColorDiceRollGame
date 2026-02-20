@@ -9,6 +9,16 @@ var dice_nodes: Array[ColoredDice] = []
 var cup_ref: Node3D
 var runtime_container: Node3D  # 동적 노드들을 넣을 컨테이너
 
+# [추가] 색상별 조명 씬 프리로드
+const PinpointLightScene = preload("res://scenes/effects/pinpoint_light.tscn")
+const LIGHT_SCENES = {
+	ColoredDice.DiceColor.WHITE: preload("res://scenes/effects/colors/pinpoint_light_white.tscn"),
+	ColoredDice.DiceColor.BLACK: preload("res://scenes/effects/colors/pinpoint_light_black.tscn"),
+	ColoredDice.DiceColor.RED:   preload("res://scenes/effects/colors/pinpoint_light_red.tscn"),
+	ColoredDice.DiceColor.GREEN: preload("res://scenes/effects/colors/pinpoint_light_green.tscn"),
+	ColoredDice.DiceColor.BLUE:  preload("res://scenes/effects/colors/pinpoint_light_blue.tscn")
+}
+
 func initialize(cup: Node3D, container: Node3D = null) -> void:
 	cup_ref = cup
 	runtime_container = container
@@ -50,6 +60,15 @@ func reset_and_spawn_all_dice(dice_colors: Array[Color]) -> void:
 		dice.setup_dice(dice_color, spawn_pos)
 		dice.setup_physics_for_spawning()
 		dice_nodes.append(dice)
+
+		# [추가] 굴러갈 주사위에도 개별 조명 부여
+		var light_scene = LIGHT_SCENES.get(dice_color, PinpointLightScene)
+		var pinpoint_light = light_scene.instantiate()
+		target_parent.add_child(pinpoint_light)
+		pinpoint_light.target_node = dice
+		
+		# 컵 내부에서는 빛을 조금만 낮춰서 어지러움을 방지 (선택 사항)
+		pinpoint_light.light_energy *= 0.8
 
 		if not dice.roll_finished.is_connected(_on_dice_roll_finished):
 			dice.roll_finished.connect(_on_dice_roll_finished)
@@ -131,8 +150,7 @@ func display_dice_results(roll_results: Dictionary) -> void:
 		dice.angular_velocity = Vector3.ZERO
 		
 		# ★ 핵심: 충돌 비활성화 (이동 중 다른 주사위와 충돌 방지)
-		dice.collision_layer = 0
-		dice.collision_mask = 0
+		dice.set_collision_enabled(false)
 
 		var target_pos = Vector3(start_x + i * GameConstants.DICE_SPACING, GameConstants.DISPLAY_Y, 0.0)
 		
@@ -146,8 +164,7 @@ func display_dice_results(roll_results: Dictionary) -> void:
 	print("=== 주사위 정렬 완료, 충돌 복원 시작 ===")
 	for dice in dice_nodes:
 		if is_instance_valid(dice):
-			dice.collision_layer = 1
-			dice.collision_mask = 1
+			dice.set_collision_enabled(true)
 			print("  ", dice.name, " 충돌 복원 완료")
 	print("=== 충돌 복원 완료 ===")
 

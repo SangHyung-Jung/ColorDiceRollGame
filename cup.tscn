@@ -62,3 +62,10 @@ debug_color = Color(0.354844, 0.496896, 0.957978, 0.42)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.7, 0)
 shape = SubResource("CylinderShape3D_358bg")
 debug_color = Color(0.160658, 0.563861, 0.837649, 0.42)
+
+[node name="CupInteriorLight" type="OmniLight3D" parent="PhysicsBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.5
+omni_range = 8.0
+omni_attenuation = 2.0
