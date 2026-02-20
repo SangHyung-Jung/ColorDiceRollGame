@@ -6,6 +6,7 @@ class_name GameRoot
 @onready var shop_hud = $UI_Canvas/ShopHUD
 @onready var start_screen = $UI_Canvas/StartScreen
 @onready var joker_dictionary = $UI_Canvas/JokerDictionary
+@onready var light_config_screen = $UI_Canvas/LightConfigScreen # [추가]
 @onready var world_3d = $"3D_World"
 @onready var floating_text_container = $EffectsLayer/FloatingTextContainer
 @onready var input_manager: InputManager = $InputManager
@@ -21,6 +22,9 @@ const ROT_SHOP = Vector3(-90, 0, 0) # 상점도 게임과 같은 탑다운 뷰 �
 const ROT_START = Vector3(-90, 0, 0)
 const POS_DICTIONARY = Vector3(-80, 20, 0)
 const ROT_DICTIONARY = Vector3(-90, 0, 0)
+# [추가] 조명 설정 화면 카메라 위치
+const POS_LIGHT_CONFIG = Vector3(-120, 20, 0)
+const ROT_LIGHT_CONFIG = Vector3(-90, 0, 0)
 
 var is_in_game_view: bool = false
 
@@ -46,10 +50,15 @@ func _ready():
 		start_screen.start_game_requested.connect(transition_to_game)
 		start_screen.joker_dictionary_requested.connect(transition_to_dictionary)
 		start_screen.shop_requested.connect(transition_to_shop)
+		start_screen.light_config_requested.connect(transition_to_light_config) # [추가]
 	
 	# [추가] 조커 사전 시그널 연결
 	if joker_dictionary:
 		joker_dictionary.back_requested.connect(transition_to_start)
+	
+	# [추가] 조명 설정 시그널 연결
+	if light_config_screen:
+		light_config_screen.back_requested.connect(transition_to_start)
 
 	# 시작 화면 진입 (즉시 이동)
 	transition_to_start(true)
@@ -72,6 +81,25 @@ func _process(_delta):
 		var game_world_pos_on_screen = camera.unproject_position(POS_GAME)
 		game_hud.position = game_world_pos_on_screen - screen_center
 
+# [추가] 조명 설정 화면으로 전환하는 함수
+func transition_to_light_config():
+	is_in_game_view = false
+	input_manager.set_roll_in_progress(true)
+
+	var tween = create_tween().set_parallel(true)
+	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	tween.tween_property(camera, "global_position", POS_LIGHT_CONFIG, 1.5)
+	tween.tween_property(camera, "rotation_degrees", ROT_LIGHT_CONFIG, 1.5)
+
+	tween.chain().tween_callback(func():
+		game_hud.visible = false
+		shop_hud.visible = false
+		if start_screen: start_screen.visible = false
+		if joker_dictionary: joker_dictionary.visible = false
+		if light_config_screen: light_config_screen.visible = true
+		input_manager.set_roll_in_progress(false)
+	)
+
 # [추가] 시작 화면으로 전환하는 함수
 func transition_to_start(instant: bool = false):
 	is_in_game_view = false
@@ -87,6 +115,7 @@ func transition_to_start(instant: bool = false):
 			start_screen.visible = true
 		if joker_dictionary:
 			joker_dictionary.visible = false
+		if light_config_screen: light_config_screen.visible = false
 		input_manager.set_roll_in_progress(false)
 		return
 
@@ -104,6 +133,7 @@ func transition_to_start(instant: bool = false):
 			start_screen.visible = true
 		if joker_dictionary:
 			joker_dictionary.visible = false
+		if light_config_screen: light_config_screen.visible = false
 		input_manager.set_roll_in_progress(false) # Re-enable input if needed for start screen
 	)
 
@@ -123,6 +153,7 @@ func transition_to_dictionary():
 		if start_screen: start_screen.visible = false
 		if joker_dictionary:
 			joker_dictionary.visible = true
+		if light_config_screen: light_config_screen.visible = false
 		input_manager.set_roll_in_progress(false) # Re-enable input if needed for dictionary (e.g., scrolling)
 	)
 
@@ -140,6 +171,7 @@ func transition_to_shop():
 		game_hud.visible = false
 		if start_screen: start_screen.visible = false # 혹시 켜져있으면 끄기
 		if joker_dictionary: joker_dictionary.visible = false
+		if light_config_screen: light_config_screen.visible = false
 		shop_hud.visible = true
 		shop_hud.enter_shop_sequence() # 상점 진입 애니메이션/로직 실행
 		input_manager.set_roll_in_progress(false) # Re-enable input for shop (if any)
@@ -153,6 +185,7 @@ func transition_to_game(instant: bool = false):
 		start_screen.visible = false # 시작 화면 숨김
 	if joker_dictionary:
 		joker_dictionary.visible = false
+	if light_config_screen: light_config_screen.visible = false
 	input_manager.set_roll_in_progress(true) # Disable shop input during transition
 	
 	if instant:

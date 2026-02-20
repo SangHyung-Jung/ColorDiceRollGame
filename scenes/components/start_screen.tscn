@@ -58,3 +58,7 @@ text = "Quit"
 [node name="JokerDictionaryButton" type="Button" parent="VBoxContainer"]
 layout_mode = 2
 text = "Joker Dictionary"
+
+[node name="LightsButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Lights"

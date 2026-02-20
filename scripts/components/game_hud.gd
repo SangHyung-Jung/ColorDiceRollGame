@@ -62,15 +62,6 @@ const ShopDiceScene = preload("res://scenes/shop_dice.tscn") # [추가] ShopDice
 const SocketTexture = preload("res://dice_socket.png")
 const PinpointLightScene = preload("res://scenes/effects/pinpoint_light.tscn")
 
-# [추가] 색상별 조명 씬 프리로드
-const LIGHT_SCENES = {
-	0: preload("res://scenes/effects/colors/pinpoint_light_white.tscn"),
-	1: preload("res://scenes/effects/colors/pinpoint_light_black.tscn"),
-	2: preload("res://scenes/effects/colors/pinpoint_light_red.tscn"),
-	3: preload("res://scenes/effects/colors/pinpoint_light_blue.tscn"),
-	4: preload("res://scenes/effects/colors/pinpoint_light_green.tscn")
-}
-
 # === 투자 시스템 변수 ===
 const MAX_INVESTED_DICE = 10
 var socket_positions: Array[Vector3] = []
@@ -291,9 +282,8 @@ func _invest_initial_dice() -> void:
 			dice_node.global_position = socket_positions[i]
 			invested_dice_nodes.append(dice_node)
 			
-			# [수정] 해당 색상의 전용 조명 씬 선택
-			var light_scene = LIGHT_SCENES.get(dice_node.current_dice_color, PinpointLightScene)
-			var pinpoint_light = light_scene.instantiate()
+			# [수정] 통합 조명 씬 사용
+			var pinpoint_light = PinpointLightScene.instantiate()
 			world_3d.add_child(pinpoint_light)
 			pinpoint_light.target_node = dice_node
 		else:
@@ -542,9 +532,8 @@ func _invest_dice(nodes: Array):
 		
 		invested_dice_nodes.append(dice_node)
 		
-		# [수정] 해당 색상의 전용 조명 씬 선택 및 인스턴스화
-		var light_scene = LIGHT_SCENES.get(dice_node.current_dice_color, PinpointLightScene)
-		var pinpoint_light = light_scene.instantiate()
+		# [수정] 통합 조명 씬 사용 (Main.light_config에 의해 실시간 제어됨)
+		var pinpoint_light = PinpointLightScene.instantiate()
 		world_3d.add_child(pinpoint_light)
 		pinpoint_light.target_node = dice_node
 		

@@ -9,15 +9,8 @@ var dice_nodes: Array[ColoredDice] = []
 var cup_ref: Node3D
 var runtime_container: Node3D  # 동적 노드들을 넣을 컨테이너
 
-# [추가] 색상별 조명 씬 프리로드
+# [추가] 통합 조명 씬 프리로드
 const PinpointLightScene = preload("res://scenes/effects/pinpoint_light.tscn")
-const LIGHT_SCENES = {
-	0: preload("res://scenes/effects/colors/pinpoint_light_white.tscn"),
-	1: preload("res://scenes/effects/colors/pinpoint_light_black.tscn"),
-	2: preload("res://scenes/effects/colors/pinpoint_light_red.tscn"),
-	3: preload("res://scenes/effects/colors/pinpoint_light_blue.tscn"),
-	4: preload("res://scenes/effects/colors/pinpoint_light_green.tscn")
-}
 
 func initialize(cup: Node3D, container: Node3D = null) -> void:
 	cup_ref = cup
@@ -63,9 +56,8 @@ func reset_and_spawn_all_dice(dice_colors: Array[Color]) -> void:
 		dice.setup_physics_for_spawning()
 		dice_nodes.append(dice)
 
-		# [추가] 굴러갈 주사위에도 개별 조명 부여
-		var light_scene = LIGHT_SCENES.get(dice_color, PinpointLightScene)
-		var pinpoint_light = light_scene.instantiate()
+		# [추가] 굴러갈 주사위에도 개별 조명 부여 (통합 씬 사용)
+		var pinpoint_light = PinpointLightScene.instantiate()
 		target_parent.add_child(pinpoint_light)
 		pinpoint_light.target_node = dice
 		

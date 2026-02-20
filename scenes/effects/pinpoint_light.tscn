@@ -11,4 +11,3 @@ shadow_bias = 0.0
 omni_range = 3.001
 omni_attenuation = 2.534
 script = ExtResource("1_script")
-shake_amount = 0.3

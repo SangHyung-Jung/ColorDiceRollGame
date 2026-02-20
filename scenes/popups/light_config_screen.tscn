@@ -1,0 +1,157 @@
+[gd_scene load_steps=4 format=3 uid="uid://b8l7k2m1n3p4q"]
+
+[ext_resource type="Script" path="res://scripts/popups/light_config_screen.gd" id="1_script"]
+[ext_resource type="FontFile" uid="uid://ulruyehktvyh" path="res://font/boldpixels/BoldPixels.otf" id="2_font"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0, 0, 0, 0.4)
+
+[node name="LightConfigScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Selection" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 80.0
+grow_horizontal = 2
+theme_override_constants/margin_left = 50
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 50
+
+[node name="DiceButtons" type="HBoxContainer" parent="Selection"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="Controls" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -350.0
+offset_top = 100.0
+offset_right = -30.0
+offset_bottom = -100.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_constants/separation = 15
+
+[node name="SelectedDiceTitle" type="Label" parent="Controls"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.843137, 0, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 24
+text = "Editing: Basic Dice"
+horizontal_alignment = 1
+
+[node name="Energy" type="VBoxContainer" parent="Controls"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Controls/Energy"]
+layout_mode = 2
+text = "Energy"
+
+[node name="Slider" type="HSlider" parent="Controls/Energy"]
+layout_mode = 2
+max_value = 10.0
+step = 0.1
+value = 2.0
+
+[node name="ValueLabel" type="Label" parent="Controls/Energy"]
+layout_mode = 2
+text = "2.0"
+horizontal_alignment = 2
+
+[node name="Range" type="VBoxContainer" parent="Controls"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Controls/Range"]
+layout_mode = 2
+text = "Range"
+
+[node name="Slider" type="HSlider" parent="Controls/Range"]
+layout_mode = 2
+max_value = 20.0
+step = 0.5
+value = 5.0
+
+[node name="ValueLabel" type="Label" parent="Controls/Range"]
+layout_mode = 2
+text = "5.0"
+horizontal_alignment = 2
+
+[node name="Attenuation" type="VBoxContainer" parent="Controls"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Controls/Attenuation"]
+layout_mode = 2
+text = "Attenuation"
+
+[node name="Slider" type="HSlider" parent="Controls/Attenuation"]
+layout_mode = 2
+max_value = 5.0
+step = 0.1
+value = 1.5
+
+[node name="ValueLabel" type="Label" parent="Controls/Attenuation"]
+layout_mode = 2
+text = "1.5"
+horizontal_alignment = 2
+
+[node name="ShakeSpeed" type="VBoxContainer" parent="Controls"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Controls/ShakeSpeed"]
+layout_mode = 2
+text = "Shake Speed"
+
+[node name="Slider" type="HSlider" parent="Controls/ShakeSpeed"]
+layout_mode = 2
+max_value = 10.0
+step = 0.1
+value = 1.5
+
+[node name="ValueLabel" type="Label" parent="Controls/ShakeSpeed"]
+layout_mode = 2
+text = "1.5"
+horizontal_alignment = 2
+
+[node name="ShakeAmount" type="VBoxContainer" parent="Controls"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Controls/ShakeAmount"]
+layout_mode = 2
+text = "Shake Amount"
+
+[node name="Slider" type="HSlider" parent="Controls/ShakeAmount"]
+layout_mode = 2
+max_value = 2.0
+step = 0.05
+value = 0.1
+
+[node name="ValueLabel" type="Label" parent="Controls/ShakeAmount"]
+layout_mode = 2
+text = "0.1"
+horizontal_alignment = 2
+
+[node name="BackButton" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 30.0
+offset_top = -80.0
+offset_right = 180.0
+offset_bottom = -30.0
+grow_vertical = 0
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 24
+text = "BACK"

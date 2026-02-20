@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://cyi2riaqbby4h"]
+[gd_scene load_steps=12 format=3 uid="uid://cyi2riaqbby4h"]
 
 [ext_resource type="Script" uid="uid://6fx2lujkwb1o" path="res://scripts/game_root.gd" id="1_x82f4"]
 [ext_resource type="PackedScene" uid="uid://bciyvj2g1j1vj" path="res://scenes/rolling_world.tscn" id="2_2t21a"]
@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://b8s5n5l3tbglo" path="res://scenes/components/start_screen.tscn" id="6_start_screen"]
 [ext_resource type="PackedScene" uid="uid://dpsk2v0i8nxxg" path="res://scenes/shop_dice.tscn" id="6_ylec3"]
 [ext_resource type="PackedScene" uid="uid://e4u7j62s742j" path="res://scenes/components/joker_dictionary.tscn" id="7_joker_dictionary"]
+[ext_resource type="PackedScene" path="res://scenes/popups/light_config_screen.tscn" id="8_light_config"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_Floor"]
 size = Vector3(10, 0.1, 10)
@@ -65,6 +66,9 @@ shape = SubResource("BoxShape3D_Wall")
 transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -5, 1, 0)
 shape = SubResource("BoxShape3D_Wall")
 
+[node name="LightConfigArea" type="Node3D" parent="3D_World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -120, 0, 0)
+
 [node name="PlayArea#RollingWorld" parent="." instance=ExtResource("2_2t21a")]
 
 [node name="UI_Canvas" type="CanvasLayer" parent="."]
@@ -79,6 +83,9 @@ shop_dice_scene = ExtResource("6_ylec3")
 visible = false
 
 [node name="JokerDictionary" parent="UI_Canvas" instance=ExtResource("7_joker_dictionary")]
+visible = false
+
+[node name="LightConfigScreen" parent="UI_Canvas" instance=ExtResource("8_light_config")]
 visible = false
 
 [node name="EffectsLayer" type="CanvasLayer" parent="."]
