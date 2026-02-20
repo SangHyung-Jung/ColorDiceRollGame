@@ -9,62 +9,6 @@ enum DiceColor {
 	GREEN
 }
 
-const DICE_GLTF_SCENES = {
-	#DiceColor.WHITE: preload("res://assets/models/9_dice_shadow_white.tscn"),
-	#DiceColor.BLACK: preload("res://assets/models/9_dice_shadow_black.tscn"),
-	#DiceColor.RED: preload("res://assets/models/9_dice_shadow_red.tscn"),
-	DiceColor.BLUE: preload("res://assets/models/9_dice_shadow_blue.tscn"),
-	#DiceColor.GREEN: preload("res://assets/models/9_dice_shadow_green.tscn")
-
-	#DiceColor.WHITE: preload("res://assets/models/0_dice_white.gltf"),
-	#DiceColor.BLACK: preload("res://assets/models/0_dice_black.gltf"),
-	DiceColor.RED: preload("res://assets/models/8_dice_prism.tscn"),
-	#DiceColor.BLUE: preload("res://assets/models/0_dice_blue.gltf"),
-	#DiceColor.GREEN: preload("res://assets/models/0_dice_green.gltf")
-
-	#DiceColor.WHITE: preload("res://assets/models/glass_prism_dice.gltf"),
-	#DiceColor.BLACK: preload("res://assets/models/glass_prism_dice.gltf"),
-	#DiceColor.RED: preload("res://assets/models/glass_prism_dice.gltf"),
-	#DiceColor.BLUE: preload("res://assets/models/glass_prism_dice.gltf"),
-	#DiceColor.GREEN: preload("res://assets/models/glass_prism_dice.gltf"),
-
-	DiceColor.WHITE: preload("res://assets/models/6_growing_dice_white.gltf"),
-	#DiceColor.BLACK: preload("res://assets/models/4_growing_dice_black.gltf"),
-	#DiceColor.RED: preload("res://assets/models/4_growing_dice_red.gltf"),
-	#DiceColor.BLUE: preload("res://assets/models/4_growing_dice_blue.gltf"),
-	#DiceColor.GREEN: preload("res://assets/models/4_growing_dice_green.gltf")
-	#DiceColor.WHITE: preload("res://assets/models/0_dice_cracked_white.glb"),
-	DiceColor.BLACK: preload("res://assets/models/7_ugly_dice_black.gltf"),
-	#DiceColor.RED: preload("res://assets/models/0_dice_cracked_red.glb"),
-	#DiceColor.BLUE: preload("res://assets/models/0_dice_cracked_blue.glb"),
-	#DiceColor.GREEN: preload("res://assets/models/0_dice_cracked_green.glb")
-
-	#DiceColor.WHITE: preload("res://assets/models/1_plus_dice_white.gltf"),
-	#DiceColor.BLACK: preload("res://assets/models/1_plus_dice_black.gltf"),
-	#DiceColor.RED: preload("res://assets/models/1_plus_dice_red.gltf"),
-	#DiceColor.BLUE: preload("res://assets/models/1_plus_dice_blue.gltf"),
-	#DiceColor.GREEN: preload("res://assets/models/1_plus_dice_green.gltf")	
-
-	#DiceColor.WHITE: preload("res://assets/models/2_gold_dice_white.gltf"),
-	#DiceColor.BLACK: preload("res://assets/models/2_gold_dice_black.gltf"),
-	#DiceColor.RED: preload("res://assets/models/2_gold_dice_red.gltf"),
-	#DiceColor.BLUE: preload("res://assets/models/2_gold_dice_blue.gltf")
-	#DiceColor.GREEN: preload("res://assets/models/2_gold_dice_green.gltf")
-
-	#DiceColor.WHITE: preload("res://assets/models/3_multiply_dice_white.gltf"),
-	#DiceColor.BLACK: preload("res://assets/models/3_multiply_dice_black.gltf"),
-	#DiceColor.RED: preload("res://assets/models/3_multiply_dice_red.gltf"),
-	#DiceColor.BLUE: preload("res://assets/models/3_multiply_dice_blue.gltf"),
-	#DiceColor.GREEN: preload("res://assets/models/3_multiply_dice_green.gltf")
-
-	#DiceColor.WHITE: preload("res://assets/models/4_faceless_dice_white.gltf"),
-	#DiceColor.WHITE: preload("res://assets/models/0_dice_energy_black.gltf"),
-	#DiceColor.BLACK: preload("res://assets/models/4_faceless_dice_black.gltf"),
-	#DiceColor.RED: preload("res://assets/models/5_lucky_dice_777.gltf"),
-	#DiceColor.BLUE: preload("res://assets/models/5_lucky_dice_777.gltf"),
-	DiceColor.GREEN: preload("res://assets/models/5_lucky_dice_777_red.gltf")	
-}
-
 const COLOR_VALUES = {
 	DiceColor.WHITE: Color.WHITE,
 	DiceColor.BLACK: Color.BLACK,
@@ -81,96 +25,68 @@ const COLOR_NAMES = {
 	DiceColor.GREEN: "green"
 }
 
-# [추가] 조커 텍스처를 입히는 함수
-func set_joker_texture(texture_path: String) -> void:
-	print("set_joker_texture called with path: ", texture_path)
-	if texture_path == "" or not ResourceLoader.exists(texture_path):
-		print("Invalid joker texture path: ", texture_path)
-		return
-
-	# Remove any existing joker Sprite3D to prevent duplicates
-	for child in get_children():
-		if child is Sprite3D and child.name == "JokerSprite":
-			child.queue_free()
-			break
-
-	var joker_texture = load(texture_path)
-	var sprite = Sprite3D.new()
-	sprite.name = "JokerSprite" # Give it a unique name
-	sprite.texture = joker_texture
-	sprite.pixel_size = 0.005 # Adjust size as needed, similar to ShopDice
-	sprite.billboard = false # Don't billboard, we want it fixed on a face
+# [추가] 주사위 타입별 모델 경로 반환 함수
+func get_model_path(type_index: int, color: DiceColor) -> String:
+	var color_name = COLOR_NAMES[color]
 	
-	# Position the sprite on one of the dice faces (e.g., top face, relative to dice center)
-	# Assuming a dice size of 2 units (from blender_dice_size in setup_dice)
-	# and model_scale = 1.0 (actual_visual_size = 2.0)
-	# So, a face is at approx +Y 1.0 unit from center.
-	sprite.transform.origin = Vector3(0, 1.0, 0) 
-	sprite.transform = sprite.transform.rotated(Vector3(1, 0, 0), deg_to_rad(-90)) # Rotate to face upwards (if texture is horizontal)
-	
-	add_child(sprite)
-	sprite.owner = self # Ensure it's part of the scene
-	
-	# Set dice_color to WHITE as it's a joker dice
-	dice_color = Color.WHITE
-	current_dice_color = DiceColor.WHITE # Ensure the internal color state is also white
+	match type_index:
+		0: return "res://assets/models/0_dice_" + color_name + ".gltf"
+		1: return "res://assets/models/1_plus_dice_" + color_name + ".gltf"
+		2: return "res://assets/models/2_dollar_dice_" + color_name + ".gltf"
+		3: return "res://assets/models/3_multiply_dice_" + color_name + ".gltf"
+		4: return "res://assets/models/4_faceless_dice_" + color_name + ".gltf"
+		5: 
+			# 5번은 특수 (레드만 따로 있고 나머지는 공용일 수 있음, 확인 필요)
+			if color == DiceColor.RED:
+				return "res://assets/models/5_lucky_dice_777_red.gltf"
+			return "res://assets/models/5_lucky_dice_777.gltf"
+		6: return "res://assets/models/6_growing_dice_" + color_name + ".gltf"
+		7: return "res://assets/models/7_ugly_dice_" + color_name + ".gltf"
+		8: return "res://assets/models/8_dice_prism.tscn"
+		_: return "res://assets/models/0_dice_" + color_name + ".gltf"
 
 var current_dice_color: DiceColor = DiceColor.WHITE
+var current_dice_type: int = 0
 
 func _init() -> void:
 	super()
-	# 동적 생성된 노드임을 표시하여 씬 저장 시 제외
 	set_scene_file_path("")
-
-	# 더 강력한 씬 저장 방지
 	set_meta("_edit_lock_", true)
 	set_meta("_edit_group_", false)
 
-func setup_dice(color: DiceColor, position_override: Vector3 = Vector3.ZERO) -> void:
+func setup_dice(color: DiceColor, position_override: Vector3 = Vector3.ZERO, type_index: int = 0) -> void:
 	current_dice_color = color
+	current_dice_type = type_index
 	dice_color = COLOR_VALUES[color]
 	
-	# 위치 먼저 설정
 	if position_override != Vector3.ZERO:
 		global_position = position_override
 		original_position = position_override
 	
-	# 기존의 모든 자식 노드(메시, 콜라이더 등)를 제거하여 깨끗한 상태에서 시작
 	for child in get_children():
-		child.queue_free()
+		if not child is OmniLight3D: # 조명은 유지 (필요시)
+			child.queue_free()
 	
-	# ==========================================
-	# ★ TSCN/GLTF 둘 다 대응
-	# ==========================================
-	var dice_scene = DICE_GLTF_SCENES[color]
+	var model_path = get_model_path(type_index, color)
+	if not ResourceLoader.exists(model_path):
+		print("Warning: Model not found at ", model_path, ". Falling back to type 0.")
+		model_path = get_model_path(0, color)
+		
+	var dice_scene = load(model_path)
 	var dice_model = dice_scene.instantiate()
-	
-	# TSCN인지 GLTF인지 자동 감지
-	var is_tscn = _is_tscn_structure(dice_model)
-	
-	# 메시가 있는 실제 노드 찾기
-	var mesh_parent = dice_model
-	if is_tscn:
-		# TSCN 구조: DiceShadow* → D6_Dice_* → ...
-		mesh_parent = _find_gltf_node_in_tscn(dice_model)
-	# GLTF 구조: D6_Dice_* (루트가 바로 GLTF)
-	
-	# 각 주사위 인스턴스가 고유한 재질을 갖도록 처리
-	var mesh = _find_mesh_recursive(mesh_parent)
-	if mesh:
-		var mat = mesh.get_active_material(0)
-		if mat:
-			mesh.set_surface_override_material(0, mat.duplicate())
-	
-	## 새 모델 추가
 	add_child(dice_model)
 	
-	# 모델 관련 설정
+	# 각 주사위 인스턴스가 고유한 재질을 갖도록 처리
+	var mesh = _find_mesh_recursive(dice_model)
+	if mesh:
+		for i in range(mesh.get_surface_override_material_count()):
+			var mat = mesh.get_active_material(i)
+			if mat:
+				mesh.set_surface_override_material(i, mat.duplicate())
+	
 	dice_model.owner = null
 	dice_model.scene_file_path = ""
-	dice_model.set_meta("_edit_lock_", true)
 	
-	# ★ 모델 스케일 (Blender 원본 2.0 → 게임 내 1.0)
 	var model_scale = 1.0
 	dice_model.scale = Vector3(model_scale, model_scale, model_scale)
 	dice_model.position = Vector3.ZERO
@@ -180,39 +96,21 @@ func setup_dice(color: DiceColor, position_override: Vector3 = Vector3.ZERO) -> 
 	collider = CollisionShape3D.new()
 	collider.name = "CollisionShape3D"
 	add_child(collider)
-	collider.owner = self # 이 노드가 소유하도록 설정
 	
 	var box_shape = BoxShape3D.new()
-	
-	# Blender 원본 크기
 	var blender_dice_size = 2.0
-	
-	# 게임 내 실제 시각적 크기
-	var actual_visual_size = blender_dice_size * model_scale  # 2.0 * 1.0 = 2.0
-	
-	# 충돌 박스: 시각적 크기의 95% (5% 마진)
+	var actual_visual_size = blender_dice_size * model_scale
 	var collision_margin = 0.95
-	var collision_box_size = actual_visual_size * collision_margin  # 2.0 * 0.95 = 1.9
+	var collision_box_size = actual_visual_size * collision_margin
 	
-	box_shape.size = Vector3(
-		collision_box_size,
-		collision_box_size,
-		collision_box_size
-	)
+	box_shape.size = Vector3(collision_box_size, collision_box_size, collision_box_size)
 	collider.shape = box_shape
 	
-	# 이름 설정
-	dice_name = COLOR_NAMES[color] + "_dice_" + str(randi())
+	dice_name = COLOR_NAMES[color] + "_type" + str(type_index) + "_dice_" + str(randi())
 	name = dice_name
 	
-	# ==========================================
-	# ★ TSCN이면 파티클 활성화
-	# ==========================================
-	if is_tscn:
-		_activate_particles(dice_model)
-		print("✅ Shadow dice (TSCN) loaded: ", name)
-	else:
-		print("✅ Basic dice (GLTF) loaded: ", name)
+	# 파티클이 있다면 활성화
+	_activate_particles(dice_model)
 
 func get_dice_color_name() -> String:
 	return COLOR_NAMES[current_dice_color]

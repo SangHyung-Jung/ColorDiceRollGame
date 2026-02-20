@@ -117,7 +117,30 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 20
 
+[node name="SelectionPanel" type="VBoxContainer" parent="MainLayout/GameArea"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 40
+alignment = 1
+
+[node name="BuyJokerButton" type="Button" parent="MainLayout/GameArea/SelectionPanel"]
+custom_minimum_size = Vector2(400, 100)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_fonts/font = ExtResource("3_7a4el")
+theme_override_font_sizes/font_size = 50
+text = "ROLL JOKERS"
+
+[node name="BuyDiceButton" type="Button" parent="MainLayout/GameArea/SelectionPanel"]
+custom_minimum_size = Vector2(400, 100)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_fonts/font = ExtResource("3_7a4el")
+theme_override_font_sizes/font_size = 50
+text = "BUY NEW DICE"
+
 [node name="ShopHeader" type="HBoxContainer" parent="MainLayout/GameArea"]
+visible = false
 layout_mode = 2
 theme_override_constants/separation = 10
 alignment = 1
@@ -134,7 +157,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_fonts/font = ExtResource("3_7a4el")
 theme_override_font_sizes/font_size = 60
-text = "JOKER SHOP"
+text = "SHOP"
 horizontal_alignment = 1
 
 [node name="RerollButton" type="Button" parent="MainLayout/GameArea/ShopHeader"]
@@ -148,45 +171,92 @@ text = "Reroll"
 visible = false
 layout_mode = 2
 
-[node name="JokerOptions" type="HBoxContainer" parent="MainLayout/GameArea/BuyPanel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MainLayout/GameArea/BuyPanel"]
+layout_mode = 2
+
+[node name="JokerOptions" type="HBoxContainer" parent="MainLayout/GameArea/BuyPanel/VBoxContainer"]
 layout_mode = 2
 alignment = 1
 
-[node name="Option1" type="VBoxContainer" parent="MainLayout/GameArea/BuyPanel/JokerOptions"]
+[node name="Option1" type="VBoxContainer" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/JokerOptions"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="JokerName1" type="Label" parent="MainLayout/GameArea/BuyPanel/JokerOptions/Option1"]
+[node name="JokerName1" type="Label" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/JokerOptions/Option1"]
 layout_mode = 2
 text = "Joker 1"
 horizontal_alignment = 1
 
-[node name="BuyButton1" type="Button" parent="MainLayout/GameArea/BuyPanel/JokerOptions/Option1"]
+[node name="BuyButton1" type="Button" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/JokerOptions/Option1"]
 layout_mode = 2
 text = "Buy"
 
-[node name="Option2" type="VBoxContainer" parent="MainLayout/GameArea/BuyPanel/JokerOptions"]
+[node name="Option2" type="VBoxContainer" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/JokerOptions"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="JokerName2" type="Label" parent="MainLayout/GameArea/BuyPanel/JokerOptions/Option2"]
+[node name="JokerName2" type="Label" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/JokerOptions/Option2"]
 layout_mode = 2
 text = "Joker 2"
 horizontal_alignment = 1
 
-[node name="BuyButton2" type="Button" parent="MainLayout/GameArea/BuyPanel/JokerOptions/Option2"]
+[node name="BuyButton2" type="Button" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/JokerOptions/Option2"]
 layout_mode = 2
 text = "Buy"
 
-[node name="Option3" type="VBoxContainer" parent="MainLayout/GameArea/BuyPanel/JokerOptions"]
+[node name="Option3" type="VBoxContainer" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/JokerOptions"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="JokerName3" type="Label" parent="MainLayout/GameArea/BuyPanel/JokerOptions/Option3"]
+[node name="JokerName3" type="Label" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/JokerOptions/Option3"]
 layout_mode = 2
 text = "Joker 3"
 horizontal_alignment = 1
 
-[node name="BuyButton3" type="Button" parent="MainLayout/GameArea/BuyPanel/JokerOptions/Option3"]
+[node name="BuyButton3" type="Button" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/JokerOptions/Option3"]
+layout_mode = 2
+text = "Buy"
+
+[node name="DiceOptions" type="HBoxContainer" parent="MainLayout/GameArea/BuyPanel/VBoxContainer"]
+visible = false
+layout_mode = 2
+alignment = 1
+
+[node name="Option1" type="VBoxContainer" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/DiceOptions"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="DiceName1" type="Label" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/DiceOptions/Option1"]
+layout_mode = 2
+text = "Dice 1"
+horizontal_alignment = 1
+
+[node name="BuyButton1" type="Button" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/DiceOptions/Option1"]
+layout_mode = 2
+text = "Buy"
+
+[node name="Option2" type="VBoxContainer" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/DiceOptions"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="DiceName2" type="Label" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/DiceOptions/Option2"]
+layout_mode = 2
+text = "Dice 2"
+horizontal_alignment = 1
+
+[node name="BuyButton2" type="Button" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/DiceOptions/Option2"]
+layout_mode = 2
+text = "Buy"
+
+[node name="Option3" type="VBoxContainer" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/DiceOptions"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="DiceName3" type="Label" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/DiceOptions/Option3"]
+layout_mode = 2
+text = "Dice 3"
+horizontal_alignment = 1
+
+[node name="BuyButton3" type="Button" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/DiceOptions/Option3"]
 layout_mode = 2
 text = "Buy"

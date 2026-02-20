@@ -12,11 +12,11 @@ var runtime_container: Node3D  # 동적 노드들을 넣을 컨테이너
 # [추가] 색상별 조명 씬 프리로드
 const PinpointLightScene = preload("res://scenes/effects/pinpoint_light.tscn")
 const LIGHT_SCENES = {
-	ColoredDice.DiceColor.WHITE: preload("res://scenes/effects/colors/pinpoint_light_white.tscn"),
-	ColoredDice.DiceColor.BLACK: preload("res://scenes/effects/colors/pinpoint_light_black.tscn"),
-	ColoredDice.DiceColor.RED:   preload("res://scenes/effects/colors/pinpoint_light_red.tscn"),
-	ColoredDice.DiceColor.GREEN: preload("res://scenes/effects/colors/pinpoint_light_green.tscn"),
-	ColoredDice.DiceColor.BLUE:  preload("res://scenes/effects/colors/pinpoint_light_blue.tscn")
+	0: preload("res://scenes/effects/colors/pinpoint_light_white.tscn"),
+	1: preload("res://scenes/effects/colors/pinpoint_light_black.tscn"),
+	2: preload("res://scenes/effects/colors/pinpoint_light_red.tscn"),
+	3: preload("res://scenes/effects/colors/pinpoint_light_blue.tscn"),
+	4: preload("res://scenes/effects/colors/pinpoint_light_green.tscn")
 }
 
 func initialize(cup: Node3D, container: Node3D = null) -> void:
@@ -57,7 +57,9 @@ func reset_and_spawn_all_dice(dice_colors: Array[Color]) -> void:
 		)
 		await get_tree().create_timer(0.1).timeout  # 0.25초 간격
 
-		dice.setup_dice(dice_color, spawn_pos)
+		# [수정] 소유한 주사위 종류 중 하나를 랜덤하게 선택
+		var random_type_index = Main.owned_dice_types[randi() % Main.owned_dice_types.size()]
+		dice.setup_dice(dice_color, spawn_pos, random_type_index)
 		dice.setup_physics_for_spawning()
 		dice_nodes.append(dice)
 

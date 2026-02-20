@@ -19,21 +19,42 @@ const GameConstants = preload("res://scripts/utils/constants.gd")
 @onready var shop_area = $"../../3D_World/ShopArea"
 
 # Shop State
+enum ShopMode { NONE, JOKER, DICE }
+var current_mode = ShopMode.NONE
+
 var cup: Node3D
 var current_shop_dice = []
 var is_shaking = false
 var finished_dice_count = 0
 var available_jokers_to_buy = []
+var available_dice_to_buy = [] # [추가] 구매 가능한 주사위 목록
+
+@onready var selection_panel = $MainLayout/GameArea/SelectionPanel # [추가] 선택 패널
+@onready var shop_header = $MainLayout/GameArea/ShopHeader # [추가] 헤더 참조
+@onready var dice_options = $MainLayout/GameArea/BuyPanel/VBoxContainer/DiceOptions # [수정] 경로 변경
+@onready var joker_options = $MainLayout/GameArea/BuyPanel/VBoxContainer/JokerOptions # [추가] 경로 변경
 
 func _ready() -> void:
 	next_round_button.pressed.connect(_on_next_round_button_pressed)
 	reroll_button.pressed.connect(enter_shop_sequence)
 	
-	$MainLayout/GameArea/BuyPanel/JokerOptions/Option1/BuyButton1.pressed.connect(func(): _on_buy_joker_pressed(0))
-	$MainLayout/GameArea/BuyPanel/JokerOptions/Option2/BuyButton2.pressed.connect(func(): _on_buy_joker_pressed(1))
-	$MainLayout/GameArea/BuyPanel/JokerOptions/Option3/BuyButton3.pressed.connect(func(): _on_buy_joker_pressed(2))
+	# [추가] 선택 버튼 연결
+	$MainLayout/GameArea/SelectionPanel/BuyJokerButton.pressed.connect(_on_buy_joker_mode_selected)
+	$MainLayout/GameArea/SelectionPanel/BuyDiceButton.pressed.connect(_on_buy_dice_mode_selected)
+	
+	# 조커 구매 버튼
+	$MainLayout/GameArea/BuyPanel/VBoxContainer/JokerOptions/Option1/BuyButton1.pressed.connect(func(): _on_buy_item_pressed(0))
+	$MainLayout/GameArea/BuyPanel/VBoxContainer/JokerOptions/Option2/BuyButton2.pressed.connect(func(): _on_buy_item_pressed(1))
+	$MainLayout/GameArea/BuyPanel/VBoxContainer/JokerOptions/Option3/BuyButton3.pressed.connect(func(): _on_buy_item_pressed(2))
+
+	# [추가] 주사위 구매 버튼
+	$MainLayout/GameArea/BuyPanel/VBoxContainer/DiceOptions/Option1/BuyButton1.pressed.connect(func(): _on_buy_item_pressed(0))
+	$MainLayout/GameArea/BuyPanel/VBoxContainer/DiceOptions/Option2/BuyButton2.pressed.connect(func(): _on_buy_item_pressed(1))
+	$MainLayout/GameArea/BuyPanel/VBoxContainer/DiceOptions/Option3/BuyButton3.pressed.connect(func(): _on_buy_item_pressed(2))
 
 func _gui_input(event: InputEvent) -> void:
+	if current_mode != ShopMode.JOKER: return # 조커 모드일 때만 드래그/굴리기 허용
+	
 	# A die is rolling if its internal state machine is active.
 	var a_die_is_rolling = false
 	for dice in current_shop_dice:
@@ -54,10 +75,38 @@ func enter_shop_sequence() -> void:
 	_update_gold_label()
 	joker_inventory.update_display(Main.owned_jokers)
 	clear_shop_objects()
-	_setup_shop_scene()
+	
+	current_mode = ShopMode.NONE
+	selection_panel.visible = true
+	shop_header.visible = false
 	buy_panel.visible = false
+	
 	is_shaking = false
 	finished_dice_count = 0
+
+func _on_buy_joker_mode_selected():
+	selection_panel.visible = false
+	shop_header.visible = true
+	current_mode = ShopMode.JOKER
+	_setup_shop_scene()
+
+func _on_buy_dice_mode_selected():
+	selection_panel.visible = false
+	shop_header.visible = true
+	current_mode = ShopMode.DICE
+	_setup_dice_shop_scene()
+
+func _setup_dice_shop_scene():
+	# 주사위 구매는 굴리기 없이 바로 목록 보여줌 (원하는 경우 굴리기 추가 가능)
+	var available_types = []
+	for i in range(1, 9): # 1~8번 주사위 대상
+		if not Main.owned_dice_types.has(i):
+			available_types.append(i)
+	
+	available_types.shuffle()
+	available_dice_to_buy = available_types.slice(0, 3)
+	
+	display_purchase_options([], available_dice_to_buy)
 
 func _setup_shop_scene():
 	cup = CupScene.instantiate()
@@ -83,6 +132,8 @@ func clear_shop_objects():
 	if is_instance_valid(cup):
 		cup.queue_free()
 		cup = null
+	
+	if buy_panel: buy_panel.visible = false
 
 func spawn_shop_dice(count: int):
 	if not shop_dice_scene:
@@ -177,7 +228,7 @@ func _align_and_present_results() -> void:
 			available_jokers.append(top_joker)
 	
 	if available_jokers.size() != current_shop_dice.size():
-		display_purchase_options(available_jokers)
+		display_purchase_options(available_jokers, [])
 		return
 
 	var tweens = []
@@ -223,40 +274,72 @@ func _align_and_present_results() -> void:
 			dice.set_physics_process(true)
 		
 	# 5. Now display the UI
-	display_purchase_options(available_jokers)
+	display_purchase_options(available_jokers, [])
 
-func display_purchase_options(jokers: Array):
-	available_jokers_to_buy = jokers
+func display_purchase_options(jokers: Array, dice_types: Array):
 	buy_panel.visible = true
 	
-	for i in range(3):
-		var option_root = $MainLayout/GameArea/BuyPanel/JokerOptions.get_child(i)
-		var name_label = option_root.get_node("JokerName" + str(i+1))
-		var buy_button = option_root.get_node("BuyButton" + str(i+1))
-
-		if i < jokers.size():
-			var joker = jokers[i]
-			name_label.text = joker["korean_name"]
-			buy_button.text = "Buy ($%d)" % joker["Price"]
-			buy_button.disabled = Main.gold < joker["Price"]
-			option_root.visible = true
-		else:
-			option_root.visible = false
-
-func _on_buy_joker_pressed(index: int):
-	if index >= available_jokers_to_buy.size(): return
-	var joker_to_buy = available_jokers_to_buy[index]
-	var price = joker_to_buy["Price"]
-	
-	if Main.gold >= price:
-		Main.gold -= price
-		Main.owned_jokers.append(joker_to_buy)
-		emit_signal("joker_purchased")
-		_on_item_purchased()
+	if current_mode == ShopMode.JOKER:
+		available_jokers_to_buy = jokers
+		joker_options.visible = true
+		dice_options.visible = false
 		
-		var buy_button = $MainLayout/GameArea/BuyPanel/JokerOptions.get_child(index).get_node("BuyButton" + str(index+1))
-		buy_button.disabled = true
-		buy_button.text = "Purchased"
+		for i in range(3):
+			var option_root = joker_options.get_child(i)
+			if i < jokers.size():
+				var joker = jokers[i]
+				option_root.get_node("JokerName" + str(i+1)).text = joker["korean_name"]
+				var buy_button = option_root.get_node("BuyButton" + str(i+1))
+				buy_button.text = "Buy ($%d)" % joker["Price"]
+				buy_button.disabled = Main.gold < joker["Price"]
+				option_root.visible = true
+			else:
+				option_root.visible = false
+				
+	elif current_mode == ShopMode.DICE:
+		available_dice_to_buy = dice_types
+		joker_options.visible = false
+		dice_options.visible = true
+		
+		for i in range(3):
+			var option_root = dice_options.get_child(i)
+			if i < dice_types.size():
+				var type_idx = dice_types[i]
+				var info = Main.ALL_DICE_INFO[type_idx]
+				option_root.get_node("DiceName" + str(i+1)).text = info["name"]
+				var buy_button = option_root.get_node("BuyButton" + str(i+1))
+				buy_button.text = "Buy ($%d)" % info["price"]
+				buy_button.disabled = Main.gold < info["price"] or Main.owned_dice_types.has(type_idx)
+				option_root.visible = true
+			else:
+				option_root.visible = false
+
+func _on_buy_item_pressed(index: int):
+	if current_mode == ShopMode.JOKER:
+		if index >= available_jokers_to_buy.size(): return
+		var joker = available_jokers_to_buy[index]
+		if Main.gold >= joker["Price"]:
+			Main.gold -= joker["Price"]
+			Main.owned_jokers.append(joker)
+			emit_signal("joker_purchased")
+			_on_item_purchased()
+			
+			var btn = joker_options.get_child(index).get_node("BuyButton" + str(index+1))
+			btn.disabled = true
+			btn.text = "Purchased"
+			
+	elif current_mode == ShopMode.DICE:
+		if index >= available_dice_to_buy.size(): return
+		var type_idx = available_dice_to_buy[index]
+		var info = Main.ALL_DICE_INFO[type_idx]
+		if Main.gold >= info["price"] and not Main.owned_dice_types.has(type_idx):
+			Main.gold -= info["price"]
+			Main.owned_dice_types.append(type_idx)
+			_on_item_purchased()
+			
+			var btn = dice_options.get_child(index).get_node("BuyButton" + str(index+1))
+			btn.disabled = true
+			btn.text = "Purchased"
 
 func _on_next_round_button_pressed() -> void:
 	clear_shop_objects()
@@ -269,4 +352,4 @@ func _update_gold_label() -> void:
 func _on_item_purchased() -> void:
 	_update_gold_label()
 	joker_inventory.update_display(Main.owned_jokers)
-	display_purchase_options(available_jokers_to_buy)
+	display_purchase_options(available_jokers_to_buy, available_dice_to_buy)

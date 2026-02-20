@@ -64,11 +64,11 @@ const PinpointLightScene = preload("res://scenes/effects/pinpoint_light.tscn")
 
 # [추가] 색상별 조명 씬 프리로드
 const LIGHT_SCENES = {
-	ColoredDice.DiceColor.WHITE: preload("res://scenes/effects/colors/pinpoint_light_white.tscn"),
-	ColoredDice.DiceColor.BLACK: preload("res://scenes/effects/colors/pinpoint_light_black.tscn"),
-	ColoredDice.DiceColor.RED:   preload("res://scenes/effects/colors/pinpoint_light_red.tscn"),
-	ColoredDice.DiceColor.GREEN: preload("res://scenes/effects/colors/pinpoint_light_green.tscn"),
-	ColoredDice.DiceColor.BLUE:  preload("res://scenes/effects/colors/pinpoint_light_blue.tscn")
+	0: preload("res://scenes/effects/colors/pinpoint_light_white.tscn"),
+	1: preload("res://scenes/effects/colors/pinpoint_light_black.tscn"),
+	2: preload("res://scenes/effects/colors/pinpoint_light_red.tscn"),
+	3: preload("res://scenes/effects/colors/pinpoint_light_blue.tscn"),
+	4: preload("res://scenes/effects/colors/pinpoint_light_green.tscn")
 }
 
 # === 투자 시스템 변수 ===
@@ -276,9 +276,12 @@ func _invest_initial_dice() -> void:
 		var value = randi_range(1, 6)
 		var dice_color_enum = ColoredDice.color_from_godot_color(color)
 		
+		# [수정] 소유한 주사위 종류 중 하나 랜덤 선택
+		var random_type_index = Main.owned_dice_types[randi() % Main.owned_dice_types.size()]
+		
 		var dice_node = ColoredDice.new()
 		world_3d.add_child(dice_node)
-		dice_node.setup_dice(dice_color_enum)
+		dice_node.setup_dice(dice_color_enum, Vector3.ZERO, random_type_index)
 		dice_node.show_face(value)
 		dice_node.set_meta("value", value)
 		
