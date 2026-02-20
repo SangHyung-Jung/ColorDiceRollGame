@@ -1,10 +1,9 @@
-[gd_scene load_steps=9 format=3 uid="uid://b7dllnjo8iisv"]
+[gd_scene load_steps=8 format=3 uid="uid://b7dllnjo8iisv"]
 
 [ext_resource type="Script" uid="uid://bdc2aef0pj644" path="res://scripts/components/game_hud.gd" id="1_abcde"]
 [ext_resource type="Texture2D" uid="uid://b6ra7i5qkug47" path="res://score_panel.png" id="2_stk2i"]
 [ext_resource type="FontFile" uid="uid://ulruyehktvyh" path="res://font/boldpixels/BoldPixels.otf" id="3_7a4el"]
 [ext_resource type="Texture2D" uid="uid://b73pj7813d7vi" path="res://dice_socket2.png" id="4_kwhh3"]
-[ext_resource type="PackedScene" uid="uid://c7d6e5f4g3h2" path="res://scenes/components/joker_inventory.tscn" id="6_jokerinv"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_fplum"]
 texture = ExtResource("2_stk2i")
@@ -170,10 +169,6 @@ theme_override_fonts/font = ExtResource("3_7a4el")
 theme_override_font_sizes/font_size = 40
 text = "Gold: $0"
 
-[node name="JokerInventory" parent="MainLayout/InfoPanel/Panel/VBoxContainer" instance=ExtResource("6_jokerinv")]
-unique_name_in_owner = true
-layout_mode = 2
-
 [node name="ViewDiceBagButton" type="Button" parent="MainLayout/InfoPanel/Panel/VBoxContainer"]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_7a4el")
@@ -185,27 +180,45 @@ theme_override_styles/pressed = SubResource("StyleBoxEmpty_transparent")
 theme_override_styles/normal = SubResource("StyleBoxEmpty_transparent")
 text = "Dice Bag"
 
-[node name="JokerSocketContainer" type="VBoxContainer" parent="MainLayout"]
+[node name="PlayAreaContainer" type="VBoxContainer" parent="MainLayout"]
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 2
 alignment = 1
 
-[node name="Spacer2" type="Control" parent="MainLayout/JokerSocketContainer"]
+[node name="Spacer2" type="Control" parent="MainLayout/PlayAreaContainer"]
 layout_mode = 2
 mouse_filter = 2
 
-[node name="SocketContainer" type="HBoxContainer" parent="MainLayout/JokerSocketContainer"]
+[node name="JokerSlotContainer" type="HBoxContainer" parent="MainLayout/PlayAreaContainer"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+alignment = 1
+
+[node name="SocketContainer" type="HBoxContainer" parent="MainLayout/PlayAreaContainer"]
 layout_mode = 2
 theme_override_constants/separation = 10
 alignment = 1
 
-[node name="SortButtonsContainer" type="HBoxContainer" parent="MainLayout/JokerSocketContainer"]
+[node name="SortButtonsContainer" type="HBoxContainer" parent="MainLayout/PlayAreaContainer"]
 layout_mode = 2
 mouse_filter = 2
 alignment = 2
 
-[node name="TextureRect" type="TextureRect" parent="MainLayout/JokerSocketContainer/SortButtonsContainer"]
+[node name="Spacer" type="Control" parent="MainLayout/PlayAreaContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="InteractionUI" type="MarginContainer" parent="MainLayout/PlayAreaContainer"]
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="TextureRect" type="TextureRect" parent="MainLayout/PlayAreaContainer/SortButtonsContainer"]
 modulate = Color(1, 1, 1, 0.784314)
 custom_minimum_size = Vector2(150, 100)
 layout_mode = 2
@@ -215,7 +228,7 @@ mouse_filter = 2
 texture = ExtResource("4_kwhh3")
 expand_mode = 3
 
-[node name="SortByColorButton" type="Button" parent="MainLayout/JokerSocketContainer/SortButtonsContainer/TextureRect"]
+[node name="SortByColorButton" type="Button" parent="MainLayout/PlayAreaContainer/SortButtonsContainer/TextureRect"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -231,7 +244,7 @@ theme_override_styles/pressed = SubResource("StyleBoxEmpty_transparent")
 theme_override_styles/normal = SubResource("StyleBoxEmpty_transparent")
 text = "Color"
 
-[node name="TextureRect2" type="TextureRect" parent="MainLayout/JokerSocketContainer/SortButtonsContainer"]
+[node name="TextureRect2" type="TextureRect" parent="MainLayout/PlayAreaContainer/SortButtonsContainer"]
 modulate = Color(1, 1, 1, 0.784314)
 custom_minimum_size = Vector2(200, 100)
 layout_mode = 2
@@ -241,7 +254,7 @@ mouse_filter = 2
 texture = ExtResource("4_kwhh3")
 expand_mode = 3
 
-[node name="SortByNumberButton" type="Button" parent="MainLayout/JokerSocketContainer/SortButtonsContainer/TextureRect2"]
+[node name="SortByNumberButton" type="Button" parent="MainLayout/PlayAreaContainer/SortButtonsContainer/TextureRect2"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -257,29 +270,16 @@ theme_override_styles/pressed = SubResource("StyleBoxEmpty_transparent")
 theme_override_styles/normal = SubResource("StyleBoxEmpty_transparent")
 text = "Number"
 
-[node name="Spacer" type="Control" parent="MainLayout/JokerSocketContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-mouse_filter = 2
-
-[node name="InteractionUI" type="MarginContainer" parent="MainLayout/JokerSocketContainer"]
-custom_minimum_size = Vector2(0, 150)
-layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 10
-
-[node name="HBoxContainer" type="HBoxContainer" parent="MainLayout/JokerSocketContainer/InteractionUI"]
+[node name="HBoxContainer" type="HBoxContainer" parent="MainLayout/PlayAreaContainer/InteractionUI"]
 layout_mode = 2
 theme_override_constants/separation = 15
 alignment = 1
 
-[node name="VSeparator3" type="Control" parent="MainLayout/JokerSocketContainer/InteractionUI/HBoxContainer"]
+[node name="VSeparator3" type="Control" parent="MainLayout/PlayAreaContainer/InteractionUI/HBoxContainer"]
 custom_minimum_size = Vector2(300, 30)
 layout_mode = 2
 
-[node name="TextureRect" type="TextureRect" parent="MainLayout/JokerSocketContainer/InteractionUI/HBoxContainer"]
+[node name="TextureRect" type="TextureRect" parent="MainLayout/PlayAreaContainer/InteractionUI/HBoxContainer"]
 modulate = Color(1, 1, 1, 0.784314)
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
@@ -290,7 +290,7 @@ mouse_filter = 2
 texture = ExtResource("4_kwhh3")
 expand_mode = 3
 
-[node name="SubmitButton" type="Button" parent="MainLayout/JokerSocketContainer/InteractionUI/HBoxContainer/TextureRect"]
+[node name="SubmitButton" type="Button" parent="MainLayout/PlayAreaContainer/InteractionUI/HBoxContainer/TextureRect"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -306,7 +306,7 @@ theme_override_styles/pressed = SubResource("StyleBoxEmpty_transparent")
 theme_override_styles/normal = SubResource("StyleBoxEmpty_transparent")
 text = "Combination"
 
-[node name="TextureRect2" type="TextureRect" parent="MainLayout/JokerSocketContainer/InteractionUI/HBoxContainer"]
+[node name="TextureRect2" type="TextureRect" parent="MainLayout/PlayAreaContainer/InteractionUI/HBoxContainer"]
 modulate = Color(1, 1, 1, 0.784314)
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
@@ -317,7 +317,7 @@ mouse_filter = 2
 texture = ExtResource("4_kwhh3")
 expand_mode = 3
 
-[node name="InvestButton" type="Button" parent="MainLayout/JokerSocketContainer/InteractionUI/HBoxContainer/TextureRect2"]
+[node name="InvestButton" type="Button" parent="MainLayout/PlayAreaContainer/InteractionUI/HBoxContainer/TextureRect2"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -333,7 +333,7 @@ theme_override_styles/pressed = SubResource("StyleBoxEmpty_transparent")
 theme_override_styles/normal = SubResource("StyleBoxEmpty_transparent")
 text = "Invest"
 
-[node name="TextureRect3" type="TextureRect" parent="MainLayout/JokerSocketContainer/InteractionUI/HBoxContainer"]
+[node name="TextureRect3" type="TextureRect" parent="MainLayout/PlayAreaContainer/InteractionUI/HBoxContainer"]
 modulate = Color(1, 1, 1, 0.784314)
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
@@ -344,7 +344,7 @@ mouse_filter = 2
 texture = ExtResource("4_kwhh3")
 expand_mode = 3
 
-[node name="TurnEndButton" type="Button" parent="MainLayout/JokerSocketContainer/InteractionUI/HBoxContainer/TextureRect3"]
+[node name="TurnEndButton" type="Button" parent="MainLayout/PlayAreaContainer/InteractionUI/HBoxContainer/TextureRect3"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -360,6 +360,6 @@ theme_override_styles/pressed = SubResource("StyleBoxEmpty_transparent")
 theme_override_styles/normal = SubResource("StyleBoxEmpty_transparent")
 text = "End"
 
-[node name="VSeparator2" type="Control" parent="MainLayout/JokerSocketContainer/InteractionUI/HBoxContainer"]
+[node name="VSeparator2" type="Control" parent="MainLayout/PlayAreaContainer/InteractionUI/HBoxContainer"]
 custom_minimum_size = Vector2(300, 30)
 layout_mode = 2
