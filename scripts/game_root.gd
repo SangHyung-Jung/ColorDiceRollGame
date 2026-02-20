@@ -30,6 +30,52 @@ var is_in_game_view: bool = false
 
 func _ready():
 	# Initial setup of game hud. This creates all the necessary manager nodes.
+	# 사운드 미리 로드
+	var die_on_cup_sounds: Array[String] = [
+		"res://assets/audio/dice_cup/dice_cup_tuned_1.ogg",
+		"res://assets/audio/dice_cup/dice_cup_tuned_2.ogg",
+		"res://assets/audio/dice_cup/dice_cup_tuned_3.ogg",
+		"res://assets/audio/dice_cup/dice_cup_tuned_4.ogg",
+		"res://assets/audio/dice_cup/dice_cup_tuned_5.ogg",
+		"res://assets/audio/dice_cup/dice_cup_tuned_6.ogg",
+		"res://assets/audio/dice_cup/dice_cup_tuned_7.ogg"
+	]
+	SoundManager.preload_sound_category("die_on_cup", die_on_cup_sounds)
+	
+	var die_on_die_sounds: Array[String] = [
+		"res://assets/audio/dice_dice/dice_tuned_1.ogg",
+		"res://assets/audio/dice_dice/dice_tuned_2.ogg",
+		"res://assets/audio/dice_dice/dice_tuned_3.ogg",
+		"res://assets/audio/dice_dice/dice_tuned_5.ogg",
+		"res://assets/audio/dice_dice/dice_tuned_6.ogg",
+		"res://assets/audio/dice_dice/dice_tuned_7.ogg",
+		"res://assets/audio/dice_dice/dice_tuned_8.ogg",
+		"res://assets/audio/dice_dice/dice_tuned_9.ogg",
+		"res://assets/audio/dice_dice/dice_tuned_10.ogg",
+		"res://assets/audio/dice_dice/dice_tuned_11.ogg",
+		"res://assets/audio/dice_dice/dice_tuned_12.ogg",
+		"res://assets/audio/dice_dice/dice_tuned_13.ogg",
+		"res://assets/audio/dice_dice/dice_tuned_14.ogg",
+		"res://assets/audio/dice_dice/dice_tuned_15.ogg",
+		"res://assets/audio/dice_dice/dice_tuned_17.ogg",
+		"res://assets/audio/dice_dice/dice_tuned_18.ogg",
+		"res://assets/audio/dice_dice/dice_tuned_19.ogg",
+		"res://assets/audio/dice_dice/dice_tuned_20.ogg",
+		"res://assets/audio/dice_dice/dice_tuned_21.ogg"
+	]
+	SoundManager.preload_sound_category("die_on_die", die_on_die_sounds)
+	
+	var die_on_floor_sounds: Array[String] = [
+		"res://assets/audio/dice_table/dice_table_multi_2_tuned.ogg",
+		"res://assets/audio/dice_table/dice_table_multi_2.ogg",
+		"res://assets/audio/dice_table/dice_table_multi_3.ogg",
+		"res://assets/audio/dice_table/die_throw_multi_1.ogg",
+		"res://assets/audio/dice_table/die-throw-1.ogg",
+		"res://assets/audio/dice_table/die-throw-3.ogg",
+		"res://assets/audio/dice_table/die-throw-4.ogg"
+	]
+	SoundManager.preload_sound_category("die_on_floor", die_on_floor_sounds)
+
 	game_hud.setup_game_hud(world_3d, camera, floating_text_container)
 	
 	# Initialize InputManager now that game_hud (and its combo_select) is ready.

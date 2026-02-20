@@ -13,7 +13,9 @@ const MAX_VELOCITY := 50.0
 const MAX_DISTANCE_FROM_ORIGIN := 100.0
 const FACE_ANGLE := 90.0
 const MAX_ROLL_TIME := 10.0  # 최대 10초 후 강제 정지
+const COLLISION_SOUND_COOLDOWN := 0.05 # 충돌 사운드 재생 쿨다운 (초)
 
+var _last_collision_sound_time := 0.0 # 마지막 충돌 사운드 재생 시간
 var sides = {
 	1: Vector3.UP,        # 1번 면: 위쪽 (Z+)
 	6: Vector3.DOWN,      # 6번 면: 아래쪽 (Z-)
@@ -57,6 +59,7 @@ func _ready() -> void:
 	if original_position == Vector3.ZERO:
 		original_position = position
 	add_to_group("dice")
+	body_entered.connect(_on_body_entered)
 
 func max_tilt() -> float:
 	return cos(deg_to_rad(FACE_ANGLE / float(sides.size())))
@@ -270,6 +273,36 @@ func _force_stop() -> void:
 	# 롤 완료 시그널 발송
 	var result = _calculate_face_value()
 	roll_finished.emit(result, name)
+
+func _on_body_entered(body: Node3D) -> void:
+	# 이동 애니메이션 중에는 충돌 사운드를 재생하지 않음
+	if collision_layer == 0:
+		return
+
+	# 너무 느릴 때는 사운드를 재생하지 않아 소음 방지
+	if linear_velocity.length() < 1.5:
+		return
+
+	# 쿨다운 체크: 마지막 사운드 재생 후 COLLISION_SOUND_COOLDOWN 초가 지났는지 확인
+	var current_time = Time.get_ticks_msec() / 1000.0 # 밀리초를 초 단위로 변환
+	if current_time - _last_collision_sound_time < COLLISION_SOUND_COOLDOWN:
+		return
+
+	# 사운드 재생 후 마지막 재생 시간 업데이트
+	_last_collision_sound_time = current_time
+
+	var body_name = body.name
+	if body_name == "CupFloor" or body_name == "CupCeiling" or body_name == "CollisionMesh":
+		SoundManager.play_random_oneshot("die_on_cup")
+	elif body_name == "Floor": # 바닥과 충돌 시
+		if rolling:
+			SoundManager.play_random_oneshot("die_on_floor")
+	elif body is Dice: # 다른 주사위와 충돌 시
+		# 중복 사운드 재생 방지 (ID가 낮은 주사위는 소리를 내지 않음)
+		if get_instance_id() < body.get_instance_id():
+			return
+		SoundManager.play_random_oneshot("die_on_die")
+
 
 func set_collision_enabled(enabled: bool):
 	if enabled:
