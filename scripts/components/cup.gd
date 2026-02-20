@@ -41,10 +41,6 @@ const DIAGONAL_VECTOR := Vector3(1.15, 1.0, -1.15)
 ## 컵 초기화 - 위치 저장 및 시그널 연결
 func _ready() -> void:
 	# 사운드 매니저를 통해 컵 흔들기 사운드를 미리 로드합니다.
-	#SoundManager.preload_sound("cup_shake", "res://assets/audio/dice-shake-3.ogg")
-	#SoundManager.preload_sound("pour_sound", "res://assets/audio/dice-throw-1.ogg")
-
-	SoundManager.preload_sound("pour_sound", "res://assets/audio/dice_shoot.wav")
 
 	# 사운드 재생을 위한 타이머를 생성하고 설정합니다.
 
@@ -170,7 +166,7 @@ func _on_body_exited_cup(body: Node3D) -> void:
 ## 컵 쏟기 애니메이션 (비동기)
 ## 컵을 기울여서 주사위들을 밖으로 쏟는 동작
 func pour() -> void:
-	SoundManager.play("pour_sound")
+	#SoundManager.play("pour_sound")
 	# ★ 천장과 외벽 충돌 모두 비활성화 - 주사위가 자유롭게 나갈 수 있도록
 	_set_ceiling_collision(false)
 

@@ -18,6 +18,12 @@ var _players = {}
 # 런타임에 파일을 읽는 부하를 없애 성능을 향상시킵니다.
 var _streams = {}
 
+# [추가] 카테고리별 볼륨 조절 변수 (단위: dB)
+var category_volumes = {
+	"die_on_floor": -8.0  # 바닥에 부딪히는 소리는 약간 작게
+}
+
+
 
 # --- Godot 생명주기 함수 ---
 
@@ -59,6 +65,33 @@ func play(sound_name: String, channel: String = CHANNEL_SFX):
 	player.play()
 
 
+## [추가] 카테고리에서 무작위 일회성 사운드를 재생합니다.
+func play_random_oneshot(category_name: String, channel: String = CHANNEL_SFX):
+	if not _streams.has(category_name) or not _streams[category_name] is Array:
+		printerr("SoundManager Error: Sound category not found or not an array: ", category_name)
+		return
+
+	var stream_array: Array = _streams[category_name]
+	if stream_array.is_empty():
+		return
+
+	var random_stream = stream_array.pick_random()
+	if not random_stream:
+		return
+
+	var oneshot_player = AudioStreamPlayer.new()
+	add_child(oneshot_player)
+	oneshot_player.stream = random_stream
+	
+	# [추가] 카테고리별 볼륨 조절 적용
+	if category_volumes.has(category_name):
+		oneshot_player.volume_db = category_volumes[category_name]
+		
+	# oneshot_player.bus = channel # Master 버스 사용
+	oneshot_player.play()
+	oneshot_player.finished.connect(oneshot_player.queue_free)
+
+
 ## 일회성 사운드를 재생합니다. 재생이 끝나면 플레이어는 자동으로 삭제됩니다.
 ## 사운드 중첩(오버랩) 효과를 만들 때 유용합니다.
 ## @param sound_name: _streams 딕셔너리에 미리 불러온 사운드의 키(이름)
@@ -75,7 +108,7 @@ func play_oneshot(sound_name: String, channel: String = CHANNEL_SFX):
 
 	# 2. 사운드 스트림과 버스를 설정합니다.
 	oneshot_player.stream = _streams[sound_name]
-	oneshot_player.bus = channel
+	# oneshot_player.bus = channel
 
 	# 3. 사운드를 재생합니다.
 	oneshot_player.play()
@@ -124,6 +157,23 @@ func preload_sound(sound_name: String, path: String):
 		# 파일 로드에 실패하면 오류 메시지를 출력합니다.
 		printerr("SoundManager Error: Failed to load sound at path: ", path)
 
+
+## [추가] 지정된 경로 배열에서 사운드들을 불러와 카테고리로 저장합니다.
+func preload_sound_category(category_name: String, paths: Array[String]):
+	if _streams.has(category_name):
+		return # 이미 로드된 카테고리
+
+	var loaded_streams = []
+	for path in paths:
+		var stream = load(path)
+		if stream:
+			loaded_streams.append(stream)
+		else:
+			printerr("SoundManager Error: Failed to load sound for category '%s' at path: %s" % [category_name, path])
+
+	if not loaded_streams.is_empty():
+		_streams[category_name] = loaded_streams
+
 # --- 비공개 메소드 (Private Methods) ---
 # 지정된 채널 이름으로 AudioStreamPlayer 노드를 생성하고 자식으로 추가합니다.
 func _setup_player_for_channel(channel_name: String):
@@ -140,4 +190,4 @@ func _setup_player_for_channel(channel_name: String):
 
 	# Godot 에디터의 '오디오' 탭에서 설정한 버스로 플레이어의 출력을 보냅니다.
 	# 만약 'SFX'나 'Music' 버스가 없다면, 경고 메시지가 출력되고 기본 'Master' 버스로 재생됩니다.
-	player.bus = channel_name
+	# player.bus = channel_name

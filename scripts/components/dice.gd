@@ -13,7 +13,7 @@ const MAX_VELOCITY := 50.0
 const MAX_DISTANCE_FROM_ORIGIN := 100.0
 const FACE_ANGLE := 90.0
 const MAX_ROLL_TIME := 10.0  # 최대 10초 후 강제 정지
-const COLLISION_SOUND_COOLDOWN := 0.1 # 충돌 사운드 재생 쿨다운 (초)
+const COLLISION_SOUND_COOLDOWN := 0.05 # 충돌 사운드 재생 쿨다운 (초)
 
 var _last_collision_sound_time := 0.0 # 마지막 충돌 사운드 재생 시간
 var sides = {
@@ -291,10 +291,17 @@ func _on_body_entered(body: Node3D) -> void:
 	# 사운드 재생 후 마지막 재생 시간 업데이트
 	_last_collision_sound_time = current_time
 
-	if body.name == "PhysicsBody": # 컵의 물리 바디와 충돌 시
-		SoundManager.play_oneshot("die_on_cup")
+	var body_name = body.name
+	if body_name == "CupFloor" or body_name == "CupCeiling" or body_name == "CollisionMesh":
+		SoundManager.play_random_oneshot("die_on_cup")
+	elif body_name == "Floor": # 바닥과 충돌 시
+		if rolling:
+			SoundManager.play_random_oneshot("die_on_floor")
 	elif body is Dice: # 다른 주사위와 충돌 시
-		SoundManager.play_oneshot("die_on_die")
+		# 중복 사운드 재생 방지 (ID가 낮은 주사위는 소리를 내지 않음)
+		if get_instance_id() < body.get_instance_id():
+			return
+		SoundManager.play_random_oneshot("die_on_die")
 
 
 func set_collision_enabled(enabled: bool):
