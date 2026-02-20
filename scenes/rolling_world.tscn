@@ -5,8 +5,13 @@
 
 [sub_resource type="Environment" id="Environment_zodac"]
 background_mode = 2
+background_color = Color(0.15, 0.15, 0.15, 1)
 ambient_light_source = 3
 ambient_light_color = Color(1, 1, 1, 1)
+ambient_light_energy = 0.8
+tonemap_mode = 2
+tonemap_white = 6.22
+ssao_enabled = true
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_zodac"]
 size = Vector3(150, 0.1, 100)
@@ -51,6 +56,79 @@ transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -50.87
 light_energy = 0.1
 light_indirect_energy = 0.3
 light_volumetric_fog_energy = 0.0
+
+[node name="PinpointLights" type="Node3D" parent="."]
+
+[node name="ResultLight1" type="OmniLight3D" parent="PinpointLights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 3, 0)
+light_energy = 2.0
+
+[node name="ResultLight2" type="OmniLight3D" parent="PinpointLights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 3, 0)
+light_energy = 2.0
+
+[node name="ResultLight3" type="OmniLight3D" parent="PinpointLights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
+light_energy = 2.0
+
+[node name="ResultLight4" type="OmniLight3D" parent="PinpointLights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 3, 0)
+light_energy = 2.0
+
+[node name="ResultLight5" type="OmniLight3D" parent="PinpointLights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 3, 0)
+light_energy = 2.0
+
+[node name="SocketLight1" type="OmniLight3D" parent="PinpointLights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 3, -12)
+light_energy = 1.5
+omni_range = 4.0
+omni_attenuation = -1.428
+
+[node name="SocketLight2" type="OmniLight3D" parent="PinpointLights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 3, -12)
+light_energy = 1.5
+omni_range = 4.0
+
+[node name="SocketLight3" type="OmniLight3D" parent="PinpointLights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 3, -12)
+light_energy = 1.5
+omni_range = 4.0
+
+[node name="SocketLight4" type="OmniLight3D" parent="PinpointLights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, 3, -12)
+light_energy = 1.5
+omni_range = 4.0
+
+[node name="SocketLight5" type="OmniLight3D" parent="PinpointLights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 3, -12)
+light_energy = 1.5
+omni_range = 4.0
+
+[node name="SocketLight6" type="OmniLight3D" parent="PinpointLights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 3, -12)
+light_energy = 1.5
+omni_range = 4.0
+
+[node name="SocketLight7" type="OmniLight3D" parent="PinpointLights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 3, -12)
+light_energy = 1.5
+omni_range = 4.0
+
+[node name="SocketLight8" type="OmniLight3D" parent="PinpointLights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, 3, -12)
+light_energy = 1.5
+omni_range = 4.0
+
+[node name="SocketLight9" type="OmniLight3D" parent="PinpointLights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 3, -12)
+light_energy = 1.5
+omni_range = 4.0
+
+[node name="SocketLight10" type="OmniLight3D" parent="PinpointLights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.5, 3, -12)
+light_energy = 1.5
+omni_range = 4.0
 
 [node name="Floor" type="StaticBody3D" parent="."]
 

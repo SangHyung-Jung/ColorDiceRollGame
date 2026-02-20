@@ -167,7 +167,24 @@ func update_socket_positions() -> void:
 			var dice = invested_dice_nodes[i]
 			if is_instance_valid(dice):
 				dice.global_position = socket_positions[i]
-				
+	
+	_sync_socket_lights()
+
+func _sync_socket_lights() -> void:
+	var rolling_world = world_3d.get_node_or_null("PlayArea#RollingWorld")
+	if not rolling_world: return
+	
+	var lights_container = rolling_world.get_node_or_null("PinpointLights")
+	if not lights_container: return
+	
+	# 소켓 라이트는 6번부터 15번까지 사용 (SocketLight1~10)
+	for i in range(socket_positions.size()):
+		var light_index = i + 5 # ResultLight가 0~4번 차지
+		if light_index < lights_container.get_child_count():
+			var light = lights_container.get_child(light_index) as OmniLight3D
+			if light:
+				light.global_position = socket_positions[i] + Vector3(0, 3, 0)
+
 func _setup_sockets():
 	var sc = get_node("MainLayout/PlayAreaContainer/SocketContainer")
 	if sc == null:
@@ -575,7 +592,10 @@ func _reposition_invested_dice() -> void:
 		
 		# Use a tween for smooth movement
 		var tween = create_tween()
-		tween.tween_property(dice_node, "global_position", target_pos, 0.3)			.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		tween.tween_property(dice_node, "global_position", target_pos, 0.3)\
+			.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	
+	_sync_socket_lights()
 
 # [추가] 조커 소켓의 2D UI 위치를 3D 월드 좌표로 변환하는 함수
 func update_joker_socket_positions() -> void:
