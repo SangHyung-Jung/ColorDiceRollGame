@@ -3,8 +3,8 @@
 [ext_resource type="Script" uid="uid://cfayt68r3368x" path="res://scripts/effects/light_follower.gd" id="1_script"]
 
 [node name="PinpointLight" type="OmniLight3D"]
-light_energy = 1.3
-light_specular = 1.573
+light_specular = 4.0
 shadow_enabled = true
-omni_range = 4.0
+omni_range = 3.0
+omni_attenuation = 0.553
 script = ExtResource("1_script")
