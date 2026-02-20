@@ -138,26 +138,9 @@ func display_dice_results(roll_results: Dictionary) -> void:
 		
 		# 마스터 트윈에 각 주사위의 위치 이동 애니메이션을 추가
 		master_tween.tween_property(dice, "global_position", target_pos, move_duration)
-		
-		# [추가] 조명 위치도 주사위 위치에 맞춰 동기화
-		_sync_result_light(i, target_pos)
 
 	# ★ 모든 병렬 애니메이션이 완료될 때까지 한 번만 대기
 	await master_tween.finished
-
-func _sync_result_light(index: int, target_pos: Vector3) -> void:
-	# runtime_container(3D_World)에서 RollingWorld를 찾아 조명 컨테이너 접근
-	if not runtime_container: return
-	var rolling_world = runtime_container.get_node_or_null("PlayArea#RollingWorld")
-	if not rolling_world: return
-	
-	var lights_container = rolling_world.get_node_or_null("PinpointLights")
-	if not lights_container: return
-	
-	if index < 5: # ResultLight는 0~4번
-		var light = lights_container.get_child(index) as OmniLight3D
-		if light:
-			light.global_position = target_pos + Vector3(0, 3, 0)
 	
 	# ★ 모든 이동이 완료된 후 충돌 복원
 	print("=== 주사위 정렬 완료, 충돌 복원 시작 ===")
