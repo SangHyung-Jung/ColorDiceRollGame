@@ -3,9 +3,12 @@ extends OmniLight3D
 var target_node: Node3D
 var offset := Vector3(0, 2.5, 0)
 
+@export var shake_speed := 1.5
+@export var shake_amount := 0.1
+
 func _process(_delta: float) -> void:
 	if is_instance_valid(target_node):
-		# 1. 대상 주사위의 타입 확인 (ColoredDice 클래스인 경우)
+		# 1. 대상 주사위의 타입 확인
 		var dice_type = 0
 		if target_node.has_method("get") and target_node.get("current_dice_type") != null:
 			dice_type = target_node.current_dice_type
@@ -19,17 +22,17 @@ func _process(_delta: float) -> void:
 		omni_attenuation = config["attenuation"]
 		light_color = config["color"]
 		
-		# 4. 위치 및 흔들림 업데이트
+		# 4. 위치 업데이트 (주사위 본체의 정중앙 피벗을 직접 따름)
 		var center_pos = target_node.global_position
-		var mesh = _find_mesh(target_node)
-		if mesh:
-			center_pos = mesh.global_position
 		
 		var time = Time.get_ticks_msec() / 1000.0
+		var s_speed = config["shake_speed"]
+		var s_amount = config["shake_amount"]
+		
 		var wobble = Vector3(
-			sin(time * config["shake_speed"] * 0.7) * config["shake_amount"],
-			sin(time * config["shake_speed"] * 1.3) * (config["shake_amount"] * 0.3),
-			cos(time * config["shake_speed"] * 0.9) * config["shake_amount"]
+			sin(time * s_speed * 0.7) * s_amount,
+			sin(time * s_speed * 1.3) * (s_amount * 0.3),
+			cos(time * s_speed * 0.9) * s_amount
 		)
 		
 		global_position = center_pos + offset + wobble

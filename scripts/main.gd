@@ -11,7 +11,8 @@ var gold: int = 0 # 플레이어 재화
 var owned_jokers: Array = [] # 플레이어가 소유한 조커 목록
 
 # 주사위 종류 관련 변수
-var owned_dice_types: Array = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+#var owned_dice_types: Array = [0] 
+var owned_dice_types: Array = [0,1,2,3,4,5,6,7,8] 
 
 const ALL_DICE_INFO = {
 	0: {"name": "Basic Dice", "description": "The standard dice.", "price": 0},
@@ -85,7 +86,6 @@ var dice_light_configs: Dictionary = {
 		"shake_amount": 0.1,
 		"color": Color(1, 1, 1)}
 }
-
 func _ready() -> void:
 	# Temporary: Add a sample joker for testing
 	if owned_jokers.is_empty():
