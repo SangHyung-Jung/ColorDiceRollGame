@@ -61,8 +61,17 @@ func enter_shop_sequence() -> void:
 
 func _setup_shop_scene():
 	cup = CupScene.instantiate()
-	cup.position = GameConstants.CUP_POSITION
+	# 상점 트레이 중앙(60, 0, 0)에 맞추기 위해 로컬 (0, 10, 0) 사용
+	cup.position = Vector3(0, 10, 0) 
 	shop_area.add_child(cup)
+	
+	# [추가] 물리 및 애니메이션 초기화
+	await get_tree().process_frame
+	if is_instance_valid(cup):
+		cup.update_initial_transform()
+		if cup.has_method("_set_ceiling_collision"):
+			cup._set_ceiling_collision(true)
+			
 	spawn_shop_dice(3)
 
 func clear_shop_objects():
@@ -83,23 +92,30 @@ func spawn_shop_dice(count: int):
 		push_error("Cup is not valid during spawn_shop_dice!")
 		return
 
+	# [변경] 상점 주사위도 3D 월드에 직접 추가 (shop_area의 부모인 3D_World 사용)
+	var world_node = shop_area.get_parent()
+	if not world_node:
+		push_error("Could not find 3D_World node!")
+		return
+
+	# 스폰 시에는 주사위가 컵 안에 갇히도록 천장 충돌 활성화
 	if cup.has_method("_set_ceiling_collision"):
 		cup._set_ceiling_collision(true)
 
 	for i in range(count):
 		var dice = shop_dice_scene.instantiate() as ShopDice
-		var world_node = get_tree().root.get_node("GameRoot/3D_World")
-		if not world_node:
-			dice.queue_free()
-			continue
-
 		world_node.add_child(dice)
 		current_shop_dice.append(dice)
 		
 		# Connect to the die's own finish signal
 		dice.roll_finished.connect(_on_shop_dice_roll_finished)
 		
-		var offset = Vector3(randf_range(-0.5, 0.5), randf_range(-1.0, 1.0), randf_range(-0.5, 0.5))
+		# 컵 내부로 소환 (Y축 오프셋을 살짝 줘서 겹침 방지)
+		var offset = Vector3(
+			randf_range(-0.5, 0.5), 
+			randf_range(0.5, 1.5), 
+			randf_range(-0.5, 0.5)
+		)
 		dice.global_position = cup.global_position + offset
 		
 		var random_jokers = JokerManager.get_random_jokers(6)
@@ -132,8 +148,19 @@ func _release_and_pour() -> void:
 	for dice in current_shop_dice:
 		dice.apply_outside_cup_physics()
 		
-		var impulse = Vector3(randf_range(-5, 5), randf_range(5, 10), randf_range(-5, 5))
-		var torque = Vector3(randf_range(-20, 20), randf_range(-20, 20), randf_range(-20, 20))
+		# [변경] GameConstants를 사용하여 게임 플레이와 동일한 물리 적용
+		var impulse = Vector3(
+			randf_range(GameConstants.DICE_IMPULSE_RANGE.x, GameConstants.DICE_IMPULSE_RANGE.y),
+			randf_range(GameConstants.DICE_IMPULSE_Y_RANGE.x, GameConstants.DICE_IMPULSE_Y_RANGE.y),
+			randf_range(GameConstants.DICE_IMPULSE_Z_RANGE.x, GameConstants.DICE_IMPULSE_Z_RANGE.y)
+		)
+
+		var torque = Vector3(
+			randf_range(GameConstants.DICE_TORQUE_RANGE.x, GameConstants.DICE_TORQUE_RANGE.y),
+			randf_range(GameConstants.DICE_TORQUE_RANGE.x, GameConstants.DICE_TORQUE_RANGE.y),
+			randf_range(GameConstants.DICE_TORQUE_RANGE.x, GameConstants.DICE_TORQUE_RANGE.y)
+		)
+
 		dice.apply_impulse_force(impulse, torque)
 		dice.start_rolling() # Activate the internal state machine
 
