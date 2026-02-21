@@ -47,10 +47,37 @@ func evaluate_and_score_combo(selected_nodes: Array, roll_results: Dictionary) -
 		print("조합이 없습니다.")
 		return false
 
+	# === [추가] 특수 주사위 효과 적용 ===
+	var bonus_score = 0
+	var bonus_multiplier_factor = 1.0
+	var bonus_gold = 0
+	
+	for d in dice_data:
+		match d.type:
+			1: # Plus: 기본 점수 +50
+				bonus_score += 50
+				print("✨ Plus Dice 효과: 기본 점수 +50")
+			2: # Dollar: 2달러 추가
+				bonus_gold += 2
+				print("✨ Dollar Dice 효과: +$2 획득")
+			3: # Multiply: 배율 2배
+				bonus_multiplier_factor *= 2.0
+				print("✨ Multiply Dice 효과: 배율 x2")
+	
+	# 수치 보정
+	result.base_score += bonus_score
+	result.multiplier = int(result.multiplier * bonus_multiplier_factor)
+	# 최종 점수 재계산
+	result.points = (result.base_score + result.dice_sum) * result.multiplier
+	
+	# 달러 즉시 지급
+	if bonus_gold > 0:
+		Main.gold += bonus_gold
+
 	# 성공: 점수 추가 및 결과 출력
-	print("조합: %s | +%d점 (기본%d + 합%d) * 배율%d" % [
+	print("조합: %s | +%d점 (기본%d + 합%d) * 배율%d | 골드보너스: $%d" % [
 		result.combo_name, result.points, 
-		result.base_score, result.dice_sum, result.multiplier
+		result.base_score, result.dice_sum, result.multiplier, bonus_gold
 	])
 
 	# [수정됨] 새로운 시그널 발생 (result 객체와 노드 전달)
