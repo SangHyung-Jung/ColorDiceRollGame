@@ -7,7 +7,8 @@ signal back_requested
 	"range": $Controls/Range/Slider,
 	"attenuation": $Controls/Attenuation/Slider,
 	"shake_speed": $Controls/ShakeSpeed/Slider,
-	"shake_amount": $Controls/ShakeAmount/Slider
+	"shake_amount": $Controls/ShakeAmount/Slider,
+	"height": $Controls/Height/Slider
 }
 @onready var dice_selection_container = $Selection/DiceButtons
 

@@ -1,60 +1,40 @@
 extends Node
 
-# 전역 게임 상태를 관리합니다.
-
 var stage: int = 1
 var target_score: int = 300
 var current_score: int = 0
 var turns_left: int = 4
 var invests_left: int = 5
-var gold: int = 0 # 플레이어 재화
-var owned_jokers: Array = [] # 플레이어가 소유한 조커 목록
-
-# 주사위 종류 관련 변수
-var owned_dice_types: Array = [0,1,2,3,4,5,6,7,8] 
+var gold: int = 0 
+var owned_jokers: Array = [] 
 #var owned_dice_types: Array = [0] 
-
+var owned_dice_types: Array = [0,1,2,3,4,5,6,7,8] 
 const ALL_DICE_INFO = {
-	0: {"name": "Basic Dice", "description": "The standard dice.", "price": 0},
-	1: {"name": "Plus Dice", "description": "Dice with a plus sign.", "price": 1},
-	2: {"name": "Dollar Dice", "description": "Dice with a dollar sign.", "price": 1},
-	3: {"name": "Multiply Dice", "description": "Dice with a multiply sign.", "price": 1},
-	4: {"name": "Faceless Dice", "description": "Dice with no faces.", "price": 1},
-	5: {"name": "Lucky 777 Dice", "description": "Special lucky dice.", "price": 1},
-	6: {"name": "Growing Dice", "description": "Dice that grows.", "price": 1},
-	7: {"name": "Ugly Dice", "description": "An ugly looking dice.", "price": 1},
-	8: {"name": "Prism Dice", "description": "A beautiful prism dice.", "price": 1}
+	0: {"name": "Basic Dice"}, 1: {"name": "Plus Dice"}, 2: {"name": "Dollar Dice"},
+	3: {"name": "Multiply Dice"}, 4: {"name": "Faceless Dice"}, 5: {"name": "Lucky Dice"},
+	6: {"name": "Growing Dice"}, 7: {"name": "Ugly Dice"}, 8: {"name": "Prism Dice"}
 }
 
-# ============================================================================
-# ⭐ [개발자용] 주사위별 조명 최종 설정 (여기서 값을 수정하고 배포하세요)
-# ============================================================================
-# shake_speed, shake_amount를 0으로 설정하여 멈춤
-# attenuation을 3.0으로 높여 중앙에 집중시킴
-var dice_light_configs: Dictionary = {
-	0: {"energy": 0.1, "range": 2.5, "attenuation": 0.0, "shake_speed": 0.0, "shake_amount": 0.0, "color": Color(1, 1, 1)},
-	1: {"energy": 0.1, "range": 2.5, "attenuation": 0.0, "shake_speed": 0.0, "shake_amount": 0.0, "color": Color(1, 1, 1)},
-	2: {"energy": 0.1, "range": 2.5, "attenuation": 0.0, "shake_speed": 0.0, "shake_amount": 0.0, "color": Color(1, 1, 1)},
-	3: {"energy": 0.1, "range": 2.5, "attenuation": 0.0, "shake_speed": 0.0, "shake_amount": 0.0, "color": Color(1, 1, 1)},
-	4: {"energy": 0.1, "range": 2.5, "attenuation": 0.0, "shake_speed": 0.0, "shake_amount": 0.0, "color": Color(1, 1, 1)},
-	5: {"energy": 1.0, "range": 1.5, "attenuation": 0.0, "shake_speed": 0.0, "shake_amount": 0.0, "color": Color(1, 1, 1)},
-	6: {"energy": 0.1, "range": 2.5, "attenuation": 0.0, "shake_speed": 0.0, "shake_amount": 0.0, "color": Color(1, 1, 1)},
-	7: {"energy": 0.1, "range": 2.5, "attenuation": 0.0, "shake_speed": 0.0, "shake_amount": 0.0, "color": Color(1, 1, 1)},
-	8: {"energy": 0.1, "range": 2.5, "attenuation": 0.0, "shake_speed": 0.0, "shake_amount": 0.0, "color": Color(1, 1, 1)}
-}
+var dice_light_configs: Dictionary = {}
+
+func _init():
+	for i in range(9):
+		dice_light_configs[i] = {
+			"energy": 1.0,       # 옴니 조명은 스포트라이트보다 적은 에너지로 충분합니다.
+			"range": 2.0,
+			"attenuation": 1.5,
+			"height": 1.5,       # 중앙 쏠림 방지를 위해 여전히 낮게 유지
+			"specular": 0.0,
+			"shake_speed": 0.0,
+			"shake_amount": 0.0,
+			"color": Color(1, 1, 1)
+		}
+	dice_light_configs[6]["attenuation"] = 2.5
+	dice_light_configs[6]["height"] = 3.0
+	dice_light_configs[6]["range"] = 3.0
+	dice_light_configs[5]["attenuation"] = 5.0
+	dice_light_configs[5]["specular"] = 16.0
 
 func _ready() -> void:
-	# Temporary: Add a sample joker for testing
 	if owned_jokers.is_empty():
-		var sample_joker = {
-			"id": 1,
-			"korean_name": "위스키잔",
-			"english_name": "whiskey",
-			"image_path": "res://assets/joker_images/whiskey.png",
-			"description": "족보 성공 시 점수 +100",
-			"unlock_condition": "기본",
-			"Tier": "Common",
-			"Price": 4
-		}
-		owned_jokers.append(sample_joker)
-		print("Temporary: Added sample joker to Main.owned_jokers")
+		owned_jokers.append({"id": 1, "korean_name": "위스키잔", "english_name": "whiskey", "Price": 4})
