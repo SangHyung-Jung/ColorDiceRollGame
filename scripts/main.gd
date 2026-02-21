@@ -10,9 +10,15 @@ var owned_jokers: Array = []
 #var owned_dice_types: Array = [0] 
 var owned_dice_types: Array = [0,1,2,3,4,5,6,7,8] 
 const ALL_DICE_INFO = {
-	0: {"name": "Basic Dice"}, 1: {"name": "Plus Dice"}, 2: {"name": "Dollar Dice"},
-	3: {"name": "Multiply Dice"}, 4: {"name": "Faceless Dice"}, 5: {"name": "Lucky Dice"},
-	6: {"name": "Growing Dice"}, 7: {"name": "Ugly Dice"}, 8: {"name": "Prism Dice"}
+	0: {"name": "Basic Dice", "description": "Standard dice without special effects.", "price": 0},
+	1: {"name": "Plus Dice", "description": "Adds +50 to the base score of the combination.", "price": 1},
+	2: {"name": "Dollar Dice", "description": "Gives +$2 bonus when used in a combination.", "price": 1},
+	3: {"name": "Multiply Dice", "description": "Doubles the final multiplier of the combination.", "price": 1},
+	4: {"name": "Faceless Dice", "description": "Acts as a wildcard for any number.", "price": 1},
+	5: {"name": "Lucky Dice", "description": "Special lucky dice (Effect TBD).", "price": 1},
+	6: {"name": "Growing Dice", "description": "Dice that grows stronger (Effect TBD).", "price": 1},
+	7: {"name": "Ugly Dice", "description": "An ugly looking dice (Effect TBD).", "price": 1},
+	8: {"name": "Prism Dice", "description": "Acts as a wildcard for any color.", "price": 1}
 }
 
 var dice_light_configs: Dictionary = {}

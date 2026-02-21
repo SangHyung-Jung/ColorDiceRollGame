@@ -13,6 +13,11 @@ signal combo_selection_toggled(active: bool)  # 조합 선택 모드 토글
 var combo_select: ComboSelect  # 조합 선택 컴포넌트
 var camera: Camera3D           # 레이캐스팅용 카메라
 
+# === 툴팁 관련 ===
+const DiceTooltipScene = preload("res://scenes/components/dice_tooltip.tscn")
+var tooltip_instance: Control
+var current_hovered_dice: Node3D
+
 # === 입력 상태 플래그들 ===
 var _roll_in_progress: bool = false   # 현재 굴리기 진행 중
 
@@ -22,6 +27,40 @@ var _roll_in_progress: bool = false   # 현재 굴리기 진행 중
 func initialize(combo_sel: ComboSelect, cam: Camera3D) -> void:
 	combo_select = combo_sel
 	camera = cam
+	
+	# 툴팁 인스턴스 생성 및 최상위 레이어에 추가
+	tooltip_instance = DiceTooltipScene.instantiate()
+	get_tree().root.add_child.call_deferred(tooltip_instance)
+
+func _process(_delta: float) -> void:
+	_handle_hover_detection()
+
+func _handle_hover_detection() -> void:
+	if not camera or not tooltip_instance: return
+	
+	var mouse_pos = get_viewport().get_mouse_position()
+	var ray_length = 1000
+	var from = camera.project_ray_origin(mouse_pos)
+	var to = from + camera.project_ray_normal(mouse_pos) * ray_length
+	
+	var space_state = camera.get_world_3d().direct_space_state
+	var query = PhysicsRayQueryParameters3D.create(from, to)
+	query.collide_with_areas = false
+	query.collide_with_bodies = true
+	
+	var result = space_state.intersect_ray(query)
+	
+	if result and result.collider is Dice:
+		var dice = result.collider
+		if dice != current_hovered_dice:
+			current_hovered_dice = dice
+			if dice.has_method("get") and dice.get("current_dice_type") != null:
+				tooltip_instance.show_dice_info(dice.current_dice_type)
+		
+		tooltip_instance.update_position(mouse_pos)
+	else:
+		current_hovered_dice = null
+		tooltip_instance.hide()
 
 ## 굴리기 진행 상태 설정
 ## @param in_progress: 굴리기 진행 중 여부
