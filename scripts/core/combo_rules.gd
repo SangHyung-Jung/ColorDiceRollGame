@@ -74,15 +74,19 @@ func eval_combo(dice: Array) -> ComboResult:
 		var args = [dice] + params
 		if callv(condition_func, args):
 			var is_color_combo = definition.get("is_color", false)
-			if is_color_combo and not _all_same_color(dice):
-				continue
+			if is_color_combo:
+				if not _all_same_color(dice):
+					continue
+			else:
+				if not _all_different_colors(dice):
+					continue
 
 			res.ok = true
 			res.combo_name = definition["name"]
 			if is_color_combo:
-				res.combo_name += " (단일 색상)"
+				res.combo_name += " (싱글컬러)"
 			else:
-				res.combo_name += " (다색상)"
+				res.combo_name += " (레인보우)"
 			
 			var base_score = definition["base_score"]
 			var multiplier = definition["multiplier"]
@@ -236,4 +240,22 @@ func _all_same_color(dice: Array) -> bool:
 			elif d.color != base_color:
 				return false
 				
+	return true
+
+func _all_different_colors(dice: Array) -> bool:
+	if dice.is_empty(): return false
+	
+	var used_colors = []
+	for d in dice:
+		if d.type == 8: # Prism: 와일드카드 색상 (무조건 다른 색으로 변신 가능하다고 가정)
+			continue
+			
+		# 일반 주사위들 간에 색이 겹치면 안 됨
+		for prev_color in used_colors:
+			if d.color.is_equal_approx(prev_color):
+				return false
+		used_colors.append(d.color)
+		
+	# 사용 가능한 전체 색상이 주사위 개수보다 적을 수 있다는 한계가 있으나, 
+	# 현재 시스템상 주사위는 최대 5개이므로 문제없음.
 	return true

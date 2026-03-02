@@ -352,9 +352,13 @@ func _on_roll_started() -> void:
 func _on_roll_finished() -> void:
 	_has_submitted_in_turn = false
 	_has_invested_in_turn = false
+	
+	# 주사위 결과 정렬 및 애니메이션 대기
+	await dice_spawner.display_dice_results(game_manager.get_roll_results())
+	
+	# 모든 애니메이션이 끝난 후 상호작용 상태로 전환
 	_set_state(GameState.TURN_INTERACTION)
 	combo_select.enter()
-	dice_spawner.display_dice_results(game_manager.get_roll_results())
 
 func _on_mouse_release() -> void:
 	if cup.has_method("stop_shaking"):
@@ -459,7 +463,6 @@ func _reset_roll() -> void:
 			return
 		var new_dice_colors = dice_spawner.create_dice_colors_from_bag(game_manager.bag, need)
 		await dice_spawner.reset_and_spawn_all_dice(new_dice_colors)
-	game_manager.dice_in_cup_count = dice_spawner.get_dice_count()
 
 func _on_invest_pressed() -> void:
 	if not combo_select.active:
@@ -546,6 +549,9 @@ func _invest_dice(nodes: Array):
 
 func _on_turn_end_pressed() -> void:
 	combo_select.exit()
+	_has_submitted_in_turn = false
+	_has_invested_in_turn = false
+	
 	if Main.turns_left > 0:
 		Main.turns_left -= 1
 		_update_ui_from_gamestate()
@@ -714,14 +720,19 @@ func _update_ui_for_state() -> void:
 			sort_by_number_button.disabled = true
 
 		GameState.TURN_INTERACTION:
-			# Mutual exclusion logic
-			submit_button.disabled = _has_invested_in_turn
-			invest_button.disabled = _has_submitted_in_turn
+			# 버튼들을 기본적으로 활성화 상태로 둡니다.
+			# 개별 버튼의 비활성화 로직은 각 버튼의 클릭 핸들러에서 체크하거나 
+			# 아래와 같이 상황에 맞게 설정합니다.
 			
-			# End button activation logic
-			turn_end_button.disabled = not (_has_submitted_in_turn or _has_invested_in_turn)
+			submit_button.disabled = false
+			
+			# 남은 투자 횟수가 없으면 투자 버튼 비활성화
+			invest_button.disabled = (Main.invests_left <= 0)
+			
+			# 턴 종료 버튼은 항상 활성화 (언제든 턴을 마칠 수 있음)
+			turn_end_button.disabled = false
 
-			# Other buttons are always enabled in this state
+			# 기타 공통 버튼 활성화
 			view_dice_bag_button.disabled = false
 			sort_by_color_button.disabled = false
 			sort_by_number_button.disabled = false

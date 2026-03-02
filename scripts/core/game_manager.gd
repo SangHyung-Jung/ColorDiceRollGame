@@ -42,6 +42,15 @@ func start_roll() -> void:
 
 	if cup_collision_mesh:
 		cup_collision_mesh.use_collision = true
+	
+	# [추가] 안전 장치: 5초 후에도 주사위가 멈추지 않으면 강제로 종료 처리
+	# (주사위가 컵에 끼거나 맵 밖으로 나가는 경우 대비)
+	get_tree().create_timer(5.0).timeout.connect(func():
+		if _roll_in_progress:
+			print("⚠️ Roll safety timeout reached. Forcing roll finish.")
+			_roll_in_progress = false
+			roll_finished.emit()
+	)
 
 func on_dice_roll_finished(value: int, dice_name: String) -> void:
 	print(dice_name, " rolled a ", value)
@@ -49,11 +58,15 @@ func on_dice_roll_finished(value: int, dice_name: String) -> void:
 	_roll_results[dice_name] = value
 
 	# 현재 굴리기 중인 주사위 개수와 비교하여 완료 확인
-	if dice_in_cup_count > 0:
+	if _roll_in_progress:
 		check_if_all_dice_finished(dice_in_cup_count)
 
 func check_if_all_dice_finished(total_dice_count: int) -> bool:
-	if _finished_dice_count == total_dice_count:
+	# 0개인 경우는 무시 (아직 주사위가 컵에서 나가지 않았을 수 있음)
+	if total_dice_count <= 0 and _finished_dice_count == 0:
+		return false
+		
+	if _finished_dice_count >= total_dice_count:
 		print("\n--- Roll Finished! ---")
 		_roll_in_progress = false
 		bag.debug_print()
@@ -80,6 +93,7 @@ func remove_combo_dice(nodes: Array) -> void:
 func _reset_roll_state() -> void:
 	_finished_dice_count = 0
 	_roll_results.clear()
+	dice_in_cup_count = 0 # [추가] 굴리기 시작 시 초기화
 
 func can_draw_dice(count: int) -> bool:
 	return bag.can_draw(count)
@@ -107,7 +121,7 @@ func _on_dice_entered_cup(body: Node3D) -> void:
 func _on_dice_exited_cup(body: Node3D) -> void:
 	# ★ 수정: 컵에서 나갈 때는 '테이블 물리'를 적용해주는 것이 맞습니다.
 	if body.is_in_group("dice"):
-		dice_in_cup_count -= 1
+		dice_in_cup_count = max(0, dice_in_cup_count - 1) # [수정] 0 이하로 내려가지 않게 보호
 		if body.has_method("apply_outside_cup_physics"):
 			body.apply_outside_cup_physics() # <- 이것은 유지
 			
