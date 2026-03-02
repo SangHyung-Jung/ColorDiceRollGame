@@ -34,11 +34,18 @@ func setup_jokers(jokers_list: Array):
 		var joker = jokers_list[i]
 		var sprite = faces[i] as Sprite3D
 		
-		# english_name을 기반으로 텍스처 로드
-		var texture_path = "res://assets/joker_images/" + joker["english_name"] + ".png"
+		# [수정] image_path가 있으면 우선 사용, 없으면 english_name 기반 생성
+		var texture_path = ""
+		if joker.has("image_path") and joker["image_path"] != "":
+			texture_path = joker["image_path"]
+		else:
+			texture_path = "res://assets/joker_images/" + joker["english_name"] + ".png"
+			
 		if ResourceLoader.exists(texture_path):
 			sprite.texture = load(texture_path)
-			sprite.scale = Vector3(1, -1, 1) # [추가] 이미지 상하 반전
+			sprite.scale = Vector3(1, 1, 1) # 스케일 정상화
+			#sprite.rotation_degrees.x = 180 # 상하 반전 보정
+			#sprite.rotation_degrees.y = 180 # 좌우 반전 보정
 		else:
 			print("Warning: Texture not found at: ", texture_path)
 		

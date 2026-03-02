@@ -669,49 +669,76 @@ func update_joker_socket_positions() -> void:
 
 # [추가] 보유한 조커 목록(Main.owned_jokers)을 기반으로 3D 주사위 생성 및 배치
 func update_joker_dice_display() -> void:
-	# 기존 조커 주사위 제거
-	for dice in joker_dice_nodes:
-		if is_instance_valid(dice):
-			dice.queue_free()
-	joker_dice_nodes.clear()
+	var owned_jokers = Main.owned_jokers
 
-	var owned_jokers = Main.owned_jokers # Main에서 보유 조커 리스트 가져옴
+	# 1. 부족한 만큼만 새로 생성
+	var current_count = joker_dice_nodes.size()
+	var target_count = owned_jokers.size()
 
-	for i in range(owned_jokers.size()):
-		if i >= joker_socket_positions.size():
-			break # 소켓 수보다 많으면 중단 (혹은 페이지 처리)
+	if target_count > current_count:
+		for i in range(current_count, target_count):
+			if i >= joker_socket_positions.size():
+				break
 
-		var joker_data = owned_jokers[i]
-		print("DEBUG: Joker data being processed: ", joker_data) # <--- ADD THIS LINE
-		var target_pos = joker_socket_positions[i]
+			var joker_data = owned_jokers[i]
+			var dice_node = ShopDiceScene.instantiate()
+			world_3d.add_child(dice_node)
 
-		# 조커 주사위 생성 (ShopDice 활용)
-		var dice_node = ShopDiceScene.instantiate()
-		world_3d.add_child(dice_node)
-
-		# 조커 이미지 적용
-		if joker_data.has("image_path"):
+			# 조커 이미지 적용 (6면 모두 동일하게)
 			var repeated_jokers_list = []
-			for _k in range(6): # Repeat the same joker data 6 times for all faces
+			for _k in range(6):
 				repeated_jokers_list.append(joker_data)
 			dice_node.setup_jokers(repeated_jokers_list)
 
-		# 물리 고정 및 위치 설정
-		dice_node.freeze = true
-		dice_node.global_position = target_pos
-		dice_node.rotation_degrees = Vector3(0, 180, 0) # 정면을 보게 회전 (필요시 조정)
+			# 초기 물리 상태 설정
+			dice_node.freeze = true
+			
+			joker_dice_nodes.append(dice_node)
+			
+			# [추가] 조커 주사위에도 핀포인트 조명 추가
+			var pinpoint_light = PinpointLightScene.instantiate()
+			world_3d.add_child(pinpoint_light)
+			pinpoint_light.target_node = dice_node
 
-		joker_dice_nodes.append(dice_node)
+	# 2. 모든 조커 주사위 위치 재조정 (Tween)
+	_reposition_joker_dice()
 
-# [추가] 조커 주사위 위치 재조정 (화면 크기 변경 대응 등)
+# [추가] 조커 주사위 위치 재조정 (게임 플레이 정렬 로직과 동일하게)
 func _reposition_joker_dice() -> void:
+	if joker_dice_nodes.is_empty():
+		return
+		
+	var move_duration = GameConstants.MOVE_DURATION
+	var master_tween = create_tween().set_parallel(true)
+	master_tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+
 	for i in range(joker_dice_nodes.size()):
 		if i < joker_socket_positions.size():
 			var dice = joker_dice_nodes[i]
 			if is_instance_valid(dice):
-				# Tween으로 부드럽게 이동
-				var tween = create_tween()
-				tween.tween_property(dice, "global_position", joker_socket_positions[i], 0.3).set_trans(Tween.TRANS_SINE)
+				# 1. 윗면 정렬 (Face 1)
+				dice.show_face(1)
+				
+				# 2. 물리 정지 및 충돌 비활성화 (DiceSpawner 로직과 동일)
+				dice.freeze = true
+				dice.freeze_mode = RigidBody3D.FREEZE_MODE_KINEMATIC
+				dice.linear_velocity = Vector3.ZERO
+				dice.angular_velocity = Vector3.ZERO
+				dice.set_collision_enabled(false)
+				
+				# 3. 위치 및 회전 애니메이션
+				var target_pos = joker_socket_positions[i]
+				var target_quat = Quaternion.IDENTITY # Face 1(UP)은 Vector3.ZERO 회전과 동일
+				
+				master_tween.tween_property(dice, "global_position", target_pos, move_duration)
+				master_tween.tween_property(dice, "quaternion", target_quat, move_duration)
+
+	# 4. 모든 이동 완료 후 충돌 복원
+	master_tween.chain().tween_callback(func():
+		for dice in joker_dice_nodes:
+			if is_instance_valid(dice):
+				dice.set_collision_enabled(true)
+	)
 
 # ============================================================================
 # 상태 관리

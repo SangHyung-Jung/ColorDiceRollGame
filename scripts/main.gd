@@ -53,4 +53,10 @@ func get_color_key(color: Color) -> String:
 
 func _ready() -> void:
 	if owned_jokers.is_empty():
-		owned_jokers.append({"id": 1, "korean_name": "위스키잔", "english_name": "whiskey", "Price": 4})
+		owned_jokers.append({
+			"id": 1, 
+			"korean_name": "위스키잔", 
+			"english_name": "whiskey", 
+			"image_path": "res://assets/joker_images/whiskey.png", # [추가]
+			"Price": 4
+		})
