@@ -320,6 +320,8 @@ func _connect_signals() -> void:
 	#rolling_area.gui_input.connect(_on_rolling_area_gui_input) # Removed
 	#rolling_area.resized.connect(_on_rolling_area_resized) # Removed
 	
+	combo_select.selection_changed.connect(_on_selection_changed)
+	
 	round_clear_popup.continue_pressed.connect(_on_round_clear_popup_continue_pressed)
 	StageManager.round_advanced.connect(_on_stage_manager_round_advanced)
 
@@ -358,7 +360,24 @@ func _on_roll_finished() -> void:
 	
 	# 모든 애니메이션이 끝난 후 상호작용 상태로 전환
 	_set_state(GameState.TURN_INTERACTION)
+	_initialize_score_calc_ui() # 초기 0x0 상태로 설정
 	combo_select.enter()
+
+func _on_selection_changed(_selected_nodes: Array[Node3D]) -> void:
+	# 애니메이션 중에는 프리뷰 갱신 안 함
+	if score_animator and score_animator.is_animation_running():
+		return
+		
+	var current_roll_results = game_manager.get_roll_results()
+	var result = score_manager.evaluate_combo_preview(_selected_nodes, current_roll_results)
+	
+	if result and result.ok:
+		combo_name_label.text = result.combo_name
+		combo_name_label.modulate = Color.WHITE # 애니메이션 후 연두색이 남아있을 수 있으므로 복구
+		score_label.text = str(result.base_score + result.dice_sum)
+		multiplier_label.text = str(result.multiplier)
+	else:
+		_initialize_score_calc_ui()
 
 func _on_mouse_release() -> void:
 	if cup.has_method("stop_shaking"):
@@ -450,9 +469,12 @@ func _remove_combo_dice(nodes: Array) -> void:
 
 
 func _initialize_score_calc_ui() -> void:
-	combo_name_label.text = " "
+	combo_name_label.text = "None"
+	combo_name_label.modulate = Color.WHITE
 	score_label.text = "0"
+	score_label.modulate = Color.WHITE
 	multiplier_label.text = "0"
+	multiplier_label.modulate = Color.WHITE
 
 
 func _reset_roll() -> void:

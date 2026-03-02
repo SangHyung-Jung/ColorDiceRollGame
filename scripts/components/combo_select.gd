@@ -1,6 +1,8 @@
 extends Node3D
 class_name ComboSelect
 
+signal selection_changed(selected_nodes: Array[Node3D])
+
 var active: bool = false
 var _sel := {}                       # id -> Node3D
 var _order: Array[Node3D] = []
@@ -20,6 +22,7 @@ func exit() -> void:
 func clear() -> void:
 	for n in _order: _set_selected(n, false)
 	_sel.clear(); _order.clear()
+	selection_changed.emit(_order)
 
 func get_selected_nodes() -> Array[Node3D]:
 	return _order.duplicate()
@@ -27,6 +30,7 @@ func get_selected_nodes() -> Array[Node3D]:
 func pop_selected_nodes() -> Array[Node3D]:
 	var nodes = _order.duplicate()
 	clear()
+	# selection_changed.emit(_order) is already called in clear()
 	return nodes
 
 func process_input(event: InputEvent) -> bool:
@@ -49,6 +53,8 @@ func _toggle(hit: Node) -> void:
 		_sel.erase(idv); _order.erase(d); _set_selected(d, false)
 	else:
 		_sel[idv] = d; _order.append(d); _set_selected(d, true)
+	
+	selection_changed.emit(_order)
 
 func _dice_root(n: Node) -> Node3D:
 	var cur: Node = n

@@ -24,6 +24,10 @@ var invested_dice_nodes_ref: Array
 
 const SCORE_ANIM_SPEED = 2 # 애니메이션 속도 제어 변수 (값이 클수록 애니메이션이 빨라짐)
 var _animation_running_score: int = 0
+var _is_anim_running: bool = false # [추가] 애니메이션 진행 상태 추적
+
+func is_animation_running() -> bool:
+	return _is_anim_running
 
 func initialize(refs: Dictionary):
 	world_3d = refs.world_3d
@@ -44,6 +48,8 @@ func initialize(refs: Dictionary):
 func play_animation(result: ComboRules.ComboResult, nodes: Array) -> void:
 	# 사운드를 미리 불러옵니다. SoundManager가 중복 로드를 방지해줍니다.
 	SoundManager.preload_sound("dice_count", "res://assets/audio/die-throw-1.ogg")
+
+	_is_anim_running = true # [추가] 애니메이션 시작
 
 	# 1. 입력 비활성화
 	submit_button.disabled = true
@@ -104,34 +110,37 @@ func play_animation(result: ComboRules.ComboResult, nodes: Array) -> void:
 		# 2단계: 특수 효과가 있는 경우 추가 시퀀스 진행
 		if die_type in [1, 2, 3]:
 			# 텍스트가 읽힐 시간을 충분히 줌 (겹침 방지)
-			tween.tween_interval(0.45 / SCORE_ANIM_SPEED)
+			tween.tween_interval(0.4 / SCORE_ANIM_SPEED)
 			
+			# 1. 주사위 강조: 먼저 커짐
+			tween.tween_property(mesh, "scale", original_scale * 1.4, 0.15 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			
+			# 2. 정점에서 텍스트 발사 및 효과음 (정확한 동기화)
 			tween.tween_callback(
 				func():
 					var is_invested = invested_dice_nodes_ref.has(die_node)
-					# 주사위를 강조하기 위해 살짝 키움
-					var highlight_tween = create_tween()
-					highlight_tween.tween_property(mesh, "scale", original_scale * 1.3, 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_BACK)
-					highlight_tween.chain().tween_property(mesh, "scale", original_scale, 0.2 / SCORE_ANIM_SPEED)
-					
 					match die_type:
 						1: # Plus Dice
 							_create_floating_text("+50", die_world_pos, is_invested, Color.CYAN)
 							_update_animation_score(50)
-							SoundManager.play("dice_count") # 효과음 한 번 더
 						2: # Dollar Dice
 							_create_floating_text("+$2", die_world_pos, is_invested, Color.GOLD)
-							SoundManager.play("dice_count")
 						3: # Multiply Dice
 							_create_floating_text("x2 Mult", die_world_pos, is_invested, Color.HOT_PINK)
 							running_multiplier *= 2
 							multiplier_label.text = str(running_multiplier)
-							SoundManager.play("dice_count")
+					
+					SoundManager.play("dice_count")
+					print("ScoreAnimator: Special effect synced at peak for type ", die_type)
 			)
-			# 특수 효과 연출을 위해 조금 더 대기
-			tween.tween_interval(0.35 / SCORE_ANIM_SPEED)
+			
+			# 3. 다시 원래대로 복구
+			tween.tween_property(mesh, "scale", original_scale, 0.2 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
+			
+			# 연출 완료 후 대기
+			tween.tween_interval(0.2 / SCORE_ANIM_SPEED)
 
-		# 3단계: 점수판 펀치 애니메이션 (기본/특수 값 합산 시마다 수행할 수도 있지만, 여기서는 한 번만)
+		# 3단계: 점수판 펀치 애니메이션
 		tween.tween_callback(func(): score_label.pivot_offset = score_label.size / 2)
 		tween.tween_property(score_label, "scale", Vector2(1.4, 1.4), 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
 		tween.tween_property(score_label, "scale", Vector2(1.0, 1.0), 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
@@ -188,6 +197,7 @@ func play_animation(result: ComboRules.ComboResult, nodes: Array) -> void:
 
 	# 6. 애니메이션 종료 시그널 발생
 	tween.tween_callback(func():
+		_is_anim_running = false # [추가] 애니메이션 종료
 		animation_finished.emit(result.points, nodes)
 	)
 		

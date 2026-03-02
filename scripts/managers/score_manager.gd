@@ -85,6 +85,40 @@ func evaluate_and_score_combo(selected_nodes: Array, roll_results: Dictionary) -
 	
 	return true
 
+## 조합의 프리뷰(미리보기)를 위해 점수를 계산합니다 (상태 변경 X)
+func evaluate_combo_preview(selected_nodes: Array, roll_results: Dictionary) -> ComboRules.ComboResult:
+	if selected_nodes.is_empty():
+		return null
+
+	var dice_data: Array = []
+	for n in selected_nodes:
+		var value: int = -1
+		if typeof(roll_results) == TYPE_DICTIONARY and roll_results.has(n.name):
+			value = int(roll_results[n.name])
+		elif n.has_meta("value"):
+			value = n.get_meta("value")
+
+		var d := ComboRules.DieData.from_node(n, value)
+		dice_data.append(d)
+
+	var combo_rules = ComboRules.new()
+	var result := combo_rules.eval_combo(dice_data)
+	
+	if result.ok:
+		# 특수 주사위 효과 미리 계산
+		var bonus_score = 0
+		var bonus_multiplier_factor = 1.0
+		for d in dice_data:
+			match d.type:
+				1: bonus_score += 50
+				3: bonus_multiplier_factor *= 2.0
+		
+		result.base_score += bonus_score
+		result.multiplier = int(result.multiplier * bonus_multiplier_factor)
+		result.points = (result.base_score + result.dice_sum) * result.multiplier
+	
+	return result
+
 ## 주사위 노드에서 색상 라벨을 추출합니다
 ## @param node: 주사위 노드
 ## @param color: 주사위 색상
