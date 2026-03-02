@@ -76,9 +76,18 @@ func draw_many(n: int) -> Array:
 ## @param colors: 다시 넣을 주사위들의 색상 키 배열
 func undo_draw(colors: Array) -> void:
 	for c in colors:
-		if c is String and c in COLORS:
-			_counts[c] += 1
-	_recalc_total()
+		add_one(c)
+
+## 가방에 특정 색상의 주사위를 하나 추가합니다.
+## @param color_key: 추가할 색상 키 ("W", "K", "R", "G", "B")
+func add_one(color_key: String) -> void:
+	if color_key in COLORS:
+		_counts[color_key] = _counts.get(color_key, 0) + 1
+		_recalc_total()
+
+## 현재 가방의 색상별 개수 딕셔너리를 반환합니다.
+func get_counts() -> Dictionary:
+	return _counts.duplicate()
 
 ## 현재 가방 상태를 콘솔에 출력합니다 (디버깅용)
 func debug_print() -> void:

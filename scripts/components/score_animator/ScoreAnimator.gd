@@ -108,7 +108,7 @@ func play_animation(result: ComboRules.ComboResult, nodes: Array) -> void:
 		)
 		
 		# 2단계: 특수 효과가 있는 경우 추가 시퀀스 진행
-		if die_type in [1, 2, 3]:
+		if die_type in [1, 2, 3, 9]:
 			# 텍스트가 읽힐 시간을 충분히 줌 (겹침 방지)
 			tween.tween_interval(0.4 / SCORE_ANIM_SPEED)
 			
@@ -129,6 +129,8 @@ func play_animation(result: ComboRules.ComboResult, nodes: Array) -> void:
 							_create_floating_text("x2 Mult", die_world_pos, is_invested, Color.HOT_PINK)
 							running_multiplier *= 2
 							multiplier_label.text = str(running_multiplier)
+						9: # Shadow Dice
+							_create_floating_text("Shadow Copy", die_world_pos, is_invested, Color.MEDIUM_PURPLE)
 					
 					SoundManager.play("dice_count")
 					print("ScoreAnimator: Special effect synced at peak for type ", die_type)

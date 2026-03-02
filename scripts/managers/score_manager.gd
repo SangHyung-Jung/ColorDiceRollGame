@@ -7,6 +7,7 @@ extends Node
 # 유효한 조합이 완성되었을 때 발생
 signal combo_scored_detailed(result: ComboRules.ComboResult, nodes: Array)
 
+var game_manager: GameManager # [추가] 가방 접근을 위해 필요
 # 게임 전체의 누적 점수
 var total_score: int = 0
 
@@ -63,6 +64,11 @@ func evaluate_and_score_combo(selected_nodes: Array, roll_results: Dictionary) -
 			3: # Multiply: 배율 2배
 				bonus_multiplier_factor *= 2.0
 				print("✨ Multiply Dice 효과: 배율 x2")
+			9: # Shadow: 주사위 복사 (가방에 추가)
+				var key = Main.get_color_key(d.color)
+				if game_manager and game_manager.bag:
+					game_manager.bag.add_one(key)
+					print("✨ Shadow Dice 효과: 가방에 %s 주사위 추가" % key)
 	
 	# 수치 보정 (original 값은 보존하여 애니메이션에서 사용)
 	result.base_score += bonus_score

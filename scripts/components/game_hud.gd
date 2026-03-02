@@ -216,6 +216,7 @@ func _initialize_managers() -> void:
 	game_manager = GameManager.new()
 	# input_manager = InputManager.new() # Removed, now in GameRoot
 	score_manager = ScoreManager.new()
+	score_manager.game_manager = game_manager # [추가] 가방 접근을 위해 레퍼런스 전달
 	dice_spawner = DiceSpawner.new()
 	combo_select = ComboSelect.new()
 

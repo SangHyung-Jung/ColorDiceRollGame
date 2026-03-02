@@ -39,6 +39,7 @@ func get_model_path(type_index: int, color: DiceColor) -> String:
 		6: return "res://assets/models/6_growing_dice_" + color_name + ".gltf"
 		7: return "res://assets/models/7_ugly_dice_" + color_name + ".gltf"
 		8: return "res://assets/models/8_dice_prism.tscn"
+		9: return "res://assets/models/9_dice_shadow_" + color_name + ".tscn"
 		_: return "res://assets/models/0_dice_" + color_name + ".gltf"
 
 var current_dice_color: DiceColor = DiceColor.WHITE
