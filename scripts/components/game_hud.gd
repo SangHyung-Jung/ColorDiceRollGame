@@ -425,6 +425,7 @@ func _animate_current_score(target_score: int, nodes: Array) -> void:
 		Main.current_score = target_score
 		
 		_has_submitted_in_turn = true
+		_update_ui_from_gamestate() # [수정] 골드 등 전체 UI 갱신
 		_update_ui_for_state()
 		_initialize_score_calc_ui()
 

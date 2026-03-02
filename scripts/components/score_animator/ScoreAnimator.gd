@@ -92,33 +92,46 @@ func play_animation(result: ComboRules.ComboResult, nodes: Array) -> void:
 		# 공중에서 원래 크기로 복귀
 		tween.tween_property(mesh, "scale", original_scale, 0.1 / SCORE_ANIM_SPEED)
 
-		# 점수 텍스트 표시 및 점수 업데이트 (정점 부근)
+		# 1단계: 기본 주사위 값 표시 및 합산
 		tween.tween_callback(
 			func():
-				# ✨ 사운드 재생 추가!
 				SoundManager.play("dice_count")
 				var is_invested = invested_dice_nodes_ref.has(die_node)
-				
-				# 1. 기본 주사위 값 표시
 				_create_floating_text("+" + str(die_value), die_world_pos, is_invested)
 				_update_animation_score(die_value)
-				
-				# 2. [추가] 특수 주사위 개별 효과 표시
-				match die_type:
-					1: # Plus Dice
-						_create_floating_text("+50", die_world_pos + Vector3(0.5, 0.5, 0), is_invested, Color.CYAN)
-						_update_animation_score(50)
-						print("ScoreAnimator: Plus Dice effect applied (+50)")
-					2: # Dollar Dice
-						_create_floating_text("+$2", die_world_pos + Vector3(0.5, 0.5, 0), is_invested, Color.GOLD)
-						print("ScoreAnimator: Dollar Dice effect applied (+$2)")
-					3: # Multiply Dice
-						_create_floating_text("x2 Mult", die_world_pos + Vector3(0.5, 0.5, 0), is_invested, Color.HOT_PINK)
-						running_multiplier *= 2
-						multiplier_label.text = str(running_multiplier)
-						print("ScoreAnimator: Multiply Dice effect applied (x2 Mult)")
 		)
-		# Animate score label punch from its center
+		
+		# 2단계: 특수 효과가 있는 경우 추가 시퀀스 진행
+		if die_type in [1, 2, 3]:
+			# 텍스트가 읽힐 시간을 충분히 줌 (겹침 방지)
+			tween.tween_interval(0.45 / SCORE_ANIM_SPEED)
+			
+			tween.tween_callback(
+				func():
+					var is_invested = invested_dice_nodes_ref.has(die_node)
+					# 주사위를 강조하기 위해 살짝 키움
+					var highlight_tween = create_tween()
+					highlight_tween.tween_property(mesh, "scale", original_scale * 1.3, 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_BACK)
+					highlight_tween.chain().tween_property(mesh, "scale", original_scale, 0.2 / SCORE_ANIM_SPEED)
+					
+					match die_type:
+						1: # Plus Dice
+							_create_floating_text("+50", die_world_pos, is_invested, Color.CYAN)
+							_update_animation_score(50)
+							SoundManager.play("dice_count") # 효과음 한 번 더
+						2: # Dollar Dice
+							_create_floating_text("+$2", die_world_pos, is_invested, Color.GOLD)
+							SoundManager.play("dice_count")
+						3: # Multiply Dice
+							_create_floating_text("x2 Mult", die_world_pos, is_invested, Color.HOT_PINK)
+							running_multiplier *= 2
+							multiplier_label.text = str(running_multiplier)
+							SoundManager.play("dice_count")
+			)
+			# 특수 효과 연출을 위해 조금 더 대기
+			tween.tween_interval(0.35 / SCORE_ANIM_SPEED)
+
+		# 3단계: 점수판 펀치 애니메이션 (기본/특수 값 합산 시마다 수행할 수도 있지만, 여기서는 한 번만)
 		tween.tween_callback(func(): score_label.pivot_offset = score_label.size / 2)
 		tween.tween_property(score_label, "scale", Vector2(1.4, 1.4), 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
 		tween.tween_property(score_label, "scale", Vector2(1.0, 1.0), 0.1 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE)
@@ -148,12 +161,9 @@ func play_animation(result: ComboRules.ComboResult, nodes: Array) -> void:
 		
 		## 각 주사위 사이의 간격 (약간 더 타이트하게)
 		tween.tween_interval(0.08 / SCORE_ANIM_SPEED)
-#
-		## 각 주사위 애니메이션 사이에 짧은 딜레이 추가
-		#tween.tween_interval(0.1 / SCORE_ANIM_SPEED)
 
-	# 모든 주사위 애니메이션이 끝난 후, 다음 단계로 넘어가기 전 잠시 멈춤
-	tween.tween_interval(0.4 / SCORE_ANIM_SPEED)
+	# 모든 주사위 애니메이션이 끝난 후, 최종 결과 공개 전 대기 시간 대폭 증가
+	tween.tween_interval(0.8 / SCORE_ANIM_SPEED)
 
 	# Phase 2: 배수(Mult) 적용
 	# var flash_tween = create_tween()
@@ -205,7 +215,8 @@ func _create_floating_text(text: String, position_3d: Vector3, is_invested: bool
 	
 	# 주사위 위치에 따른 초기 오프셋 설정
 	var base_offset_y = 120
-	var final_pos = screen_pos + (Vector2(0, base_offset_y) if is_invested else Vector2(0, -base_offset_y))
+	var random_x = randf_range(-40, 40) # 텍스트 겹침을 줄이기 위한 랜덤 X 오프셋
+	var final_pos = screen_pos + (Vector2(random_x, base_offset_y) if is_invested else Vector2(random_x, -base_offset_y))
 	
 	# 레이블을 중앙 정렬하기 위해 자신의 크기 절반만큼 뺌
 	label.position = final_pos - (label.size / 2.0)
@@ -220,12 +231,12 @@ func _create_floating_text(text: String, position_3d: Vector3, is_invested: bool
 	tween.tween_property(label, "scale", Vector2(1.2, 1.2), 0.15 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(label, "modulate:a", 1.0, 0.1 / SCORE_ANIM_SPEED)
 	
-	# 2. 위(혹은 아래)로 부드럽게 이동
-	var move_dist = -80 if not is_invested else 80
-	tween.tween_property(label, "position:y", label.position.y + move_dist, 0.6 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	# 2. 위(혹은 아래)로 부드럽게 이동 (속도 늦춤)
+	var move_dist = -100 if not is_invested else 100
+	tween.tween_property(label, "position:y", label.position.y + move_dist, 1.2 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	
-	# 3. 서서히 사라짐
-	tween.chain().tween_property(label, "modulate:a", 0.0, 0.2 / SCORE_ANIM_SPEED).set_delay(0.2 / SCORE_ANIM_SPEED)
+	# 3. 서서히 사라짐 (지연 시간 증가)
+	tween.chain().tween_property(label, "modulate:a", 0.0, 0.3 / SCORE_ANIM_SPEED).set_delay(0.5 / SCORE_ANIM_SPEED)
 	tween.chain().tween_callback(label.queue_free)
 
 func _update_animation_score(die_value: int) -> void:
