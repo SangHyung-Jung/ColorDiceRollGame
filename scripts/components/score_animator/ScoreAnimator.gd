@@ -5,6 +5,7 @@ signal animation_finished(points, nodes)
 
 # References to be set from MainScreen
 var world_3d: Node3D
+var camera: Camera3D # [추가]
 
 # UI Node References
 var score_label: Label
@@ -26,6 +27,7 @@ var _animation_running_score: int = 0
 
 func initialize(refs: Dictionary):
 	world_3d = refs.world_3d
+	camera = refs.camera # [추가]
 	score_label = refs.score_label
 	multiplier_label = refs.multiplier_label
 	turn_score_label = refs.turn_score_label
@@ -49,10 +51,13 @@ func play_animation(result: ComboRules.ComboResult, nodes: Array) -> void:
 	turn_end_button.disabled = true
 
 	# 2. UI 및 애니메이션 변수 초기 상태 설정
-	_animation_running_score = result.base_score
+	# [수정] 특수 효과 주사위 효과를 하나씩 보여주기 위해 original 값부터 시작
+	_animation_running_score = result.original_base_score
+	var running_multiplier = result.original_multiplier
+	
 	combo_name_label.text = result.combo_name
 	score_label.text = str(_animation_running_score)
-	multiplier_label.text = str(result.multiplier)
+	multiplier_label.text = str(running_multiplier)
 	
 	var tween = create_tween().set_parallel(false)
 	var current_roll_results = game_manager.get_roll_results()
@@ -70,6 +75,7 @@ func play_animation(result: ComboRules.ComboResult, nodes: Array) -> void:
 		elif die_node.has_meta("value"):
 			die_value = die_node.get_meta("value")
 		
+		var die_type = die_node.get("current_dice_type") if "current_dice_type" in die_node else 0
 		var die_world_pos = die_node.global_position
 		
 		# Animate the mesh locally
@@ -92,8 +98,25 @@ func play_animation(result: ComboRules.ComboResult, nodes: Array) -> void:
 				# ✨ 사운드 재생 추가!
 				SoundManager.play("dice_count")
 				var is_invested = invested_dice_nodes_ref.has(die_node)
+				
+				# 1. 기본 주사위 값 표시
 				_create_floating_text("+" + str(die_value), die_world_pos, is_invested)
 				_update_animation_score(die_value)
+				
+				# 2. [추가] 특수 주사위 개별 효과 표시
+				match die_type:
+					1: # Plus Dice
+						_create_floating_text("+50", die_world_pos + Vector3(0.5, 0.5, 0), is_invested, Color.CYAN)
+						_update_animation_score(50)
+						print("ScoreAnimator: Plus Dice effect applied (+50)")
+					2: # Dollar Dice
+						_create_floating_text("+$2", die_world_pos + Vector3(0.5, 0.5, 0), is_invested, Color.GOLD)
+						print("ScoreAnimator: Dollar Dice effect applied (+$2)")
+					3: # Multiply Dice
+						_create_floating_text("x2 Mult", die_world_pos + Vector3(0.5, 0.5, 0), is_invested, Color.HOT_PINK)
+						running_multiplier *= 2
+						multiplier_label.text = str(running_multiplier)
+						print("ScoreAnimator: Multiply Dice effect applied (x2 Mult)")
 		)
 		# Animate score label punch from its center
 		tween.tween_callback(func(): score_label.pivot_offset = score_label.size / 2)
@@ -160,7 +183,6 @@ func play_animation(result: ComboRules.ComboResult, nodes: Array) -> void:
 		
 		
 func _create_floating_text(text: String, position_3d: Vector3, is_invested: bool, color: Color = Color.WHITE) -> void:
-	var camera = world_3d.get_node_or_null("Camera3D")
 	if not camera: return
 
 	var screen_pos = camera.unproject_position(position_3d)
@@ -168,28 +190,43 @@ func _create_floating_text(text: String, position_3d: Vector3, is_invested: bool
 	var label = Label.new()
 	label.text = text
 	label.modulate = color
-	# Style updates
-	label.add_theme_font_size_override("font_size", 50)
+	# 가독성을 위해 텍스트 스타일 강화
+	label.add_theme_font_size_override("font_size", 60)
 	label.add_theme_color_override("font_shadow_color", Color.BLACK)
-	label.add_theme_constant_override("shadow_offset_x", 2)
-	label.add_theme_constant_override("shadow_offset_y", 2)
+	label.add_theme_constant_override("shadow_offset_x", 3)
+	label.add_theme_constant_override("shadow_offset_y", 3)
+	label.add_theme_constant_override("shadow_outline_size", 5)
 
 	floating_text_container.add_child(label)
-	label.pivot_offset = label.get_size() / 2
+	
+	# 크기 계산을 위해 한 프레임 대기 대신 직접 설정 (Pivot Center)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	
+	# 주사위 위치에 따른 초기 오프셋 설정
+	var base_offset_y = 120
+	var final_pos = screen_pos + (Vector2(0, base_offset_y) if is_invested else Vector2(0, -base_offset_y))
+	
+	# 레이블을 중앙 정렬하기 위해 자신의 크기 절반만큼 뺌
+	label.position = final_pos - (label.size / 2.0)
+	label.pivot_offset = label.size / 2.0
 
-	# Position text above or below based on whether the die is invested
-	var text_offset_y = 150
-	if is_invested:
-		label.global_position = screen_pos + Vector2(0, text_offset_y) # Move down for invested dice
-	else:
-		label.global_position = screen_pos - Vector2(0, text_offset_y) # Move up for rolled dice
-
-	var tween = create_tween()
-	# "Pop" animation: appear instantly, short delay, then fade out quickly
-	label.modulate.a = 1.0 # Ensure it's fully visible at start
-	tween.tween_interval(0.3 / SCORE_ANIM_SPEED) # Controllable delay before fade
-	tween.tween_property(label, "modulate:a", 0.0, 0.1 / SCORE_ANIM_SPEED) # Quick fade out
-	tween.tween_callback(label.queue_free)
+	var tween = create_tween().set_parallel(true)
+	# "Pop and Rise" 애니메이션
+	label.scale = Vector2(0.5, 0.5)
+	label.modulate.a = 0.0
+	
+	# 1. 나타나면서 커짐
+	tween.tween_property(label, "scale", Vector2(1.2, 1.2), 0.15 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(label, "modulate:a", 1.0, 0.1 / SCORE_ANIM_SPEED)
+	
+	# 2. 위(혹은 아래)로 부드럽게 이동
+	var move_dist = -80 if not is_invested else 80
+	tween.tween_property(label, "position:y", label.position.y + move_dist, 0.6 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	
+	# 3. 서서히 사라짐
+	tween.chain().tween_property(label, "modulate:a", 0.0, 0.2 / SCORE_ANIM_SPEED).set_delay(0.2 / SCORE_ANIM_SPEED)
+	tween.chain().tween_callback(label.queue_free)
 
 func _update_animation_score(die_value: int) -> void:
 	_animation_running_score += die_value
@@ -214,14 +251,16 @@ func _shake_screen(duration: float = 0.2, frequency: int = 15, amplitude: float 
 	tween.tween_callback(func(): main_layout.position = original_pos)
 
 func _display_final_calculation(result: ComboRules.ComboResult) -> void:
-	# Use the final "chips" score calculated during the animation
+	# 애니메이션 중 합산된 최종 칩 점수 사용
 	var final_chips = _animation_running_score
-	var calc_text = "%d x %d = %d" % [final_chips, result.multiplier, result.points]
+	var calc_text = "FINAL SCORE: %d x %d = %d" % [final_chips, result.multiplier, result.points]
 	
 	combo_name_label.text = calc_text
+	combo_name_label.modulate = Color.GREEN_YELLOW # 가시성 좋은 연두색
 	combo_name_label.pivot_offset = combo_name_label.size / 2
 	
 	var tween = create_tween()
-	tween.tween_property(combo_name_label, "scale", Vector2(1.3, 1.3), 0.1 / SCORE_ANIM_SPEED)
-	tween.chain().tween_callback(_shake_screen.bind(0.3, 20, 15)) # Strong shake on reveal
+	# 팝업 효과
+	tween.tween_property(combo_name_label, "scale", Vector2(1.5, 1.5), 0.15 / SCORE_ANIM_SPEED).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.chain().tween_callback(_shake_screen.bind(0.4, 25, 20)) # 결과 공개 시 강한 화면 흔들림
 	tween.tween_property(combo_name_label, "scale", Vector2(1.0, 1.0), 0.2 / SCORE_ANIM_SPEED)

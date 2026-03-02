@@ -64,7 +64,7 @@ func evaluate_and_score_combo(selected_nodes: Array, roll_results: Dictionary) -
 				bonus_multiplier_factor *= 2.0
 				print("✨ Multiply Dice 효과: 배율 x2")
 	
-	# 수치 보정
+	# 수치 보정 (original 값은 보존하여 애니메이션에서 사용)
 	result.base_score += bonus_score
 	result.multiplier = int(result.multiplier * bonus_multiplier_factor)
 	# 최종 점수 재계산

@@ -106,7 +106,7 @@ func _initialize_score_animator() -> void:
 	add_child(score_animator)
 	var refs = {
 		"world_3d": world_3d,
-		# "rolling_area": rolling_area, # Removed
+		"camera": rolling_world_camera, # [추가] 카메라 레퍼런스 전달
 		"score_label": score_label,
 		"multiplier_label": multiplier_label,
 		"turn_score_label": turn_score_label,
