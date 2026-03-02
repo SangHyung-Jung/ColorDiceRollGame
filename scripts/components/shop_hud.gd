@@ -26,6 +26,7 @@ var cup: Node3D
 var current_shop_dice = []
 var is_shaking = false
 var finished_dice_count = 0
+var _is_aligning = false # [추가] 정렬 중복 실행 방지
 var available_jokers_to_buy = []
 var available_dice_to_buy = [] # [추가] 구매 가능한 주사위 목록
 
@@ -88,6 +89,8 @@ func _on_buy_joker_mode_selected():
 	selection_panel.visible = false
 	shop_header.visible = true
 	current_mode = ShopMode.JOKER
+	finished_dice_count = 0 # 리셋
+	_is_aligning = false    # 리셋
 	_setup_shop_scene()
 
 func _on_buy_dice_mode_selected():
@@ -191,11 +194,10 @@ func _release_and_pour() -> void:
 	
 	if cup.has_method("stop_shaking"):
 		await cup.stop_shaking()
-	if cup.has_method("pour"):
-		await cup.pour()
-	if cup.has_method("_set_ceiling_collision"):
-		cup._set_ceiling_collision(false)
 	
+	finished_dice_count = 0 # 굴리기 시작 전 리셋
+	_is_aligning = false    # 굴리기 시작 전 리셋
+
 	for dice in current_shop_dice:
 		dice.apply_outside_cup_physics()
 		
@@ -215,65 +217,65 @@ func _release_and_pour() -> void:
 		dice.apply_impulse_force(impulse, torque)
 		dice.start_rolling() # Activate the internal state machine
 
+	# 주사위가 굴러가기 시작한 후 컵을 쏟음
+	if cup.has_method("pour"):
+		await cup.pour()
+	
+	if cup.has_method("_set_ceiling_collision"):
+		cup._set_ceiling_collision(false)
+
 func _on_shop_dice_roll_finished(value: int, dice_name: String):
 	finished_dice_count += 1
-	if finished_dice_count == current_shop_dice.size():
-		_align_and_present_results()
+	if finished_dice_count >= current_shop_dice.size():
+		if not _is_aligning:
+			_is_aligning = true
+			_align_and_present_results()
 
 func _align_and_present_results() -> void:
+	# 1. 결과 먼저 캡처 (DiceSpawner와 동일하게 불변성 확보)
 	var available_jokers = []
 	for dice in current_shop_dice:
-		var top_joker = dice.get_top_joker()
-		if top_joker:
-			available_jokers.append(top_joker)
+		available_jokers.append(dice.get_top_joker())
 	
-	if available_jokers.size() != current_shop_dice.size():
-		display_purchase_options(available_jokers, [])
-		return
-
-	var tweens = []
 	var center_x = shop_area.global_position.x
 	var start_x = center_x - (current_shop_dice.size() - 1) * (GameConstants.DICE_SPACING / 2.0)
+	var move_duration = GameConstants.MOVE_DURATION
 	
-	# 1. Prepare all dice for tweening
+	# 2. 단일 트윈으로 모든 주사위의 움직임을 병렬 처리 (DiceSpawner.gd와 100% 동일 구조)
+	var master_tween: Tween = create_tween().set_parallel()
+	master_tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+
 	for i in range(current_shop_dice.size()):
 		var dice = current_shop_dice[i]
 		var top_joker_for_alignment = available_jokers[i]
 
-		# Set rotation first and wait for it to apply
-		if top_joker_for_alignment:
-			await dice.align_to_top_joker(top_joker_for_alignment)
-
-		# Disable the parent's physics process to prevent interference
-		dice.set_physics_process(false)
-		# Set to kinematic to allow tweening without physics interference
+		# 2-1. 물리 정지 및 충돌 비활성화 (회전값 변경 전 먼저 수행하여 튕김 방지)
+		dice.freeze = true
 		dice.freeze_mode = RigidBody3D.FREEZE_MODE_KINEMATIC
-		# Stop all movement
 		dice.linear_velocity = Vector3.ZERO
 		dice.angular_velocity = Vector3.ZERO
-		# Disable collision to prevent them from hitting each other during the tween
 		dice.set_collision_enabled(false)
 
-	# 2. Create and run tweens for each die
-	for i in range(current_shop_dice.size()):
-		var dice = current_shop_dice[i]
-		
-		var target_pos = Vector3(start_x + i * GameConstants.DICE_SPACING, shop_area.global_position.y + GameConstants.DISPLAY_Y, shop_area.global_position.z)
-		var tween: Tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-		tween.tween_property(dice, "global_position", target_pos, GameConstants.MOVE_DURATION)
-		tweens.append(tween)
+		# 2-2. 회전값 즉시 설정 (await 없는 non-blocking 방식)
+		if top_joker_for_alignment:
+			dice.align_to_top_joker(top_joker_for_alignment)
 
-	# 3. Wait for all tweens to finish
-	for tween in tweens:
-		await tween.finished
+		# 2-3. 위치 트윈 추가
+		var target_pos = Vector3(
+			start_x + i * GameConstants.DICE_SPACING, 
+			shop_area.global_position.y + GameConstants.DISPLAY_Y, 
+			shop_area.global_position.z
+		)
+		master_tween.tween_property(dice, "global_position", target_pos, move_duration)
+
+	# 3. 모든 병렬 애니메이션이 완료될 때까지 대기
+	await master_tween.finished
 	
-	# 4. Re-enable collision and physics process now that they are in place
+	# 4. 충돌 복원 및 UI 표시
 	for dice in current_shop_dice:
 		if is_instance_valid(dice):
 			dice.set_collision_enabled(true)
-			dice.set_physics_process(true)
 		
-	# 5. Now display the UI
 	display_purchase_options(available_jokers, [])
 
 func display_purchase_options(jokers: Array, dice_types: Array):
