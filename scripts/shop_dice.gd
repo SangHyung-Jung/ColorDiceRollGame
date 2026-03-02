@@ -44,40 +44,37 @@ func setup_jokers(jokers_list: Array):
 		if ResourceLoader.exists(texture_path):
 			sprite.texture = load(texture_path)
 			sprite.scale = Vector3(1, 1, 1) # 스케일 정상화
-			#sprite.rotation_degrees.x = 180 # 상하 반전 보정
-			#sprite.rotation_degrees.y = 180 # 좌우 반전 보정
+			# 조커 이미지가 정방향으로 보이도록 스프라이트 자체 회전 보정
+			#sprite.rotation_degrees.x = 180
+			#sprite.rotation_degrees.y = 180
 		else:
 			print("Warning: Texture not found at: ", texture_path)
 		
 		# 이미지 크기 증가
 		sprite.pixel_size = 0.008
 
-# 굴림이 멈췄을 때 윗면의 조커 반환
-func get_top_joker():
+# 현재 물리적으로 가장 윗면인 인덱스(0~5)를 반환
+func get_top_face_index() -> int:
 	var max_dot = -1.0
 	var best_index = 0
 	
 	for i in range(6):
+		# 주사위의 각 면 벡터를 월드 좌표로 변환
 		var world_face_dir = global_transform.basis * face_vectors[i]
+		# 월드 UP(Vector3.UP)과 가장 일치하는 면을 찾음
 		var dot = world_face_dir.dot(Vector3.UP)
 		if dot > max_dot:
 			max_dot = dot
 			best_index = i
-			
-	if best_index < assigned_jokers.size():
-		return assigned_jokers[best_index]
-	else:
-		return null
+	return best_index
 
-# 주사위를 굴린 후 특정 조커 이미지가 위를 향하도록 정렬
-func align_to_top_joker(joker_data: Dictionary) -> void:
-	var index_of_joker = assigned_jokers.find(joker_data)
-	if index_of_joker == -1:
-		push_error("Joker data not found in assigned jokers for alignment!")
-		return
+# 굴림이 멈췄을 때 윗면의 조커 데이터 반환
+func get_top_joker() -> Dictionary:
+	var idx = get_top_face_index()
+	if idx < assigned_jokers.size():
+		return assigned_jokers[idx]
+	return {}
 
-	var dice_face_value = JOKER_FACE_TO_DICE_FACE_MAP[index_of_joker]
-	show_face(dice_face_value) # Removed await to match gameplay dice logic
 # Override the parent's _calculate_face_value as it's not needed
 # and we don't want it to run by mistake.
 func _calculate_face_value() -> int:

@@ -229,54 +229,70 @@ func _on_shop_dice_roll_finished(value: int, dice_name: String):
 	if finished_dice_count >= current_shop_dice.size():
 		if not _is_aligning:
 			_is_aligning = true
+			# 즉시 정렬하지 않고 물리 엔진이 완전히 안정될 시간을 줌 (0.4s)
+			await get_tree().create_timer(0.4).timeout
 			_align_and_present_results()
 
 func _align_and_present_results() -> void:
-	# 1. 결과 먼저 캡처 (DiceSpawner와 동일하게 불변성 확보)
-	var available_jokers = []
+	# 1. 결과 확정 (인덱스 기반으로 텍스트와 회전값을 완벽히 동기화)
+	var final_joker_data = []
+	var target_rotations = []
+	
 	for dice in current_shop_dice:
-		available_jokers.append(dice.get_top_joker())
+		var face_idx = dice.get_top_face_index()
+		# 해당 면에 할당된 조커 데이터를 UI용으로 저장 (가장 확실한 매칭 방식)
+		final_joker_data.append(dice.assigned_jokers[face_idx])
+		
+		# 해당 면이 위를 향하게 하는 회전값 계산 (윗면 정렬 + 정면 응시)
+		var face_val = ShopDice.JOKER_FACE_TO_DICE_FACE_MAP[face_idx]
+		var target_rot = dice._get_rotation_for_face(face_val)
+		target_rot.y = 0 # 정면(플레이어 쪽)을 바라보도록 Y축 고정
+		target_rotations.append(target_rot)
 	
 	var center_x = shop_area.global_position.x
 	var start_x = center_x - (current_shop_dice.size() - 1) * (GameConstants.DICE_SPACING / 2.0)
 	var move_duration = GameConstants.MOVE_DURATION
 	
-	# 2. 단일 트윈으로 모든 주사위의 움직임을 병렬 처리 (DiceSpawner.gd와 100% 동일 구조)
+	# 2. 주사위 물리 정지 및 정렬 애니메이션 (병렬 처리)
 	var master_tween: Tween = create_tween().set_parallel()
 	master_tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 	for i in range(current_shop_dice.size()):
 		var dice = current_shop_dice[i]
-		var top_joker_for_alignment = available_jokers[i]
+		var target_rot = target_rotations[i]
 
-		# 2-1. 물리 정지 및 충돌 비활성화 (회전값 변경 전 먼저 수행하여 튕김 방지)
+		# 2-1. 물리 엔진 개입 완전 차단 (순서 중요! 회전값 변경 전 수행)
 		dice.freeze = true
 		dice.freeze_mode = RigidBody3D.FREEZE_MODE_KINEMATIC
 		dice.linear_velocity = Vector3.ZERO
 		dice.angular_velocity = Vector3.ZERO
 		dice.set_collision_enabled(false)
 
-		# 2-2. 회전값 즉시 설정 (await 없는 non-blocking 방식)
-		if top_joker_for_alignment:
-			dice.align_to_top_joker(top_joker_for_alignment)
-
-		# 2-3. 위치 트윈 추가
+		# 2-2. 위치 및 회전 트윈 추가
 		var target_pos = Vector3(
 			start_x + i * GameConstants.DICE_SPACING, 
 			shop_area.global_position.y + GameConstants.DISPLAY_Y, 
 			shop_area.global_position.z
 		)
+		
+		var target_quat = Quaternion.from_euler(Vector3(
+			deg_to_rad(target_rot.x),
+			deg_to_rad(target_rot.y),
+			deg_to_rad(target_rot.z)
+		))
+		
 		master_tween.tween_property(dice, "global_position", target_pos, move_duration)
+		master_tween.tween_property(dice, "quaternion", target_quat, move_duration)
 
-	# 3. 모든 병렬 애니메이션이 완료될 때까지 대기
+	# 3. 모든 애니메이션 완료 대기
 	await master_tween.finished
 	
-	# 4. 충돌 복원 및 UI 표시
 	for dice in current_shop_dice:
 		if is_instance_valid(dice):
 			dice.set_collision_enabled(true)
 		
-	display_purchase_options(available_jokers, [])
+	# 4. 확정된 데이터를 UI에 전달하여 100% 일치 보장
+	display_purchase_options(final_joker_data, [])
 
 func display_purchase_options(jokers: Array, dice_types: Array):
 	buy_panel.visible = true
