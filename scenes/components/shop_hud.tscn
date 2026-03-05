@@ -1,14 +1,55 @@
 [gd_scene load_steps=7 format=3 uid="uid://c58gd6pl6utxq"]
 
 [ext_resource type="Script" uid="uid://i83w7bbvcuip" path="res://scripts/components/shop_hud.gd" id="1_abcde"]
-[ext_resource type="Texture2D" uid="uid://b6ra7i5qkug47" path="res://score_panel.png" id="2_stk2i"]
 [ext_resource type="FontFile" uid="uid://ulruyehktvyh" path="res://font/boldpixels/BoldPixels.otf" id="3_7a4el"]
-[ext_resource type="PackedScene" uid="uid://c7d6e5f4g3h2" path="res://scenes/components/joker_inventory.tscn" id="6_abcde"]
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_fplum"]
-texture = ExtResource("2_stk2i")
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button"]
+bg_color = Color(0.2, 0.2, 0.2, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.4, 0.4, 0.4, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_transparent"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_item_slot"]
+bg_color = Color(0.1, 0.1, 0.1, 0.8)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.3, 0.3, 0.3, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_category"]
+bg_color = Color(0.15, 0.15, 0.15, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.6, 0.4, 0.2, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_disabled"]
+bg_color = Color(0.1, 0.1, 0.1, 0.5)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.2, 0.2, 0.2, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
 
 [node name="ShopHUD" type="Control"]
 layout_mode = 3
@@ -17,6 +58,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 script = ExtResource("1_abcde")
 
 [node name="MainLayout" type="HBoxContainer" parent="."]
@@ -27,162 +69,172 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 0
+mouse_filter = 2
 
 [node name="LeftSpacer" type="Control" parent="MainLayout"]
 custom_minimum_size = Vector2(450, 0)
 layout_mode = 2
 mouse_filter = 2
 
-[node name="GameArea" type="VBoxContainer" parent="MainLayout"]
+[node name="ContentArea" type="VBoxContainer" parent="MainLayout"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 20
+mouse_filter = 2
 
-[node name="TopSpacer" type="Control" parent="MainLayout/GameArea"]
+[node name="TopSpacer" type="Control" parent="MainLayout/ContentArea"]
 custom_minimum_size = Vector2(0, 150)
 layout_mode = 2
 mouse_filter = 2
 
-[node name="SelectionPanel" type="VBoxContainer" parent="MainLayout/GameArea"]
+[node name="InteractiveArea" type="Control" parent="MainLayout/ContentArea"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 40
+mouse_filter = 2
+
+[node name="BottomControls" type="VBoxContainer" parent="MainLayout/ContentArea"]
+custom_minimum_size = Vector2(0, 350)
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="NavRow" type="HBoxContainer" parent="MainLayout/ContentArea/BottomControls"]
+layout_mode = 2
+theme_override_constants/separation = 50
 alignment = 1
 
-[node name="BuyJokerButton" type="Button" parent="MainLayout/GameArea/SelectionPanel"]
-custom_minimum_size = Vector2(400, 100)
+[node name="RerollButton" type="Button" parent="MainLayout/ContentArea/BottomControls/NavRow"]
+custom_minimum_size = Vector2(250, 60)
 layout_mode = 2
-size_flags_horizontal = 4
 theme_override_fonts/font = ExtResource("3_7a4el")
-theme_override_font_sizes/font_size = 50
-text = "ROLL JOKERS"
+theme_override_font_sizes/font_size = 35
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+text = "REROLL"
 
-[node name="BuyDiceButton" type="Button" parent="MainLayout/GameArea/SelectionPanel"]
-custom_minimum_size = Vector2(400, 100)
+[node name="NextRoundButton" type="Button" parent="MainLayout/ContentArea/BottomControls/NavRow"]
+custom_minimum_size = Vector2(250, 60)
 layout_mode = 2
-size_flags_horizontal = 4
 theme_override_fonts/font = ExtResource("3_7a4el")
-theme_override_font_sizes/font_size = 50
-text = "BUY NEW DICE"
+theme_override_font_sizes/font_size = 35
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+text = "NEXT ROUND"
 
-[node name="ShopHeader" type="HBoxContainer" parent="MainLayout/GameArea"]
-visible = false
+[node name="InteractionRow" type="HBoxContainer" parent="MainLayout/ContentArea/BottomControls"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 30
+
+[node name="RandomItems" type="HBoxContainer" parent="MainLayout/ContentArea/BottomControls/InteractionRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 15
+alignment = 1
+
+[node name="Slot1" type="PanelContainer" parent="MainLayout/ContentArea/BottomControls/InteractionRow/RandomItems"]
+custom_minimum_size = Vector2(200, 220)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_item_slot")
+
+[node name="VBox" type="VBoxContainer" parent="MainLayout/ContentArea/BottomControls/InteractionRow/RandomItems/Slot1"]
+layout_mode = 2
+alignment = 1
+
+[node name="Name" type="Label" parent="MainLayout/ContentArea/BottomControls/InteractionRow/RandomItems/Slot1/VBox"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7a4el")
+text = "Item 1"
+horizontal_alignment = 1
+
+[node name="BuyButton" type="Button" parent="MainLayout/ContentArea/BottomControls/InteractionRow/RandomItems/Slot1/VBox"]
+layout_mode = 2
+text = "Buy $6"
+
+[node name="Slot2" type="PanelContainer" parent="MainLayout/ContentArea/BottomControls/InteractionRow/RandomItems"]
+custom_minimum_size = Vector2(200, 220)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_item_slot")
+
+[node name="VBox" type="VBoxContainer" parent="MainLayout/ContentArea/BottomControls/InteractionRow/RandomItems/Slot2"]
+layout_mode = 2
+alignment = 1
+
+[node name="Name" type="Label" parent="MainLayout/ContentArea/BottomControls/InteractionRow/RandomItems/Slot2/VBox"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7a4el")
+text = "Item 2"
+horizontal_alignment = 1
+
+[node name="BuyButton" type="Button" parent="MainLayout/ContentArea/BottomControls/InteractionRow/RandomItems/Slot2/VBox"]
+layout_mode = 2
+text = "Buy $6"
+
+[node name="Slot3" type="PanelContainer" parent="MainLayout/ContentArea/BottomControls/InteractionRow/RandomItems"]
+custom_minimum_size = Vector2(200, 220)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_item_slot")
+
+[node name="VBox" type="VBoxContainer" parent="MainLayout/ContentArea/BottomControls/InteractionRow/RandomItems/Slot3"]
+layout_mode = 2
+alignment = 1
+
+[node name="Name" type="Label" parent="MainLayout/ContentArea/BottomControls/InteractionRow/RandomItems/Slot3/VBox"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7a4el")
+text = "Item 3"
+horizontal_alignment = 1
+
+[node name="BuyButton" type="Button" parent="MainLayout/ContentArea/BottomControls/InteractionRow/RandomItems/Slot3/VBox"]
+layout_mode = 2
+text = "Buy $6"
+
+[node name="Slot4" type="PanelContainer" parent="MainLayout/ContentArea/BottomControls/InteractionRow/RandomItems"]
+custom_minimum_size = Vector2(200, 220)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_item_slot")
+
+[node name="VBox" type="VBoxContainer" parent="MainLayout/ContentArea/BottomControls/InteractionRow/RandomItems/Slot4"]
+layout_mode = 2
+alignment = 1
+
+[node name="Name" type="Label" parent="MainLayout/ContentArea/BottomControls/InteractionRow/RandomItems/Slot4/VBox"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7a4el")
+text = "Item 4"
+horizontal_alignment = 1
+
+[node name="BuyButton" type="Button" parent="MainLayout/ContentArea/BottomControls/InteractionRow/RandomItems/Slot4/VBox"]
+layout_mode = 2
+text = "Buy $6"
+
+[node name="CategoryButtons" type="VBoxContainer" parent="MainLayout/ContentArea/BottomControls/InteractionRow"]
+custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
 theme_override_constants/separation = 10
 alignment = 1
 
-[node name="NextRoundButton" type="Button" parent="MainLayout/GameArea/ShopHeader"]
-custom_minimum_size = Vector2(150, 60)
+[node name="SpecialDiceButton" type="Button" parent="MainLayout/ContentArea/BottomControls/InteractionRow/CategoryButtons"]
+unique_name_in_owner = true
 layout_mode = 2
+size_flags_vertical = 3
 theme_override_fonts/font = ExtResource("3_7a4el")
-theme_override_font_sizes/font_size = 40
-text = "Next Round"
+theme_override_styles/disabled = SubResource("StyleBoxFlat_disabled")
+theme_override_styles/normal = SubResource("StyleBoxFlat_category")
+disabled = true
+text = "SPECIAL DICE"
 
-[node name="Title" type="Label" parent="MainLayout/GameArea/ShopHeader"]
+[node name="JokerButton" type="Button" parent="MainLayout/ContentArea/BottomControls/InteractionRow/CategoryButtons"]
+unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_fonts/font = ExtResource("3_7a4el")
-theme_override_font_sizes/font_size = 60
-text = "SHOP"
-horizontal_alignment = 1
+theme_override_styles/normal = SubResource("StyleBoxFlat_category")
+text = "JOKERS"
 
-[node name="RerollButton" type="Button" parent="MainLayout/GameArea/ShopHeader"]
-custom_minimum_size = Vector2(150, 60)
+[node name="ItemButton" type="Button" parent="MainLayout/ContentArea/BottomControls/InteractionRow/CategoryButtons"]
+unique_name_in_owner = true
 layout_mode = 2
+size_flags_vertical = 3
 theme_override_fonts/font = ExtResource("3_7a4el")
-theme_override_font_sizes/font_size = 40
-text = "Reroll"
-
-[node name="BuyPanel" type="PanelContainer" parent="MainLayout/GameArea"]
-visible = false
-layout_mode = 2
-
-[node name="VBoxContainer" type="VBoxContainer" parent="MainLayout/GameArea/BuyPanel"]
-layout_mode = 2
-
-[node name="JokerOptions" type="HBoxContainer" parent="MainLayout/GameArea/BuyPanel/VBoxContainer"]
-layout_mode = 2
-alignment = 1
-
-[node name="Option1" type="VBoxContainer" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/JokerOptions"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="JokerName1" type="Label" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/JokerOptions/Option1"]
-layout_mode = 2
-text = "Joker 1"
-horizontal_alignment = 1
-
-[node name="BuyButton1" type="Button" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/JokerOptions/Option1"]
-layout_mode = 2
-text = "Buy"
-
-[node name="Option2" type="VBoxContainer" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/JokerOptions"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="JokerName2" type="Label" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/JokerOptions/Option2"]
-layout_mode = 2
-text = "Joker 2"
-horizontal_alignment = 1
-
-[node name="BuyButton2" type="Button" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/JokerOptions/Option2"]
-layout_mode = 2
-text = "Buy"
-
-[node name="Option3" type="VBoxContainer" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/JokerOptions"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="JokerName3" type="Label" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/JokerOptions/Option3"]
-layout_mode = 2
-text = "Joker 3"
-horizontal_alignment = 1
-
-[node name="BuyButton3" type="Button" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/JokerOptions/Option3"]
-layout_mode = 2
-text = "Buy"
-
-[node name="DiceOptions" type="HBoxContainer" parent="MainLayout/GameArea/BuyPanel/VBoxContainer"]
-visible = false
-layout_mode = 2
-alignment = 1
-
-[node name="Option1" type="VBoxContainer" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/DiceOptions"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="DiceName1" type="Label" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/DiceOptions/Option1"]
-layout_mode = 2
-text = "Dice 1"
-horizontal_alignment = 1
-
-[node name="BuyButton1" type="Button" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/DiceOptions/Option1"]
-layout_mode = 2
-text = "Buy"
-
-[node name="Option2" type="VBoxContainer" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/DiceOptions"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="DiceName2" type="Label" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/DiceOptions/Option2"]
-layout_mode = 2
-text = "Dice 2"
-horizontal_alignment = 1
-
-[node name="BuyButton2" type="Button" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/DiceOptions/Option2"]
-layout_mode = 2
-text = "Buy"
-
-[node name="Option3" type="VBoxContainer" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/DiceOptions"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="DiceName3" type="Label" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/DiceOptions/Option3"]
-layout_mode = 2
-text = "Dice 3"
-horizontal_alignment = 1
-
-[node name="BuyButton3" type="Button" parent="MainLayout/GameArea/BuyPanel/VBoxContainer/DiceOptions/Option3"]
-layout_mode = 2
-text = "Buy"
+theme_override_styles/disabled = SubResource("StyleBoxFlat_disabled")
+theme_override_styles/normal = SubResource("StyleBoxFlat_category")
+disabled = true
+text = "ITEMS"
