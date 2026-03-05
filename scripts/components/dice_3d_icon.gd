@@ -119,12 +119,13 @@ func _get_color_name(key: String) -> String:
 	return "white"
 
 func _set_model_face(node: Node3D, face: int):
-	# 카메라가 보는 방향(Z+)에 해당 눈금이 오도록 회전
-	# Dice.gd 기준: 1:Y+, 6:Y-, 5:X+, 2:X-, 3:Z-, 4:Z+
+	# 카메라가 Z축 정면(Z+)에서 Z- 방향을 보고 있으므로, 
+	# 해당 눈금이 카메라 쪽(Z+)을 향하도록 회전합니다.
+	# 사용자 피드백(1,5,3,4,2,6)에 근거하여 2번과 5번의 물리-논리 매핑을 스왑함.
 	match face:
-		1: node.rotation_degrees = Vector3(-90, 0, 0)  # Y+ -> Z+
-		6: node.rotation_degrees = Vector3(90, 0, 0)   # Y- -> Z+
-		5: node.rotation_degrees = Vector3(0, -90, 0)  # X+ -> Z+
-		2: node.rotation_degrees = Vector3(0, 90, 0)   # X- -> Z+
-		3: node.rotation_degrees = Vector3(0, 0, 0)    # Z- -> Z+ (이미 정면)
-		4: node.rotation_degrees = Vector3(0, 180, 0)  # Z+ -> Z+ (반대편)
+		1: node.rotation_degrees = Vector3(90, 0, 0)   # Y+ (UP) -> Z+
+		2: node.rotation_degrees = Vector3(0, -90, 0)  # X+ (RIGHT) -> Z+ (기존 5번)
+		3: node.rotation_degrees = Vector3(0, 180, 0)  # Z- (FORWARD) -> Z+
+		4: node.rotation_degrees = Vector3(0, 0, 0)    # Z+ (BACK) -> Z+
+		5: node.rotation_degrees = Vector3(0, 90, 0)   # X- (LEFT) -> Z+ (기존 2번)
+		6: node.rotation_degrees = Vector3(-90, 0, 0)  # Y- (DOWN) -> Z+
