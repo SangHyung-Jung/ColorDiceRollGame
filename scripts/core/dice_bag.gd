@@ -1,108 +1,113 @@
 ## 주사위 가방 관리 클래스
-## 제한된 수량의 색상별 주사위를 관리하여 전략적 자원 관리를 제공합니다.
-## 각 색상당 8개씩 총 40개의 주사위로 시작하며, 한 번 사용된 주사위는
-## 가방에서 제거되어 게임에 전략적 요소를 추가합니다.
+## 각 주사위의 색상과 특수 타입을 개별적으로 관리합니다.
 class_name DiceBag
 extends RefCounted
 
-# 사용 가능한 주사위 색상들 (White, Black, Red, Green, Blue)
+# 사용 가능한 주사위 색상들
 const COLORS := ["W","K","R","G","B"]
 
-# 각 색상별 남은 주사위 개수를 저장하는 딕셔너리
-var _counts: Dictionary = {}   # 예: {"W":8,"K":8,"R":8,"G":8,"B":8}
-var _total_left := 0  # 전체 남은 주사위 개수 (캐시)
+# 가방에 들어있는 실제 주사위 목록: Array[Dictionary]
+# 각 항목: { "color": "W", "type": 0 }
+var _dice_list: Array = []
 
-## 가방을 풀 세트로 초기화합니다 (각 색상 8개씩)
+## 가방을 풀 세트로 초기화합니다
+## 기본 주사위 각 8개 + 현재 소유한 모든 특수 주사위 1개씩 포함
 func setup_full() -> void:
-	_counts.clear()
+	_dice_list.clear()
+	# 1. 기본 주사위 추가
 	for c in COLORS:
-		_counts[c] = 8  # 각 색상당 8개씩 설정
-	_recalc_total()
+		for i in range(8):
+			add_die(c, 0)
+	
+	# 2. 현재 소유한 특수 주사위 추가 (테스트 및 시작 보너스)
+	if Main.owned_dice_types.size() > 1:
+		for type_idx in Main.owned_dice_types:
+			if type_idx == 0: continue
+			
+			# 색상 주사위면 랜덤 색상으로, Prism(8)이면 흰색으로 추가
+			var color = COLORS[randi() % COLORS.size()]
+			if type_idx == 8: color = "W"
+			add_die(color, type_idx)
+
+## 가방에 주사위를 추가합니다.
+func add_die(color_key: String, type_index: int) -> void:
+	_dice_list.append({
+		"color": color_key,
+		"type": type_index
+	})
 
 ## 가방에 남은 전체 주사위 개수를 반환합니다
 func total_left() -> int:
-	return _total_left
+	return _dice_list.size()
 
 ## 특정 색상의 남은 주사위 개수를 반환합니다
-## @param color_key: 확인할 색상 키 ("W", "K", "R", "G", "B")
 func count_of(color_key: String) -> int:
-	return int(_counts.get(color_key, 0))
+	var count := 0
+	for d in _dice_list:
+		if d.color == color_key:
+			count += 1
+	return count
 
-## 요청된 개수만큼 주사위를 뽑을 수 있는지 확인합니다
-## @param n: 뽑고자 하는 주사위 개수
-func can_draw(n: int) -> bool:
-	return _total_left >= n
-
-## 주사위를 한 개 뽑습니다
-## @param color_hint: 우선적으로 뽑고 싶은 색상 (있을 경우)
-## @return 뽑힌 주사위의 색상 키, 실패 시 빈 문자열
-func draw_one(color_hint: String = "") -> String:
-	if _total_left <= 0:
-		return ""  # 가방이 비어있음
-
-	var chosen := ""
-
-	# 힌트 색상이 있고 그 색상이 남아있으면 우선 사용
-	if color_hint != "" and count_of(color_hint) > 0:
-		chosen = color_hint
-	else:
-		# 사용 가능한 색상들 중에서 랜덤 선택
-		var avail: Array = []
-		for c in COLORS:
-			if _counts[c] > 0:
-				avail.append(c)
-		chosen = avail[randi() % avail.size()]
-
-	# 선택된 색상의 개수 감소
-	_counts[chosen] -= 1
-	_recalc_total()
-	return chosen
-
-## 여러 개의 주사위를 뽑습니다
-## @param n: 뽑을 주사위 개수
-## @return 뽑힌 주사위들의 색상 키 배열
-func draw_many(n: int) -> Array:
-	var out: Array = []
-	if n <= 0:
-		return out
-
-	# 요청 개수를 남은 개수로 제한
-	n = min(n, _total_left)
-	for i in n:
-		out.append(draw_one())
+## 특정 색상 및 타입의 주사위 목록을 반환합니다 (UI 표시용)
+func get_dice_by_color(color_key: String) -> Array:
+	var out := []
+	for d in _dice_list:
+		if d.color == color_key:
+			out.append(d)
 	return out
 
-## 잘못 뽑은 주사위들을 가방에 다시 넣습니다 (실행 취소용)
-## @param colors: 다시 넣을 주사위들의 색상 키 배열
-func undo_draw(colors: Array) -> void:
-	for c in colors:
-		add_one(c)
+## 색상 구분이 없는(Neutral) 특수 주사위 목록을 반환합니다
+func get_neutral_dice() -> Array:
+	var out := []
+	for d in _dice_list:
+		# Prism(8) 등 특정 타입은 색상 그룹에서 제외하고 따로 표시할 수 있음
+		if d.type == 8: # Prism 예시
+			out.append(d)
+	return out
 
-## 가방에 특정 색상의 주사위를 하나 추가합니다.
-## @param color_key: 추가할 색상 키 ("W", "K", "R", "G", "B")
-func add_one(color_key: String) -> void:
-	if color_key in COLORS:
-		_counts[color_key] = _counts.get(color_key, 0) + 1
-		_recalc_total()
+## 요청된 개수만큼 주사위를 뽑을 수 있는지 확인합니다
+func can_draw(n: int) -> bool:
+	return _dice_list.size() >= n
 
-## 현재 가방의 색상별 개수 딕셔너리를 반환합니다.
+## 주사위를 한 개 뽑습니다 (색상+타입 정보 반환)
+func draw_one_data() -> Dictionary:
+	if _dice_list.is_empty():
+		return {}
+	
+	var idx = randi() % _dice_list.size()
+	return _dice_list.pop_at(idx)
+
+## 여러 개의 주사위를 뽑습니다
+func draw_many_data(n: int) -> Array:
+	var out: Array = []
+	n = min(n, _dice_list.size())
+	for i in n:
+		out.append(draw_one_data())
+	return out
+
+## 잘못 뽑은 주사위들을 가방에 다시 넣습니다
+func undo_draw_data(dice_data_list: Array) -> void:
+	for d in dice_data_list:
+		_dice_list.append(d)
+
+## [호환성 유지] 색상 키만 반환하는 기존 메서드
+func draw_one(color_hint: String = "") -> String:
+	var data = draw_one_data()
+	return data.get("color", "")
+
+func draw_many(n: int) -> Array:
+	var out = []
+	var data_list = draw_many_data(n)
+	for d in data_list:
+		out.append(d.color)
+	return out
+
 func get_counts() -> Dictionary:
-	return _counts.duplicate()
+	var counts = {"W":0,"K":0,"R":0,"G":0,"B":0}
+	for d in _dice_list:
+		if counts.has(d.color):
+			counts[d.color] += 1
+	return counts
 
-## 현재 가방 상태를 콘솔에 출력합니다 (디버깅용)
 func debug_print() -> void:
-	print(
-		"[BAG] LEFT=", _total_left,
-		"  W:", _counts["W"],
-		"  K:", _counts["K"],
-		"  R:", _counts["R"],
-		"  G:", _counts["G"],
-		"  B:", _counts["B"]
-	)
-
-## 전체 남은 주사위 개수를 다시 계산합니다 (내부 캐시 업데이트)
-func _recalc_total() -> void:
-	var t := 0
-	for c in COLORS:
-		t += int(_counts[c])
-	_total_left = t
+	print("[BAG] Total Left: ", _dice_list.size(), " Contents: ", get_counts())
