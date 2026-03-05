@@ -1,56 +1,124 @@
 extends Window
 
-# 이제 각 색상 키에 대해 레이블 노드만 저장합니다.
-var ui_labels: Dictionary = {} # { "W": label_node, "K": label_node, ... }
-
 func _ready():
 	close_requested.connect(hide)
+	# Window 크기를 좀 더 넉넉하게 조정
+	size = Vector2i(550, 700)
 	
-	var grid = get_node("MarginContainer/GridContainer")
-	if not grid:
-		push_error("GridContainer not found in DiceBagPopup!")
-		return
-		
-	# 기존 자식 노드를 모두 제거하여 중복 생성을 방지합니다.
-	for child in grid.get_children():
-		child.queue_free()
+	_setup_base_ui()
 
-	# GameConstants를 기반으로 2D UI를 동적으로 생성합니다.
-	for key in GameConstants.BAG_COLOR_MAP:
-		var color = GameConstants.BAG_COLOR_MAP[key]
+var main_container: VBoxContainer
+
+func _setup_base_ui():
+	# 기존 MarginContainer 내의 GridContainer를 제거하고 ScrollContainer 추가
+	var margin = get_node("MarginContainer")
+	for child in margin.get_children():
+		child.queue_free()
+	
+	# 검은색 주사위가 잘 보이도록 어두운 회색 배경의 Panel 추가
+	var bg_panel = Panel.new()
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.15, 0.15, 0.15) # 너무 검지 않은 회색
+	bg_panel.add_theme_stylebox_override("panel", style)
+	margin.add_child(bg_panel)
 		
-		# --- 2D 색상 사각형 생성 ---
-		var color_rect = ColorRect.new()
-		color_rect.custom_minimum_size = Vector2(60, 60)
-		color_rect.color = color
-		# 검은색 사각형이 잘 보이도록 테두리를 추가합니다.
-		if color == Color.BLACK:
-			var style_box = StyleBoxFlat.new()
-			style_box.set_border_width_all(2)
-			style_box.border_color = Color.WHITE
-			style_box.bg_color = Color.BLACK
-			var panel = Panel.new()
-			panel.custom_minimum_size = Vector2(60, 60)
-			panel.add_theme_stylebox_override("panel", style_box)
-			grid.add_child(panel)
-		else:
-			grid.add_child(color_rect)
-		
-		# --- 개수 표시 레이블 생성 ---
-		var label = Label.new()
-		label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		label.add_theme_font_size_override("font_size", 24)
-		grid.add_child(label)
-		
-		# 나중에 개수를 업데이트하기 위해 레이블을 저장합니다.
-		ui_labels[key] = label
+	var scroll = ScrollContainer.new()
+	scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	bg_panel.add_child(scroll)
+	
+	main_container = VBoxContainer.new()
+	main_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# 내부 마진 추가
+	main_container.add_theme_constant_override("separation", 10)
+	scroll.add_child(main_container)
+
+func _add_section_header(container: Container, title: String):
+	var label = Label.new()
+	label.text = title
+	label.add_theme_font_size_override("font_size", 22)
+	label.add_theme_color_override("font_color", Color.GOLD)
+	# 상단 여백을 위한 더미 레이블 대신 마진 설정
+	var spacer = Control.new()
+	spacer.custom_minimum_size = Vector2(0, 15)
+	container.add_child(spacer)
+	
+	container.add_child(label)
+	
+	var hs = HSeparator.new()
+	container.add_child(hs)
 
 func update_counts(dice_bag: DiceBag):
-	if not dice_bag:
-		print("DiceBag is null, cannot update counts.")
-		return
+	if not dice_bag: return
+	if not main_container: _setup_base_ui()
+	
+	# 중복 생성 방지를 위해 먼저 모두 비우기
+	for child in main_container.get_children():
+		child.queue_free()
+
+	_add_section_header(main_container, "Remaining Dice in Bag")
+	
+	# 1. 색상별 주사위 그룹핑 (일반 + 해당 색상의 특수)
+	for color_key in GameConstants.BAG_COLOR_MAP:
+		var color_dice = dice_bag.get_dice_by_color(color_key)
+		if color_dice.is_empty(): continue
 		
-	for color_key in ui_labels:
-		var label_node = ui_labels[color_key]
-		var count = dice_bag.count_of(color_key)
-		label_node.text = " :  " + str(count)
+		# Prism(8) 등 색상 구분이 없는 주사위는 이 단계에서 제외
+		var filtered_dice = []
+		for d in color_dice:
+			if d.type != 8: # 8번 Prism은 Neutral 섹션으로
+				filtered_dice.append(d)
+		
+		if filtered_dice.is_empty(): continue
+
+		var color_name = _get_color_display_name(color_key)
+		var color_label = Label.new()
+		color_label.text = "  " + color_name + " Dice (" + str(filtered_dice.size()) + ")"
+		color_label.add_theme_font_size_override("font_size", 18)
+		main_container.add_child(color_label)
+		
+		var flow = HFlowContainer.new()
+		flow.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		flow.add_theme_constant_override("h_separation", 10)
+		flow.add_theme_constant_override("v_separation", 10)
+		main_container.add_child(flow)
+		
+		for i in range(filtered_dice.size()):
+			var d = filtered_dice[i]
+			var icon = Dice3DIcon.new()
+			flow.add_child(icon)
+			
+			# 눈금은 1~6 순환 (사용자 요청: 1부터 올라가게)
+			var face_val = (i % 6) + 1
+			_setup_icon_deferred(icon, d.color, d.type, face_val)
+
+	# 2. 색상 구분이 없는 특수 주사위 (Neutral Special Dice)
+	var neutral_dice = dice_bag.get_neutral_dice()
+	if not neutral_dice.is_empty():
+		_add_section_header(main_container, "Neutral Special Dice")
+		
+		var flow = HFlowContainer.new()
+		flow.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		flow.add_theme_constant_override("h_separation", 10)
+		main_container.add_child(flow)
+		
+		for i in range(neutral_dice.size()):
+			var d = neutral_dice[i]
+			var icon = Dice3DIcon.new()
+			flow.add_child(icon)
+			_setup_icon_deferred(icon, d.color, d.type, 1)
+
+func _get_color_display_name(key: String) -> String:
+	match key:
+		"W": return "White"
+		"K": return "Black"
+		"R": return "Red"
+		"G": return "Green"
+		"B": return "Blue"
+	return "Unknown"
+
+func _setup_icon_deferred(icon: Dice3DIcon, color_key: String, type_index: int, face_val: int):
+	# 뷰포트가 완전히 로드될 시간을 주기 위해 한 프레임 대기 후 호출
+	await get_tree().process_frame
+	if is_instance_valid(icon):
+		icon.setup_dice(color_key, type_index, face_val)

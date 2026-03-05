@@ -19,83 +19,54 @@ func initialize(cup: Node3D, container: Node3D = null) -> void:
 func _get_dice_color_from_godot_color(color: Color) -> ColoredDice.DiceColor:
 	return ColoredDice.color_from_godot_color(color)
 
-func reset_and_spawn_all_dice(dice_colors: Array[Color]) -> void:
+func reset_and_spawn_all_dice_from_data(dice_data_list: Array) -> void:
 	print("=== 새로운 주사위 스폰 시작 ===")
-	print("생성할 주사위 수: ", dice_colors.size())
+	print("생성할 주사위 수: ", dice_data_list.size())
 
-	for i in range(dice_colors.size()):
-		var color = dice_colors[i]
-		print("새 주사위 ", i, " 생성, 색상: ", color)
-
+	for i in range(dice_data_list.size()):
+		var data = dice_data_list[i]
+		var color_key = data.color
+		var type_index = data.type
+		
+		var color = GameConstants.BAG_COLOR_MAP.get(color_key, Color.WHITE)
 		var dice_color = _get_dice_color_from_godot_color(color)
 		var dice = ColoredDice.new()
 
-		var target_parent = runtime_container
-		if target_parent == null:
-			target_parent = get_tree().current_scene
-			if target_parent == null:
-				target_parent = get_parent()
+		var target_parent = runtime_container if runtime_container else get_tree().current_scene
 		target_parent.add_child(dice)
 
 		dice.owner = null
-		dice.set_meta("_editor_description_", "Runtime Generated Dice - Do Not Save")
-		dice.set_meta("_edit_lock_", true)
+		dice.set_meta("_editor_description_", "Runtime Generated Dice")
 		dice.add_to_group("runtime_dice", true)
-		dice.scene_file_path = ""
 
-		var spawn_pos = cup_ref.global_position + Vector3(
-			randf_range(-0.3, 0.3),
-			1.5,                        # Y=11.5, ceiling(12.7) 안쪽
-			randf_range(-0.3, 0.3)
-		)
-		await get_tree().create_timer(0.1).timeout  # 0.25초 간격
+		var spawn_pos = cup_ref.global_position + Vector3(randf_range(-0.3, 0.3), 1.5, randf_range(-0.3, 0.3))
+		await get_tree().create_timer(0.05).timeout
 
-		# [수정] 소유한 주사위 종류 중 하나를 랜덤하게 선택
-		var random_type_index = Main.owned_dice_types[randi() % Main.owned_dice_types.size()]
-		dice.setup_dice(dice_color, spawn_pos, random_type_index)
+		dice.setup_dice(dice_color, spawn_pos, type_index)
+		dice.set_meta("bag_data", data) # 가방 데이터 저장
 		dice.setup_physics_for_spawning()
 		dice_nodes.append(dice)
 
-		# [추가] 굴러갈 주사위에도 개별 조명 부여 (통합 씬 사용)
 		var pinpoint_light = PinpointLightScene.instantiate()
 		target_parent.add_child(pinpoint_light)
 		pinpoint_light.target_node = dice
-		
-		# 컵 내부에서는 빛을 조금만 낮춰서 어지러움을 방지 (선택 사항)
 		pinpoint_light.light_energy *= 0.8
 
 		if not dice.roll_finished.is_connected(_on_dice_roll_finished):
 			dice.roll_finished.connect(_on_dice_roll_finished)
 
-		await get_tree().process_frame
-
 	print("=== 모든 주사위 배치 완료 - 정착 대기 시작 ===")
 	await wait_for_dice_settlement()
 	print("=== 주사위 스폰 완료 ===")
-	
 
 func _on_dice_roll_finished(value: int, dice_name: String) -> void:
 	dice_roll_finished.emit(value, dice_name)
 
-func create_dice_colors_from_bag(bag: DiceBag, count: int) -> Array[Color]:
-	var colors: Array[Color] = []
+func draw_dice_data_from_bag(bag: DiceBag, count: int) -> Array:
 	if not bag.can_draw(count):
-		push_error("Bag empty, cannot create dice colors")
-		return colors
-
-	var keys = bag.draw_many(count)
-
-	for key in keys:
-		var color = GameConstants.BAG_COLOR_MAP.get(key, Color.WHITE)
-		colors.append(color)
-
-	return colors
-
-func tag_spawned_nodes_with_keys(keys: Array) -> void:
-	var n: int = min(dice_nodes.size(), keys.size())
-	for i in range(n):
-		var dice = dice_nodes[i]
-		dice.set_meta("bag_key", keys[i])
+		push_error("Bag empty, cannot draw dice data")
+		return []
+	return bag.draw_many_data(count)
 
 func apply_dice_impulse() -> void:
 	for dice in dice_nodes:

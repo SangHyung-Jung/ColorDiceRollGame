@@ -145,13 +145,10 @@ func _on_roll_released():
 	elif shop_hud.visible:
 		shop_hud.stop_shaking_sequence()
 
-func _process(_delta):
-	# GameHUD UI 위치 보정 (기존 로직 유지)
-	if game_hud.visible:
-		var viewport_rect = get_viewport().get_visible_rect()
-		var screen_center = viewport_rect.size / 2
-		var game_world_pos_on_screen = camera.unproject_position(POS_GAME)
-		game_hud.position = game_world_pos_on_screen - screen_center
+func get_game_manager() -> GameManager:
+	if game_hud:
+		return game_hud.game_manager
+	return null
 
 # [추가] 조명 설정 화면으로 전환하는 함수
 func transition_to_light_config():

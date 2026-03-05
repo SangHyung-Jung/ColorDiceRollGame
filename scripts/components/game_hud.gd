@@ -267,33 +267,35 @@ func _invest_initial_dice() -> void:
 	if not game_manager.can_draw_dice(5):
 		push_error("Not enough dice in bag for initial investment")
 		return
-# 소켓 위치가 아직 계산되지 않았을 수 있으므로 확인
+
+	# 소켓 위치가 아직 계산되지 않았을 수 있으므로 확인
 	if socket_positions.is_empty():
 		await update_socket_positions()
-		
-	var dice_colors = dice_spawner.create_dice_colors_from_bag(game_manager.bag, 5)
 
-	for i in range(dice_colors.size()):
-		var color = dice_colors[i]
+	var dice_data = dice_spawner.draw_dice_data_from_bag(game_manager.bag, 5)
+
+	for i in range(dice_data.size()):
+		var data = dice_data[i]
+		var color_key = data.color
+		var type_index = data.type
+
+		var color = GameConstants.BAG_COLOR_MAP.get(color_key, Color.WHITE)
 		var value = randi_range(1, 6)
 		var dice_color_enum = ColoredDice.color_from_godot_color(color)
-		
-		# [수정] 소유한 주사위 종류 중 하나 랜덤 선택
-		var random_type_index = Main.owned_dice_types[randi() % Main.owned_dice_types.size()]
-		
+
 		var dice_node = ColoredDice.new()
 		world_3d.add_child(dice_node)
-		dice_node.setup_dice(dice_color_enum, Vector3.ZERO, random_type_index)
+		dice_node.setup_dice(dice_color_enum, Vector3.ZERO, type_index)
 		dice_node.show_face(value)
 		dice_node.set_meta("value", value)
-		
+		dice_node.set_meta("bag_data", data) # 가방 데이터 저장
+
 		dice_node.freeze = true
-		
+
 		if i < socket_positions.size():
 			dice_node.global_position = socket_positions[i]
 			invested_dice_nodes.append(dice_node)
-			
-			# [수정] 통합 조명 씬 사용
+
 			var pinpoint_light = PinpointLightScene.instantiate()
 			world_3d.add_child(pinpoint_light)
 			pinpoint_light.target_node = dice_node
@@ -301,20 +303,12 @@ func _invest_initial_dice() -> void:
 			push_error("Not enough socket positions for initial investment.")
 			dice_node.queue_free()
 
-
 func _spawn_initial_dice() -> void:
 	if not game_manager.can_draw_dice(GameConstants.HAND_SIZE):
 		push_error("Bag empty at init")
 		return
-	var dice_colors = dice_spawner.create_dice_colors_from_bag(game_manager.bag, GameConstants.HAND_SIZE)
-	await dice_spawner.reset_and_spawn_all_dice(dice_colors)
-	var keys = []
-	for color in dice_colors:
-		for color_key in GameConstants.BAG_COLOR_MAP:
-			if GameConstants.BAG_COLOR_MAP[color_key] == color:
-				keys.append(color_key)
-				break
-	dice_spawner.tag_spawned_nodes_with_keys(keys)
+	var dice_data = dice_spawner.draw_dice_data_from_bag(game_manager.bag, GameConstants.HAND_SIZE)
+	await dice_spawner.reset_and_spawn_all_dice_from_data(dice_data)
 
 
 func _connect_signals() -> void:
@@ -489,13 +483,15 @@ func _initialize_score_calc_ui() -> void:
 
 func _reset_roll() -> void:
 	cup.reset()
-	var need = GameConstants.HAND_SIZE - dice_spawner.get_dice_count()
+	var current_count = dice_spawner.get_dice_count()
+	var need = GameConstants.HAND_SIZE - current_count
 	if need > 0:
 		if not game_manager.can_draw_dice(need):
 			game_manager.end_challenge_due_to_empty_bag()
 			return
-		var new_dice_colors = dice_spawner.create_dice_colors_from_bag(game_manager.bag, need)
-		await dice_spawner.reset_and_spawn_all_dice(new_dice_colors)
+		var dice_data = dice_spawner.draw_dice_data_from_bag(game_manager.bag, need)
+		await dice_spawner.reset_and_spawn_all_dice_from_data(dice_data)
+
 
 func _on_invest_pressed() -> void:
 	if not combo_select.active:

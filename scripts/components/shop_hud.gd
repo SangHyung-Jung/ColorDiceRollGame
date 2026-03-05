@@ -182,11 +182,38 @@ func _on_random_item_buy_pressed(index: int):
 	var item = available_shop_items[index]
 	if Main.gold >= item.price:
 		Main.gold -= item.price
-		if item.type == "joker": Main.owned_jokers.append(item.data); emit_signal("joker_purchased")
-		else: Main.owned_dice_types.append(item.data.type_index)
-		if side_panel: side_panel.update_gold(Main.gold); side_panel.update_joker_inventory(Main.owned_jokers)
+		if item.type == "joker":
+			Main.owned_jokers.append(item.data)
+			emit_signal("joker_purchased")
+		else:
+			# 특수 주사위 구매 시: 가방에 해당 타입 주사위 하나 추가
+			# 타입 8(Prism)은 색상 무관, 나머지는 랜덤 색상으로 가방에 추가
+			var type_idx = item.data.type_index
+			var color_key = DiceBag.COLORS[randi() % DiceBag.COLORS.size()]
+			if type_idx == 8: color_key = "W" # Prism은 대표색으로
+			
+			# GameManager.bag이 싱글톤이 아니므로 Main이나 전역 접근 필요
+			# 여기서는 GameRoot가 나중에 가방을 초기화하므로, 
+			# 현재 세션의 가방(game_manager.bag)에 직접 접근해야 함.
+			# 하지만 ShopHUD에는 game_manager 참조가 직접 없을 수 있으므로 Main에 저장된 정보를 활용하거나
+			# GameRoot를 통해 접근해야 함. 
+			# 임시 해결책: Main.owned_dice_types에 추가하는 것은 유지하고, 
+			# 가방 업데이트는 GameRoot가 관리하도록 하거나 여기서 직접 bag을 찾음.
+			var root = get_tree().current_scene
+			if root.has_method("get_game_manager"):
+				var gm = root.get_game_manager()
+				if gm and gm.bag:
+					gm.bag.add_die(color_key, type_idx)
+			
+			if not Main.owned_dice_types.has(type_idx):
+				Main.owned_dice_types.append(type_idx)
+				
+		if side_panel:
+			side_panel.update_gold(Main.gold)
+			side_panel.update_joker_inventory(Main.owned_jokers)
 		var slot = random_items_container.get_child(index)
-		slot.get_node("VBox/BuyButton").disabled = true; slot.get_node("VBox/BuyButton").text = "SOLDOUT"
+		slot.get_node("VBox/Name").text = "SOLD OUT"
+		slot.get_node("VBox/BuyButton").disabled = true
 
 func clear_shop_objects():
 	for dice in current_shop_dice: if is_instance_valid(dice): dice.queue_free()
