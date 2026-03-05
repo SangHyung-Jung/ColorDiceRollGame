@@ -52,7 +52,8 @@ func count_of(color_key: String) -> int:
 func get_dice_by_color(color_key: String) -> Array:
 	var out := []
 	for d in _dice_list:
-		if d.color == color_key:
+		# Prism(8)과 Lucky(5)는 색상 그룹에서 제외 (Neutral 섹션으로)
+		if d.color == color_key and d.type != 8 and d.type != 5:
 			out.append(d)
 	return out
 
@@ -60,8 +61,7 @@ func get_dice_by_color(color_key: String) -> Array:
 func get_neutral_dice() -> Array:
 	var out := []
 	for d in _dice_list:
-		# Prism(8) 등 특정 타입은 색상 그룹에서 제외하고 따로 표시할 수 있음
-		if d.type == 8: # Prism 예시
+		if d.type == 8 or d.type == 5: # Prism 또는 Lucky
 			out.append(d)
 	return out
 

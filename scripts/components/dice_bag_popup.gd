@@ -63,19 +63,12 @@ func update_counts(dice_bag: DiceBag):
 		var color_dice = dice_bag.get_dice_by_color(color_key)
 		if color_dice.is_empty(): continue
 		
-		# 정렬: 특수 타입(type > 0)이 앞으로 오게 함
-		color_dice.sort_custom(func(a, b): return a.type > b.type)
+		# 정렬 규칙: 일반 주사위(0) 먼저, 그 후 특수 주사위(type > 0)
+		color_dice.sort_custom(func(a, b): return a.type < b.type)
 		
-		var filtered_dice = []
-		for d in color_dice:
-			if d.type != 8: # Prism 제외
-				filtered_dice.append(d)
-		
-		if filtered_dice.is_empty(): continue
-
 		var color_name = _get_color_display_name(color_key)
 		var color_label = Label.new()
-		color_label.text = "  " + color_name + " Dice (" + str(filtered_dice.size()) + ")"
+		color_label.text = "  " + color_name + " Dice (" + str(color_dice.size()) + ")"
 		color_label.add_theme_font_size_override("font_size", 18)
 		main_container.add_child(color_label)
 		
@@ -83,27 +76,35 @@ func update_counts(dice_bag: DiceBag):
 		flow.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		flow.add_theme_constant_override("h_separation", 12)
 		flow.add_theme_constant_override("v_separation", 12)
-		# 내부 여백 확보
 		flow.custom_minimum_size = Vector2(0, 100)
 		main_container.add_child(flow)
 		
-		for i in range(filtered_dice.size()):
-			var d = filtered_dice[i]
+		var basic_count = 0
+		for i in range(color_dice.size()):
+			var d = color_dice[i]
 			var icon = Dice3DIcon.new()
 			flow.add_child(icon)
 			
-			# 눈금은 1~6 순환 (1부터 확실하게 시작)
-			var face_val = (i % 6) + 1
+			var face_val = 1
+			if d.type == 0:
+				# 일반 주사위는 1부터 순차적으로
+				face_val = (basic_count % 6) + 1
+				basic_count += 1
+			else:
+				# 특수 주사위는 상징적으로 1번 면 표시
+				face_val = 1
+				
 			_setup_icon_deferred(icon, d.color, d.type, face_val)
 
-	# 2. 색상 구분이 없는 특수 주사위 (Neutral Special Dice)
+	# 2. 색상 구분이 없는 특수 주사위 (Neutral: Prism, Lucky)
 	var neutral_dice = dice_bag.get_neutral_dice()
 	if not neutral_dice.is_empty():
-		_add_section_header(main_container, "Neutral Special Dice")
+		_add_section_header(main_container, "Neutral Special Dice (Prism, Lucky)")
 		
 		var flow = HFlowContainer.new()
 		flow.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		flow.add_theme_constant_override("h_separation", 10)
+		flow.add_theme_constant_override("h_separation", 12)
+		flow.add_theme_constant_override("v_separation", 12)
 		main_container.add_child(flow)
 		
 		for i in range(neutral_dice.size()):

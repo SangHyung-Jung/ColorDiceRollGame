@@ -84,7 +84,7 @@ func setup_dice(color_key: String, type_index: int, face_value: int):
 		if is_instance_valid(instance):
 			_center_and_fill(instance)
 			# 중앙 정렬 후 살짝 비틀어서 3면이 보이게 함
-			model_parent.rotation_degrees = Vector3(-20, 35, 0)
+			model_parent.rotation_degrees = Vector3(10, -15, 0)
 
 func _center_and_fill(model: Node3D):
 	var aabb = _get_local_aabb(model)
