@@ -822,6 +822,16 @@ func _on_stage_manager_round_advanced(new_stage: int, new_round: int) -> void:
 	_update_ui_from_gamestate()
 	
 	# 3. 이전 라운드의 모든 주사위와 컵 제거
+	clear_round_objects()
+	
+	_has_submitted_in_turn = false
+	_has_invested_in_turn = false
+
+	# 5. 게임 상태를 롤 입력 대기로 전환
+	_set_state(GameState.AWAITING_ROLL_INPUT)
+
+# [추가] 현재 화면의 모든 게임 관련 3D 물체 제거
+func clear_round_objects():
 	if is_instance_valid(cup):
 		cup.queue_free()
 		
@@ -831,15 +841,6 @@ func _on_stage_manager_round_advanced(new_stage: int, new_round: int) -> void:
 			d.queue_free()
 	dice_spawner.clear_dice_nodes()
 	invested_dice_nodes.clear()
-	
-	_has_submitted_in_turn = false
-	_has_invested_in_turn = false
-
-	# 4. 새 라운드를 완벽하게 새로 설정 (주사위 주머니 리셋 포함)
-	# Removed _setup_game() as it's now called by start_round_sequence()
-
-	# 5. 게임 상태를 롤 입력 대기로 전환
-	_set_state(GameState.AWAITING_ROLL_INPUT)
 
 
 

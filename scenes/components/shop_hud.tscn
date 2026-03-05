@@ -58,7 +58,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 2
+mouse_filter = 1
 script = ExtResource("1_abcde")
 
 [node name="MainLayout" type="HBoxContainer" parent="."]
@@ -69,27 +69,27 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 0
-mouse_filter = 2
+mouse_filter = 1
 
 [node name="LeftSpacer" type="Control" parent="MainLayout"]
 custom_minimum_size = Vector2(450, 0)
 layout_mode = 2
-mouse_filter = 2
+mouse_filter = 1
 
 [node name="ContentArea" type="VBoxContainer" parent="MainLayout"]
 layout_mode = 2
 size_flags_horizontal = 3
-mouse_filter = 2
+mouse_filter = 1
 
 [node name="TopSpacer" type="Control" parent="MainLayout/ContentArea"]
 custom_minimum_size = Vector2(0, 150)
 layout_mode = 2
-mouse_filter = 2
+mouse_filter = 1
 
 [node name="InteractiveArea" type="Control" parent="MainLayout/ContentArea"]
 layout_mode = 2
 size_flags_vertical = 3
-mouse_filter = 2
+mouse_filter = 1
 
 [node name="BottomControls" type="VBoxContainer" parent="MainLayout/ContentArea"]
 custom_minimum_size = Vector2(0, 350)

@@ -17,7 +17,7 @@ const DiceBagPopupScene = preload("res://scripts/components/dice_bag_popup.tscn"
 var dice_bag_popup: Window
 
 const POS_GAME = Vector3(-6, 15, 0) # 게임 플레이 카메라 위치
-const POS_SHOP = Vector3(55.6, 20, 0) # 상점 카메라 위치
+const POS_SHOP = Vector3(60, 20, 0) # 상점 카메라 위치
 # [추가] 시작 화면 카메라 위치 (게임 화면 왼쪽 멀리)
 const POS_START = Vector3(-40, 20, 0) 
 
@@ -47,8 +47,8 @@ func _ready():
 	
 	# Initialize InputManager now that game_hud (and its combo_select) is ready.
 	input_manager.initialize(game_hud.combo_select, camera)
-	input_manager.roll_started.connect(game_hud.start_roll_animation)
-	input_manager.roll_released.connect(game_hud.handle_roll_release)
+	input_manager.roll_started.connect(_on_roll_started)
+	input_manager.roll_released.connect(_on_roll_released)
 
 	# UI에서 발생하는 시그널 연결
 	game_hud.connect("go_to_shop_requested", Callable(self, "transition_to_shop"))
@@ -130,8 +130,20 @@ func _on_joker_purchased():
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if is_in_game_view:
+	if is_in_game_view or shop_hud.visible:
 		input_manager.handle_input(event)
+
+func _on_roll_started():
+	if is_in_game_view:
+		game_hud.start_roll_animation()
+	elif shop_hud.visible:
+		shop_hud.start_shaking_sequence()
+
+func _on_roll_released():
+	if is_in_game_view:
+		game_hud.handle_roll_release()
+	elif shop_hud.visible:
+		shop_hud.stop_shaking_sequence()
 
 func _process(_delta):
 	# GameHUD UI 위치 보정 (기존 로직 유지)
@@ -229,6 +241,13 @@ func transition_to_shop():
 	is_in_game_view = false
 	input_manager.set_roll_in_progress(true) # Disable game input during transition
 
+	# [추가] 전환 시작 시점에 바로 상점 시퀀스 실행 (컵이 왼쪽에서 나오기 시작)
+	shop_hud.visible = true
+	shop_hud.enter_shop_sequence()
+	# 게임 컵 제거
+	if game_hud.has_method("clear_round_objects"):
+		game_hud.clear_round_objects()
+
 	# Camera Tween
 	var tween = create_tween().set_parallel(true)
 	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
@@ -240,12 +259,10 @@ func transition_to_shop():
 		top_panel.visible = true
 		side_panel.show_shop_ui()
 		game_hud.visible = false
-		if start_screen: start_screen.visible = false # 혹시 켜져있으면 끄기
+		if start_screen: start_screen.visible = false
 		if joker_dictionary: joker_dictionary.visible = false
 		if light_config_screen: light_config_screen.visible = false
-		shop_hud.visible = true
-		shop_hud.enter_shop_sequence() # 상점 진입 애니메이션/로직 실행
-		input_manager.set_roll_in_progress(false) # Re-enable input for shop (if any)
+		input_manager.set_roll_in_progress(false)
 	)
 
 func transition_to_game(instant: bool = false):
