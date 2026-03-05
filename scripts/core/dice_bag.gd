@@ -10,12 +10,24 @@ const COLORS := ["W","K","R","G","B"]
 # 각 항목: { "color": "W", "type": 0 }
 var _dice_list: Array = []
 
-## 가방을 풀 세트로 초기화합니다 (각 색상 8개씩 기본 주사위)
+## 가방을 풀 세트로 초기화합니다
+## 기본 주사위 각 8개 + 현재 소유한 모든 특수 주사위 1개씩 포함
 func setup_full() -> void:
 	_dice_list.clear()
+	# 1. 기본 주사위 추가
 	for c in COLORS:
 		for i in range(8):
-			add_die(c, 0) # 기본 타입(0) 주사위 추가
+			add_die(c, 0)
+	
+	# 2. 현재 소유한 특수 주사위 추가 (테스트 및 시작 보너스)
+	if Main.owned_dice_types.size() > 1:
+		for type_idx in Main.owned_dice_types:
+			if type_idx == 0: continue
+			
+			# 색상 주사위면 랜덤 색상으로, Prism(8)이면 흰색으로 추가
+			var color = COLORS[randi() % COLORS.size()]
+			if type_idx == 8: color = "W"
+			add_die(color, type_idx)
 
 ## 가방에 주사위를 추가합니다.
 func add_die(color_key: String, type_index: int) -> void:

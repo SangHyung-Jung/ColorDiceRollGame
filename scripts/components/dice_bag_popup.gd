@@ -58,15 +58,17 @@ func update_counts(dice_bag: DiceBag):
 
 	_add_section_header(main_container, "Remaining Dice in Bag")
 	
-	# 1. 색상별 주사위 그룹핑 (일반 + 해당 색상의 특수)
+	# 1. 색상별 주사위 그룹핑
 	for color_key in GameConstants.BAG_COLOR_MAP:
 		var color_dice = dice_bag.get_dice_by_color(color_key)
 		if color_dice.is_empty(): continue
 		
-		# Prism(8) 등 색상 구분이 없는 주사위는 이 단계에서 제외
+		# 정렬: 특수 타입(type > 0)이 앞으로 오게 함
+		color_dice.sort_custom(func(a, b): return a.type > b.type)
+		
 		var filtered_dice = []
 		for d in color_dice:
-			if d.type != 8: # 8번 Prism은 Neutral 섹션으로
+			if d.type != 8: # Prism 제외
 				filtered_dice.append(d)
 		
 		if filtered_dice.is_empty(): continue
@@ -79,8 +81,10 @@ func update_counts(dice_bag: DiceBag):
 		
 		var flow = HFlowContainer.new()
 		flow.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		flow.add_theme_constant_override("h_separation", 10)
-		flow.add_theme_constant_override("v_separation", 10)
+		flow.add_theme_constant_override("h_separation", 12)
+		flow.add_theme_constant_override("v_separation", 12)
+		# 내부 여백 확보
+		flow.custom_minimum_size = Vector2(0, 100)
 		main_container.add_child(flow)
 		
 		for i in range(filtered_dice.size()):
@@ -88,7 +92,7 @@ func update_counts(dice_bag: DiceBag):
 			var icon = Dice3DIcon.new()
 			flow.add_child(icon)
 			
-			# 눈금은 1~6 순환 (사용자 요청: 1부터 올라가게)
+			# 눈금은 1~6 순환 (1부터 확실하게 시작)
 			var face_val = (i % 6) + 1
 			_setup_icon_deferred(icon, d.color, d.type, face_val)
 

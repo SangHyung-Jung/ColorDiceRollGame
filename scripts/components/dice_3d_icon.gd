@@ -7,18 +7,18 @@ var model_parent: Node3D
 var light: DirectionalLight3D
 
 func _init():
-	custom_minimum_size = Vector2(80, 80)
+	custom_minimum_size = Vector2(90, 90)
 	size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.1, 0.1, 0.1)
-	style.set_border_width_all(1)
-	style.border_color = Color(0.3, 0.3, 0.3)
-	style.corner_radius_top_left = 10
-	style.corner_radius_top_right = 10
-	style.corner_radius_bottom_left = 10
-	style.corner_radius_bottom_right = 10
+	style.bg_color = Color(0.15, 0.15, 0.15)
+	style.set_border_width_all(2)
+	style.border_color = Color(0.35, 0.35, 0.35)
+	style.corner_radius_top_left = 12
+	style.corner_radius_top_right = 12
+	style.corner_radius_bottom_left = 12
+	style.corner_radius_bottom_right = 12
 	add_theme_stylebox_override("panel", style)
 
 func _ready():
@@ -41,13 +41,14 @@ func _setup_3d_scene():
 	
 	camera = Camera3D.new()
 	camera.projection = Camera3D.PROJECTION_ORTHOGONAL
-	camera.transform.origin = Vector3(2, 2, 2)
+	# 카메라를 Z축 정면에 배치하여 회전 계산을 명확하게 함
+	camera.transform.origin = Vector3(0, 0, 5)
 	camera.look_at(Vector3.ZERO)
 	camera.size = 2.0 
 	viewport.add_child(camera)
 	
 	light = DirectionalLight3D.new()
-	light.transform.origin = Vector3(5, 10, 5)
+	light.transform.origin = Vector3(5, 5, 5)
 	light.look_at(Vector3.ZERO)
 	light.light_energy = 4.0
 	viewport.add_child(light)
@@ -55,11 +56,10 @@ func _setup_3d_scene():
 	var env = Environment.new()
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = Color.WHITE
-	env.ambient_light_energy = 1.2
+	env.ambient_light_energy = 1.5
 	camera.environment = env
 
 func setup_dice(color_key: String, type_index: int, face_value: int):
-	if not is_inside_tree(): await tree_entered
 	if not viewport: await ready
 
 	for child in model_parent.get_children():
@@ -75,53 +75,38 @@ func setup_dice(color_key: String, type_index: int, face_value: int):
 		var instance = scene.instantiate() as Node3D
 		model_parent.add_child(instance)
 		
-		# 1. 눈금 설정
+		# 1. 눈금 설정 (카메라가 있는 Z+ 방향으로 눈금을 회전)
 		_set_model_face(instance, face_value)
 		
-		# 2. 아이콘용 기본 회전
-		model_parent.rotation_degrees = Vector3(-20, 45, 0)
-		
-		# 3. 모델이 완전히 준비될 때까지 2프레임 대기 (중요)
+		# 2. 아이콘용 보정 회전 (약간 기울여서 입체감 부여)
+		# 회전 중심을 맞추기 위해 인스턴스 자체를 회전시키는 대신 부모 노드 활용
 		await get_tree().process_frame
-		await get_tree().process_frame
-		
 		if is_instance_valid(instance):
 			_center_and_fill(instance)
+			# 중앙 정렬 후 살짝 비틀어서 3면이 보이게 함
+			model_parent.rotation_degrees = Vector3(-20, 35, 0)
 
 func _center_and_fill(model: Node3D):
-	# 모델 내부의 메쉬를 정밀하게 추적하여 전체 바운딩 박스 계산
 	var aabb = _get_local_aabb(model)
 	if aabb.size.length() > 0:
-		# 1. 모델의 중심을 정확히 (0,0,0)으로 이동
 		model.position = -aabb.get_center()
-		
-		# 2. 카메라 사이즈 조정 (꽉 차게)
-		# 바운딩 박스의 대각선 길이를 기준으로 카메라 사이즈 설정
-		var size_factor = aabb.size.length() * 0.65
-		camera.size = size_factor
-		camera.look_at(Vector3.ZERO)
+		var max_dim = max(aabb.size.x, max(aabb.size.y, aabb.size.z))
+		camera.size = max_dim * 1.3 
 
 func _get_local_aabb(node: Node) -> AABB:
 	var aabb = AABB()
 	var first = true
 	var stack = [{"node": node, "transform": Transform3D.IDENTITY}]
-	
 	while stack.size() > 0:
 		var data = stack.pop_back()
 		var n = data.node
 		var t = data.transform
-		
 		if n is MeshInstance3D and n.mesh:
 			var mesh_aabb = t * n.get_aabb()
-			if first:
-				aabb = mesh_aabb
-				first = false
-			else:
-				aabb = aabb.merge(mesh_aabb)
-		
+			if first: aabb = mesh_aabb; first = false
+			else: aabb = aabb.merge(mesh_aabb)
 		for child in n.get_children():
-			if child is Node3D:
-				stack.append({"node": child, "transform": t * child.transform})
+			if child is Node3D: stack.append({"node": child, "transform": t * child.transform})
 	return aabb
 
 func _get_color_name(key: String) -> String:
@@ -134,10 +119,12 @@ func _get_color_name(key: String) -> String:
 	return "white"
 
 func _set_model_face(node: Node3D, face: int):
+	# 카메라가 보는 방향(Z+)에 해당 눈금이 오도록 회전
+	# Dice.gd 기준: 1:Y+, 6:Y-, 5:X+, 2:X-, 3:Z-, 4:Z+
 	match face:
-		1: node.rotation_degrees = Vector3(-90, 0, 0)
-		6: node.rotation_degrees = Vector3(90, 0, 0)
-		5: node.rotation_degrees = Vector3(0, -90, 0)
-		2: node.rotation_degrees = Vector3(0, 90, 0)
-		3: node.rotation_degrees = Vector3(0, 0, 0)
-		4: node.rotation_degrees = Vector3(0, 180, 0)
+		1: node.rotation_degrees = Vector3(-90, 0, 0)  # Y+ -> Z+
+		6: node.rotation_degrees = Vector3(90, 0, 0)   # Y- -> Z+
+		5: node.rotation_degrees = Vector3(0, -90, 0)  # X+ -> Z+
+		2: node.rotation_degrees = Vector3(0, 90, 0)   # X- -> Z+
+		3: node.rotation_degrees = Vector3(0, 0, 0)    # Z- -> Z+ (이미 정면)
+		4: node.rotation_degrees = Vector3(0, 180, 0)  # Z+ -> Z+ (반대편)
