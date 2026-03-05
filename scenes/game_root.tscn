@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://cyi2riaqbby4h"]
+[gd_scene load_steps=13 format=3 uid="uid://cyi2riaqbby4h"]
 
 [ext_resource type="Script" uid="uid://6fx2lujkwb1o" path="res://scripts/game_root.gd" id="1_x82f4"]
 [ext_resource type="PackedScene" uid="uid://bciyvj2g1j1vj" path="res://scenes/rolling_world.tscn" id="2_2t21a"]
@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://b8s5n5l3tbglo" path="res://scenes/components/start_screen.tscn" id="6_start_screen"]
 [ext_resource type="PackedScene" uid="uid://dpsk2v0i8nxxg" path="res://scenes/shop_dice.tscn" id="6_ylec3"]
 [ext_resource type="PackedScene" uid="uid://e4u7j62s742j" path="res://scenes/components/joker_dictionary.tscn" id="7_joker_dictionary"]
+[ext_resource type="PackedScene" uid="uid://b7v2yqj6l7j6u" path="res://scenes/components/persistent_side_panel.tscn" id="9_side_panel"]
 [ext_resource type="PackedScene" path="res://scenes/popups/light_config_screen.tscn" id="8_light_config"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_Floor"]
@@ -78,6 +79,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40, 0, -25)
 [node name="ShopHUD" parent="UI_Canvas" instance=ExtResource("4_shop_hud")]
 visible = false
 shop_dice_scene = ExtResource("6_ylec3")
+
+[node name="PersistentSidePanel" parent="UI_Canvas" instance=ExtResource("9_side_panel")]
+visible = false
 
 [node name="StartScreen" parent="UI_Canvas" instance=ExtResource("6_start_screen")]
 visible = false

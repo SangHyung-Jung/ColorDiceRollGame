@@ -1,0 +1,187 @@
+[gd_scene load_steps=7 format=3 uid="uid://b7v2yqj6l7j6u"]
+
+[ext_resource type="Script" uid="uid://d3yqj6l7j6u" path="res://scripts/components/persistent_side_panel.gd" id="1_abcde"]
+[ext_resource type="Texture2D" uid="uid://b6ra7i5qkug47" path="res://score_panel.png" id="2_stk2i"]
+[ext_resource type="FontFile" uid="uid://ulruyehktvyh" path="res://font/boldpixels/BoldPixels.otf" id="3_7a4el"]
+[ext_resource type="PackedScene" uid="uid://c7d6e5f4g3h2" path="res://scenes/components/joker_inventory.tscn" id="6_joker_inv"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_fplum"]
+texture = ExtResource("2_stk2i")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_scorebox"]
+bg_color = Color(0, 0, 0, 0.392157)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 0.501961)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_transparent"]
+
+[node name="PersistentSidePanel" type="MarginContainer"]
+custom_minimum_size = Vector2(450, 0)
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_right = 450.0
+grow_vertical = 2
+script = ExtResource("1_abcde")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_fplum")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 49.0
+offset_top = 43.0
+offset_right = -49.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 26
+
+[node name="VSeparator2" type="Control" parent="Panel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+
+[node name="StageLabel" type="Label" parent="Panel/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7a4el")
+theme_override_font_sizes/font_size = 70
+text = "STAGE 1-1"
+horizontal_alignment = 1
+
+[node name="VSeparator" type="Control" parent="Panel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="TargetScoreLabel" type="Label" parent="Panel/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7a4el")
+theme_override_font_sizes/font_size = 40
+text = "Target Score: 300"
+
+[node name="CurrentScoreLabel" type="Label" parent="Panel/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7a4el")
+theme_override_font_sizes/font_size = 40
+text = "Current Score: 0"
+
+[node name="ScoreCalcBox" type="VBoxContainer" parent="Panel/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 180)
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ComboNameLabel" type="Label" parent="Panel/VBoxContainer/ScoreCalcBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 35)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7a4el")
+theme_override_font_sizes/font_size = 35
+text = " "
+horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="CalculationBoxes" type="HBoxContainer" parent="Panel/VBoxContainer/ScoreCalcBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="ScoreBox" type="PanelContainer" parent="Panel/VBoxContainer/ScoreCalcBox/CalculationBoxes"]
+custom_minimum_size = Vector2(180, 80)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_scorebox")
+
+[node name="ScoreLabel" type="Label" parent="Panel/VBoxContainer/ScoreCalcBox/CalculationBoxes/ScoreBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7a4el")
+theme_override_font_sizes/font_size = 50
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="XLabel" type="Label" parent="Panel/VBoxContainer/ScoreCalcBox/CalculationBoxes"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7a4el")
+theme_override_font_sizes/font_size = 40
+text = "x"
+vertical_alignment = 1
+
+[node name="MultiplierBox" type="PanelContainer" parent="Panel/VBoxContainer/ScoreCalcBox/CalculationBoxes"]
+custom_minimum_size = Vector2(100, 80)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_scorebox")
+
+[node name="MultiplierLabel" type="Label" parent="Panel/VBoxContainer/ScoreCalcBox/CalculationBoxes/MultiplierBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7a4el")
+theme_override_font_sizes/font_size = 50
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TurnScoreLabel" type="Label" parent="Panel/VBoxContainer/ScoreCalcBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7a4el")
+theme_override_font_sizes/font_size = 40
+text = " "
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="TurnsLeftLabel" type="Label" parent="Panel/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7a4el")
+theme_override_font_sizes/font_size = 40
+text = "# Combinations: 4"
+
+[node name="InvestsLeftLabel" type="Label" parent="Panel/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7a4el")
+theme_override_font_sizes/font_size = 40
+text = "# Investments: 5"
+
+[node name="GoldLabel" type="Label" parent="Panel/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7a4el")
+theme_override_font_sizes/font_size = 40
+text = "Gold: $0"
+
+[node name="JokerInventory" parent="Panel/VBoxContainer" instance=ExtResource("6_joker_inv")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
+[node name="VSeparator3" type="Control" parent="Panel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="ViewDiceBagButton" type="Button" parent="Panel/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7a4el")
+theme_override_font_sizes/font_size = 60
+theme_override_styles/focus = SubResource("StyleBoxEmpty_transparent")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_transparent")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_transparent")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_transparent")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_transparent")
+text = "Dice Bag"

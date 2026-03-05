@@ -15,12 +15,7 @@ var _has_submitted_in_turn: bool = false
 var _has_invested_in_turn: bool = false
 
 # === UI 노드 참조 ===
-@onready var stage_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/StageLabel
-@onready var target_score_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/TargetScoreLabel
-@onready var current_score_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/CurrentScoreLabel
-@onready var turns_left_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/TurnsLeftLabel
-@onready var invests_left_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/InvestsLeftLabel
-@onready var gold_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/GoldLabel
+var side_panel: PersistentSidePanel # [추가] 공통 사이드 패널 참조
 # [추가] 조커 시스템 관련 변수
 const MAX_JOKER_SLOTS = 5 # 최대 조커 배치 개수 (필요에 따라 조정)
 var joker_socket_positions: Array[Vector3] = []
@@ -28,7 +23,6 @@ var joker_dice_nodes: Array[Node3D] = []
 
 # [추가] 조커 소켓 컨테이너 참조 (경로는 에디터 설정에 맞춰주세요)
 @onready var joker_socket_container: HBoxContainer = $MainLayout/PlayAreaContainer/JokerSlotContainer
-@onready var view_dice_bag_button: Button = $MainLayout/InfoPanel/Panel/VBoxContainer/ViewDiceBagButton
 @onready var submit_button: Button = $MainLayout/PlayAreaContainer/InteractionUI/HBoxContainer/TextureRect/SubmitButton
 @onready var invest_button: Button = $MainLayout/PlayAreaContainer/InteractionUI/HBoxContainer/TextureRect2/InvestButton
 @onready var turn_end_button: Button = $MainLayout/PlayAreaContainer/InteractionUI/HBoxContainer/TextureRect3/TurnEndButton
@@ -36,10 +30,11 @@ var joker_dice_nodes: Array[Node3D] = []
 @onready var sort_by_number_button: Button = $MainLayout/PlayAreaContainer/SortButtonsContainer/TextureRect2/SortByNumberButton
 
 # === 스코어 애니메이션 UI 노드 ===
-@onready var combo_name_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/ScoreCalcBox/ComboNameLabel
-@onready var score_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/ScoreCalcBox/CalculationBoxes/ScoreBox/ScoreLabel
-@onready var multiplier_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/ScoreCalcBox/CalculationBoxes/MultiplierBox/MultiplierLabel
-@onready var turn_score_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/ScoreCalcBox/TurnScoreLabel
+# [수정] 사이드 패널의 노드를 참조하도록 변경 (setup_game_hud에서 초기화됨)
+var combo_name_label: Label
+var score_label: Label
+var multiplier_label: Label
+var turn_score_label: Label
 @onready var main_layout: HBoxContainer = $MainLayout
 
 # === 3D 씬 참조 ===
@@ -82,10 +77,21 @@ func _ready() -> void:
 	# All other initialization is now deferred to setup_game_hud()
 
 
-func setup_game_hud(p_world_3d: Node3D, p_rolling_world_camera: Camera3D, p_floating_text_container: Control) -> void:
+func setup_game_hud(p_world_3d: Node3D, p_rolling_world_camera: Camera3D, p_floating_text_container: Control, p_side_panel: PersistentSidePanel) -> void:
 	world_3d = p_world_3d
 	rolling_world_camera = p_rolling_world_camera
 	floating_text_container = p_floating_text_container
+	side_panel = p_side_panel
+	
+	# 사이드 패널에서 필요한 라벨 참조 연결
+	combo_name_label = side_panel.combo_name_label
+	score_label = side_panel.score_label
+	multiplier_label = side_panel.multiplier_label
+	turn_score_label = side_panel.turn_score_label
+	
+	# 주사위 가방 버튼 연결
+	if not side_panel.view_dice_bag_button.pressed.is_connected(_on_view_dice_bag_pressed):
+		side_panel.view_dice_bag_button.pressed.connect(_on_view_dice_bag_pressed)
 	
 	_initialize_managers()
 	_initialize_score_animator()
@@ -315,7 +321,6 @@ func _connect_signals() -> void:
 	submit_button.pressed.connect(_on_submit_pressed)
 	invest_button.pressed.connect(_on_invest_pressed)
 	turn_end_button.pressed.connect(_on_turn_end_pressed)
-	view_dice_bag_button.pressed.connect(_on_view_dice_bag_pressed)
 	sort_by_color_button.pressed.connect(_on_sort_by_color_pressed)
 	sort_by_number_button.pressed.connect(_on_sort_by_number_pressed)
 	#rolling_area.gui_input.connect(_on_rolling_area_gui_input) # Removed
@@ -425,7 +430,7 @@ func _on_score_animation_finished(points: int, nodes: Array) -> void:
 
 
 func _animate_current_score(target_score: int, nodes: Array) -> void:
-	var current_score_text = current_score_label.text.split(": ")[1]
+	var current_score_text = side_panel.current_score_label.text.split(": ")[1]
 	var start_score = int(current_score_text)
 	
 	var tween = create_tween()
@@ -758,7 +763,7 @@ func _update_ui_for_state() -> void:
 			invest_button.disabled = true
 			turn_end_button.disabled = true
 			
-			view_dice_bag_button.disabled = false
+			side_panel.view_dice_bag_button.disabled = false
 			sort_by_color_button.disabled = false
 			sort_by_number_button.disabled = false
 		
@@ -766,7 +771,7 @@ func _update_ui_for_state() -> void:
 			submit_button.disabled = true
 			invest_button.disabled = true
 			turn_end_button.disabled = true
-			view_dice_bag_button.disabled = true
+			side_panel.view_dice_bag_button.disabled = true
 			sort_by_color_button.disabled = true
 			sort_by_number_button.disabled = true
 
@@ -784,7 +789,7 @@ func _update_ui_for_state() -> void:
 			turn_end_button.disabled = false
 
 			# 기타 공통 버튼 활성화
-			view_dice_bag_button.disabled = false
+			side_panel.view_dice_bag_button.disabled = false
 			sort_by_color_button.disabled = false
 			sort_by_number_button.disabled = false
 
@@ -843,14 +848,14 @@ func _on_stage_manager_round_advanced(new_stage: int, new_round: int) -> void:
 
 # --- Public API ---
 func update_stage(stage_num: int) -> void:
-	stage_label.text = "Stage: %d" % stage_num
+	side_panel.update_stage(stage_num)
 func update_target_score(score: int) -> void:
-	target_score_label.text = "Target Score: %d" % score
+	side_panel.update_target_score(score)
 func update_current_score(score: int) -> void:
-	current_score_label.text = "Current Score: %d" % score
+	side_panel.update_current_score(score)
 func update_turns_left(count: int) -> void:
-	turns_left_label.text = "Left Turns: %d" % count
+	side_panel.update_turns_left(count)
 func update_invests_left(count: int) -> void:
-	invests_left_label.text = "Left Invests: %d" % count
+	side_panel.update_invests_left(count)
 func update_gold(amount: int) -> void:
-	gold_label.text = "Gold: $%d" % amount
+	side_panel.update_gold(amount)

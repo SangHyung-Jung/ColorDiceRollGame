@@ -2,14 +2,18 @@ extends Node3D
 class_name GameRoot
 
 @onready var camera = $MainCamera
-@onready var game_hud = $UI_Canvas/GameHUD
-@onready var shop_hud = $UI_Canvas/ShopHUD
+@onready var game_hud: GameHUD = $UI_Canvas/GameHUD
+@onready var shop_hud: ShopHUD = $UI_Canvas/ShopHUD
+@onready var side_panel: PersistentSidePanel = $UI_Canvas/PersistentSidePanel
 @onready var start_screen = $UI_Canvas/StartScreen
 @onready var joker_dictionary = $UI_Canvas/JokerDictionary
 @onready var light_config_screen = $UI_Canvas/LightConfigScreen # [추가]
 @onready var world_3d = $"3D_World"
 @onready var floating_text_container = $EffectsLayer/FloatingTextContainer
 @onready var input_manager: InputManager = $InputManager
+
+const DiceBagPopupScene = preload("res://scripts/components/dice_bag_popup.tscn")
+var dice_bag_popup: Window
 
 const POS_GAME = Vector3(-6, 15, 0) # 게임 플레이 카메라 위치
 const POS_SHOP = Vector3(55.6, 20, 0) # 상점 카메라 위치
@@ -30,7 +34,45 @@ var is_in_game_view: bool = false
 
 func _ready():
 	# Initial setup of game hud. This creates all the necessary manager nodes.
-	# 사운드 미리 로드
+	_preload_sounds()
+
+	# 팝업 초기화
+	dice_bag_popup = DiceBagPopupScene.instantiate()
+	add_child(dice_bag_popup)
+	side_panel.dice_bag_requested.connect(_on_view_dice_bag_pressed)
+
+	game_hud.setup_game_hud(world_3d, camera, floating_text_container, side_panel)
+	shop_hud.side_panel = side_panel
+	
+	# Initialize InputManager now that game_hud (and its combo_select) is ready.
+	input_manager.initialize(game_hud.combo_select, camera)
+	input_manager.roll_started.connect(game_hud.start_roll_animation)
+	input_manager.roll_released.connect(game_hud.handle_roll_release)
+
+	# UI에서 발생하는 시그널 연결
+	game_hud.connect("go_to_shop_requested", Callable(self, "transition_to_shop"))
+	shop_hud.connect("go_to_game_requested", Callable(self, "transition_to_game"))
+	shop_hud.joker_purchased.connect(_on_joker_purchased)
+
+	# [추가] 시작 화면 시그널 연결
+	if start_screen:
+		start_screen.start_game_requested.connect(transition_to_game)
+		start_screen.joker_dictionary_requested.connect(transition_to_dictionary)
+		start_screen.shop_requested.connect(transition_to_shop)
+		start_screen.light_config_requested.connect(transition_to_light_config) # [추가]
+	
+	# [추가] 조커 사전 시그널 연결
+	if joker_dictionary:
+		joker_dictionary.back_requested.connect(transition_to_start)
+	
+	# [추가] 조명 설정 시그널 연결
+	if light_config_screen:
+		light_config_screen.back_requested.connect(transition_to_start)
+
+	# 시작 화면 진입 (즉시 이동)
+	transition_to_start(true)
+
+func _preload_sounds():
 	var die_on_cup_sounds: Array[String] = [
 		"res://assets/audio/dice_cup/dice_cup_tuned_1.ogg",
 		"res://assets/audio/dice_cup/dice_cup_tuned_2.ogg",
@@ -76,39 +118,10 @@ func _ready():
 	]
 	SoundManager.preload_sound_category("die_on_floor", die_on_floor_sounds)
 
-	game_hud.setup_game_hud(world_3d, camera, floating_text_container)
-	
-	# Initialize InputManager now that game_hud (and its combo_select) is ready.
-	input_manager.initialize(game_hud.combo_select, camera)
-	input_manager.roll_started.connect(game_hud.start_roll_animation)
-	input_manager.roll_released.connect(game_hud.handle_roll_release)
-
-	# [변경] 게임 시작 시 바로 게임이 아닌 '시작 화면'으로 초기화
-	# transition_to_game(true) -> 삭제
-	
-	# UI에서 발생하는 시그널 연결
-	game_hud.connect("go_to_shop_requested", Callable(self, "transition_to_shop"))
-	shop_hud.connect("go_to_game_requested", Callable(self, "transition_to_game"))
-	shop_hud.joker_purchased.connect(_on_joker_purchased)
-
-	# [추가] 시작 화면 시그널 연결
-	if start_screen:
-		start_screen.start_game_requested.connect(transition_to_game)
-		start_screen.joker_dictionary_requested.connect(transition_to_dictionary)
-		start_screen.shop_requested.connect(transition_to_shop)
-		start_screen.light_config_requested.connect(transition_to_light_config) # [추가]
-	
-	# [추가] 조커 사전 시그널 연결
-	if joker_dictionary:
-		joker_dictionary.back_requested.connect(transition_to_start)
-	
-	# [추가] 조명 설정 시그널 연결
-	if light_config_screen:
-		light_config_screen.back_requested.connect(transition_to_start)
-
-	# 시작 화면 진입 (즉시 이동)
-	transition_to_start(true)
-
+func _on_view_dice_bag_pressed() -> void:
+	if game_hud and game_hud.game_manager:
+		dice_bag_popup.update_counts(game_hud.game_manager.bag)
+		dice_bag_popup.show()
 
 func _on_joker_purchased():
 	if game_hud:
@@ -138,6 +151,7 @@ func transition_to_light_config():
 	tween.tween_property(camera, "rotation_degrees", ROT_LIGHT_CONFIG, 1.5)
 
 	tween.chain().tween_callback(func():
+		side_panel.visible = false
 		game_hud.visible = false
 		shop_hud.visible = false
 		if start_screen: start_screen.visible = false
@@ -155,6 +169,7 @@ func transition_to_start(instant: bool = false):
 		camera.global_position = POS_START
 		camera.rotation_degrees = ROT_START
 		# UI 상태 설정
+		side_panel.visible = false
 		game_hud.visible = false
 		shop_hud.visible = false
 		if start_screen:
@@ -173,6 +188,7 @@ func transition_to_start(instant: bool = false):
 
 	tween.chain().tween_callback(func():
 		# UI 상태 설정
+		side_panel.visible = false
 		game_hud.visible = false
 		shop_hud.visible = false
 		if start_screen:
@@ -194,6 +210,7 @@ func transition_to_dictionary():
 	tween.tween_property(camera, "rotation_degrees", ROT_DICTIONARY, 1.5)
 
 	tween.chain().tween_callback(func():
+		side_panel.visible = false
 		game_hud.visible = false
 		shop_hud.visible = false
 		if start_screen: start_screen.visible = false
@@ -214,6 +231,8 @@ func transition_to_shop():
 	tween.tween_property(camera, "rotation_degrees", ROT_SHOP, 1.5)
 	
 	tween.chain().tween_callback(func():
+		side_panel.visible = true
+		side_panel.show_shop_ui()
 		game_hud.visible = false
 		if start_screen: start_screen.visible = false # 혹시 켜져있으면 끄기
 		if joker_dictionary: joker_dictionary.visible = false
@@ -237,6 +256,8 @@ func transition_to_game(instant: bool = false):
 	if instant:
 		camera.global_position = POS_GAME
 		camera.rotation_degrees = ROT_GAME
+		side_panel.visible = true
+		side_panel.show_game_ui()
 		game_hud.visible = true
 
 		# [추가] 즉시 이동 시에도 위치 갱신 필요
@@ -258,6 +279,8 @@ func transition_to_game(instant: bool = false):
 	tween.tween_property(camera, "rotation_degrees", ROT_GAME, 1.5)
 	
 	tween.chain().tween_callback(func():
+		side_panel.visible = true
+		side_panel.show_game_ui()
 		# [핵심] 카메라가 도착했으므로, 이제 현재 카메라 기준으로 소켓 위치를 다시 계산하라고 명령
 		game_hud.update_socket_positions()
 		# [추가] 조커 소켓 및 주사위 업데이트

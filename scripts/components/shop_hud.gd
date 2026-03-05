@@ -11,8 +11,7 @@ const GameConstants = preload("res://scripts/utils/constants.gd")
 # UI Node References
 @onready var next_round_button: Button = $MainLayout/GameArea/ShopHeader/NextRoundButton
 @onready var reroll_button: Button = $MainLayout/GameArea/ShopHeader/RerollButton
-@onready var gold_label: Label = $MainLayout/InfoPanel/Panel/VBoxContainer/GoldLabel
-@onready var joker_inventory: HBoxContainer = $MainLayout/InfoPanel/Panel/VBoxContainer/JokerInventory
+var side_panel: PersistentSidePanel # [추가] 공통 사이드 패널 참조
 @onready var buy_panel: PanelContainer = $MainLayout/GameArea/BuyPanel
 
 # 3D Node References
@@ -73,8 +72,15 @@ func _gui_input(event: InputEvent) -> void:
 				_release_and_pour()
 
 func enter_shop_sequence() -> void:
-	_update_gold_label()
-	joker_inventory.update_display(Main.owned_jokers)
+	if side_panel:
+		side_panel.show_shop_ui()
+		side_panel.update_stage_text("LOUNGE")
+		side_panel.update_joker_inventory(Main.owned_jokers)
+		_update_gold_label()
+		# 주사위 가방 버튼 연결
+		if not side_panel.view_dice_bag_button.pressed.is_connected(_on_view_dice_bag_pressed):
+			side_panel.view_dice_bag_button.pressed.connect(_on_view_dice_bag_pressed)
+
 	clear_shop_objects()
 	
 	current_mode = ShopMode.NONE
@@ -365,9 +371,15 @@ func _on_next_round_button_pressed() -> void:
 	emit_signal("go_to_game_requested")
 
 func _update_gold_label() -> void:
-	gold_label.text = "Gold: $%d" % Main.gold
+	if side_panel:
+		side_panel.update_gold(Main.gold)
 
 func _on_item_purchased() -> void:
 	_update_gold_label()
-	joker_inventory.update_display(Main.owned_jokers)
+	if side_panel:
+		side_panel.update_joker_inventory(Main.owned_jokers)
 	display_purchase_options(available_jokers_to_buy, available_dice_to_buy)
+
+func _on_view_dice_bag_pressed() -> void:
+	# This will be handled by GameRoot's connection to side_panel.dice_bag_requested
+	pass
