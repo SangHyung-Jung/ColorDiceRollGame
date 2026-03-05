@@ -1,0 +1,137 @@
+[gd_scene load_steps=6 format=3 uid="uid://b7v2yqj6l7j7v"]
+
+[ext_resource type="Script" uid="uid://d3yqj6l7j7v" path="res://scripts/components/top_panel.gd" id="1_abcde"]
+[ext_resource type="FontFile" uid="uid://ulruyehktvyh" path="res://font/boldpixels/BoldPixels.otf" id="3_7a4el"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_header"]
+bg_color = Color(0.2, 0.2, 0.2, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.4, 0.4, 0.4, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_slot_border"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.6, 0.6, 0.6, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_item_bg"]
+bg_color = Color(0.15, 0.15, 0.15, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.5, 0.5, 0.5, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="TopPanel" type="MarginContainer"]
+custom_minimum_size = Vector2(0, 150)
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 450.0
+grow_horizontal = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+script = ExtResource("1_abcde")
+
+[node name="HBox" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="JokerSection" type="HBoxContainer" parent="HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 15
+
+[node name="LabelContainer" type="PanelContainer" parent="HBox/JokerSection"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_header")
+
+[node name="Label" type="Label" parent="HBox/JokerSection/LabelContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7a4el")
+theme_override_font_sizes/font_size = 24
+text = "JOKERS"
+horizontal_alignment = 1
+
+[node name="JokerSlotContainer" type="HBoxContainer" parent="HBox/JokerSection"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="Slot1" type="Panel" parent="HBox/JokerSection/JokerSlotContainer"]
+custom_minimum_size = Vector2(110, 110)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_slot_border")
+
+[node name="Slot2" type="Panel" parent="HBox/JokerSection/JokerSlotContainer"]
+custom_minimum_size = Vector2(110, 110)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_slot_border")
+
+[node name="Slot3" type="Panel" parent="HBox/JokerSection/JokerSlotContainer"]
+custom_minimum_size = Vector2(110, 110)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_slot_border")
+
+[node name="Slot4" type="Panel" parent="HBox/JokerSection/JokerSlotContainer"]
+custom_minimum_size = Vector2(110, 110)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_slot_border")
+
+[node name="Slot5" type="Panel" parent="HBox/JokerSection/JokerSlotContainer"]
+custom_minimum_size = Vector2(110, 110)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_slot_border")
+
+[node name="ItemSection" type="PanelContainer" parent="HBox"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_item_bg")
+
+[node name="VBox" type="VBoxContainer" parent="HBox/ItemSection"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="HBox/ItemSection/VBox"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7a4el")
+theme_override_font_sizes/font_size = 20
+text = "ITEMS"
+horizontal_alignment = 1
+
+[node name="ItemSlotContainer" type="HBoxContainer" parent="HBox/ItemSection/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 15
+alignment = 1
+
+[node name="Slot1" type="Panel" parent="HBox/ItemSection/VBox/ItemSlotContainer"]
+custom_minimum_size = Vector2(80, 80)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_header")
+
+[node name="Slot2" type="Panel" parent="HBox/ItemSection/VBox/ItemSlotContainer"]
+custom_minimum_size = Vector2(80, 80)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_header")

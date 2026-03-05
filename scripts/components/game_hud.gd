@@ -16,13 +16,14 @@ var _has_invested_in_turn: bool = false
 
 # === UI 노드 참조 ===
 var side_panel: PersistentSidePanel # [추가] 공통 사이드 패널 참조
+var top_panel: TopPanel # [추가] 상단 패널 참조
 # [추가] 조커 시스템 관련 변수
 const MAX_JOKER_SLOTS = 5 # 최대 조커 배치 개수 (필요에 따라 조정)
 var joker_socket_positions: Array[Vector3] = []
 var joker_dice_nodes: Array[Node3D] = []
 
-# [추가] 조커 소켓 컨테이너 참조 (경로는 에디터 설정에 맞춰주세요)
-@onready var joker_socket_container: HBoxContainer = $MainLayout/PlayAreaContainer/JokerSlotContainer
+# [추가] 조커 소켓 컨테이너 참조는 이제 top_panel을 통해 동적으로 가져옵니다.
+var joker_socket_container: HBoxContainer
 @onready var submit_button: Button = $MainLayout/PlayAreaContainer/InteractionUI/HBoxContainer/TextureRect/SubmitButton
 @onready var invest_button: Button = $MainLayout/PlayAreaContainer/InteractionUI/HBoxContainer/TextureRect2/InvestButton
 @onready var turn_end_button: Button = $MainLayout/PlayAreaContainer/InteractionUI/HBoxContainer/TextureRect3/TurnEndButton
@@ -77,11 +78,14 @@ func _ready() -> void:
 	# All other initialization is now deferred to setup_game_hud()
 
 
-func setup_game_hud(p_world_3d: Node3D, p_rolling_world_camera: Camera3D, p_floating_text_container: Control, p_side_panel: PersistentSidePanel) -> void:
+func setup_game_hud(p_world_3d: Node3D, p_rolling_world_camera: Camera3D, p_floating_text_container: Control, p_side_panel: PersistentSidePanel, p_top_panel: TopPanel) -> void:
 	world_3d = p_world_3d
 	rolling_world_camera = p_rolling_world_camera
 	floating_text_container = p_floating_text_container
 	side_panel = p_side_panel
+	top_panel = p_top_panel
+	
+	joker_socket_container = top_panel.joker_slot_container
 	
 	# 사이드 패널에서 필요한 라벨 참조 연결
 	combo_name_label = side_panel.combo_name_label
@@ -636,24 +640,17 @@ func update_joker_socket_positions() -> void:
 	if joker_socket_container == null:
 		return
 
-	# UI 슬롯이 비어있다면 미리 채워줌 (위치 계산용)
-	if joker_socket_container.get_child_count() == 0:
-		for i in range(MAX_JOKER_SLOTS):
-			var socket_ui = TextureRect.new()
-			# const SocketTexture = preload("res://dice_socket.png") - Already defined at the top
-			socket_ui.texture = preload("res://dice_socket2.png") # 기존 소켓 텍스처 재사용
-			socket_ui.custom_minimum_size = Vector2(80, 80) # 크기 조정
-			socket_ui.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-			socket_ui.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-			socket_ui.modulate = Color(1, 1, 1, 0.5) # 약간 투명하게
-			joker_socket_container.add_child(socket_ui)
-		await get_tree().process_frame # UI 레이아웃 적용 대기
+	# [수정] TopPanel 레이아웃이 완전히 정해질 때까지 충분히 대기
+	await get_tree().process_frame
+	await get_tree().process_frame
 
 	var camera = rolling_world_camera
 	if not camera: return
 
 	joker_socket_positions.clear()
-	var plane_y = 0.6 # 투자 주사위와 같은 높이 또는 약간 다르게 설정
+	# [수정] plane_y를 크게 높여서 카메라 시야와 UI 슬롯 사이의 오차를 줄이고
+	# 주사위가 다른 3D 물체(바닥 등)보다 확실히 위에 보이게 함
+	var plane_y = 5.0 
 
 	for socket_ui in joker_socket_container.get_children():
 		var rect = socket_ui.get_global_rect()

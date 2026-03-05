@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://dpsk2v0i8nxxg" path="res://scenes/shop_dice.tscn" id="6_ylec3"]
 [ext_resource type="PackedScene" uid="uid://e4u7j62s742j" path="res://scenes/components/joker_dictionary.tscn" id="7_joker_dictionary"]
 [ext_resource type="PackedScene" uid="uid://b7v2yqj6l7j6u" path="res://scenes/components/persistent_side_panel.tscn" id="9_side_panel"]
+[ext_resource type="PackedScene" uid="uid://b7v2yqj6l7j7v" path="res://scenes/components/top_panel.tscn" id="10_top_panel"]
 [ext_resource type="PackedScene" path="res://scenes/popups/light_config_screen.tscn" id="8_light_config"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_Floor"]
@@ -81,6 +82,9 @@ visible = false
 shop_dice_scene = ExtResource("6_ylec3")
 
 [node name="PersistentSidePanel" parent="UI_Canvas" instance=ExtResource("9_side_panel")]
+visible = false
+
+[node name="TopPanel" parent="UI_Canvas" instance=ExtResource("10_top_panel")]
 visible = false
 
 [node name="StartScreen" parent="UI_Canvas" instance=ExtResource("6_start_screen")]

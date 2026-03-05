@@ -5,6 +5,7 @@ class_name GameRoot
 @onready var game_hud: GameHUD = $UI_Canvas/GameHUD
 @onready var shop_hud: ShopHUD = $UI_Canvas/ShopHUD
 @onready var side_panel: PersistentSidePanel = $UI_Canvas/PersistentSidePanel
+@onready var top_panel: TopPanel = $UI_Canvas/TopPanel
 @onready var start_screen = $UI_Canvas/StartScreen
 @onready var joker_dictionary = $UI_Canvas/JokerDictionary
 @onready var light_config_screen = $UI_Canvas/LightConfigScreen # [추가]
@@ -41,7 +42,7 @@ func _ready():
 	add_child(dice_bag_popup)
 	side_panel.dice_bag_requested.connect(_on_view_dice_bag_pressed)
 
-	game_hud.setup_game_hud(world_3d, camera, floating_text_container, side_panel)
+	game_hud.setup_game_hud(world_3d, camera, floating_text_container, side_panel, top_panel)
 	shop_hud.side_panel = side_panel
 	
 	# Initialize InputManager now that game_hud (and its combo_select) is ready.
@@ -152,6 +153,7 @@ func transition_to_light_config():
 
 	tween.chain().tween_callback(func():
 		side_panel.visible = false
+		top_panel.visible = false
 		game_hud.visible = false
 		shop_hud.visible = false
 		if start_screen: start_screen.visible = false
@@ -170,6 +172,7 @@ func transition_to_start(instant: bool = false):
 		camera.rotation_degrees = ROT_START
 		# UI 상태 설정
 		side_panel.visible = false
+		top_panel.visible = false
 		game_hud.visible = false
 		shop_hud.visible = false
 		if start_screen:
@@ -189,6 +192,7 @@ func transition_to_start(instant: bool = false):
 	tween.chain().tween_callback(func():
 		# UI 상태 설정
 		side_panel.visible = false
+		top_panel.visible = false
 		game_hud.visible = false
 		shop_hud.visible = false
 		if start_screen:
@@ -211,6 +215,7 @@ func transition_to_dictionary():
 
 	tween.chain().tween_callback(func():
 		side_panel.visible = false
+		top_panel.visible = false
 		game_hud.visible = false
 		shop_hud.visible = false
 		if start_screen: start_screen.visible = false
@@ -232,6 +237,7 @@ func transition_to_shop():
 	
 	tween.chain().tween_callback(func():
 		side_panel.visible = true
+		top_panel.visible = true
 		side_panel.show_shop_ui()
 		game_hud.visible = false
 		if start_screen: start_screen.visible = false # 혹시 켜져있으면 끄기
@@ -257,6 +263,7 @@ func transition_to_game(instant: bool = false):
 		camera.global_position = POS_GAME
 		camera.rotation_degrees = ROT_GAME
 		side_panel.visible = true
+		top_panel.visible = true
 		side_panel.show_game_ui()
 		game_hud.visible = true
 
@@ -280,6 +287,7 @@ func transition_to_game(instant: bool = false):
 	
 	tween.chain().tween_callback(func():
 		side_panel.visible = true
+		top_panel.visible = true
 		side_panel.show_game_ui()
 		# [핵심] 카메라가 도착했으므로, 이제 현재 카메라 기준으로 소켓 위치를 다시 계산하라고 명령
 		game_hud.update_socket_positions()
